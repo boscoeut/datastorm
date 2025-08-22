@@ -1,86 +1,124 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+// Placeholder page components - these will be replaced with actual implementations
+const HomePage = () => (
+  <div className="space-y-6">
+    <div className="text-center">
+      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        Welcome to DataStorm
+      </h1>
+      <p className="text-xl text-gray-600 dark:text-gray-400">
+        Your comprehensive Electric Vehicle Data Hub
+      </p>
+    </div>
+    
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Vehicle Database</CardTitle>
+          <CardDescription>Explore comprehensive EV specifications and data</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 dark:text-gray-400">
+            Access detailed technical specifications, performance metrics, and comparison tools for electric vehicles.
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Market Data</CardTitle>
+          <CardDescription>Sales figures, trends, and market analysis</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 dark:text-gray-400">
+            Stay informed with real-time market data, sales trends, and competitive analysis.
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Industry News</CardTitle>
+          <CardDescription>Latest updates and industry insights</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 dark:text-gray-400">
+            Get the latest news, rumors, and expert analysis from the electric vehicle industry.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+);
+
+const VehiclesPage = () => (
+  <div className="space-y-6">
+    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Vehicle Database</h1>
+    <Card>
+      <CardHeader>
+        <CardTitle>Coming Soon</CardTitle>
+        <CardDescription>Vehicle database implementation in progress</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-600 dark:text-gray-400">
+          This section will contain comprehensive vehicle data, specifications, and comparison tools.
+        </p>
+      </CardContent>
+    </Card>
+  </div>
+);
+
+const MarketPage = () => (
+  <div className="space-y-6">
+    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Market Data</h1>
+    <Card>
+      <CardHeader>
+        <CardTitle>Coming Soon</CardTitle>
+        <CardDescription>Market data implementation in progress</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-600 dark:text-gray-400">
+          This section will contain sales figures, market trends, and competitive analysis.
+        </p>
+      </CardContent>
+    </Card>
+  </div>
+);
+
+const NewsPage = () => (
+  <div className="space-y-6">
+    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Industry News</h1>
+    <Card>
+      <CardHeader>
+        <CardTitle>Coming Soon</CardTitle>
+        <CardDescription>News aggregation implementation in progress</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-600 dark:text-gray-400">
+          This section will contain the latest industry news, rumors, and expert insights.
+        </p>
+      </CardContent>
+    </Card>
+  </div>
+);
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [inputValue, setInputValue] = useState('')
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8">
-      <div className="flex gap-8 mb-8">
-        <a href="https://vite.dev" target="_blank" className="hover:scale-110 transition-transform">
-          <img src={viteLogo} className="h-24 w-24" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" className="hover:scale-110 transition-transform">
-          <img src={reactLogo} className="h-24 w-24 animate-spin" alt="React logo" />
-        </a>
-      </div>
-      
-      <h1 className="text-4xl font-bold mb-8">Vite + React + Tailwind + shadcn/ui</h1>
-      
-      <div className="grid gap-6 w-full max-w-2xl">
-        <Card>
-          <CardHeader>
-            <CardTitle>Counter Component</CardTitle>
-            <CardDescription>Built with shadcn/ui Button component</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-center text-2xl font-semibold text-gray-700">
-              count is {count}
-            </div>
-            <div className="flex gap-2 justify-center">
-              <Button onClick={() => setCount((count) => count + 1)}>
-                Increment
-              </Button>
-              <Button variant="outline" onClick={() => setCount(0)}>
-                Reset
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Input Component</CardTitle>
-            <CardDescription>Built with shadcn/ui Input and Label components</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="input-demo">Type something:</Label>
-              <Input
-                id="input-demo"
-                placeholder="Enter text here..."
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-              />
-            </div>
-            {inputValue && (
-              <div className="text-sm text-gray-600">
-                You typed: <span className="font-medium">{inputValue}</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Getting Started</CardTitle>
-            <CardDescription>Edit <code className="bg-gray-200 px-2 py-1 rounded text-sm">src/App.tsx</code> and save to test HMR</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 text-center">
-              Click on the Vite and React logos to learn more
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  )
+    <Router>
+      <AppLayout>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/vehicles" element={<VehiclesPage />} />
+          <Route path="/market" element={<MarketPage />} />
+          <Route path="/news" element={<NewsPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AppLayout>
+    </Router>
+  );
 }
 
-export default App
+export default App;

@@ -27,7 +27,7 @@ const initialState: AppState = {
 export const useAppStore = create<AppStore>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         ...initialState,
         user: null,
         theme: 'light',
