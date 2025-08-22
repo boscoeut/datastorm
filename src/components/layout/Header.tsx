@@ -2,6 +2,7 @@ import type { HeaderProps } from '@/types/layout';
 import { Navigation } from './Navigation';
 import { useLayoutStore } from '@/stores/layout-store';
 import { Button } from '@/components/ui/button';
+import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { Menu, X } from 'lucide-react';
 
 export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
@@ -32,21 +33,26 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
             />
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onMenuToggle}
-              className="p-2"
-              aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
-            >
-              {sidebarOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </Button>
+          {/* Theme Switcher and Mobile Menu */}
+          <div className="flex items-center space-x-2">
+            <ThemeSwitcher />
+            
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onMenuToggle}
+                className="p-2"
+                aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+              >
+                {sidebarOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

@@ -17,7 +17,6 @@
 ## Task Overview
 **Task Name:** [Descriptive task name]
 **Priority:** [High/Medium/Low]
-**Estimated Time:** [X hours/days]
 **Complexity:** [Simple/Moderate/Complex]
 **Related PRD Section:** [Section number and title from PRD]
 **Related Technical Spec Section:** [Section number and title from TECHNICAL_SPEC]
@@ -178,7 +177,6 @@ Each task file should follow this exact structure:
 
 **Created:** [YYYY-MM-DD]
 **Priority:** [High/Medium/Low]
-**Estimated Time:** [X hours/days]
 **Complexity:** [Simple/Moderate/Complex]
 **Status:** [Not Started/In Progress/Completed/Blocked]
 
@@ -257,21 +255,7 @@ ls -la tasks/ | sort
 - `tasks/status-completed/` - Finished tasks
 - `tasks/status-blocked/` - Blocked tasks
 
-### 6. Task Tracking
-
-#### Daily Standup
-- Review tasks in progress
-- Update status of completed tasks
-- Identify blocked tasks
-- Prioritize new tasks
-
-#### Weekly Review
-- Archive completed tasks
-- Review task metrics
-- Plan next week's priorities
-- Identify process improvements
-
-### 7. Example Task File
+### 6. Example Task File
 
 See `tasks/example-task.md` for a complete example of a filled-out task file.
 

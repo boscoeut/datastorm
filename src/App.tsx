@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Placeholder page components - these will be replaced with actual implementations
@@ -107,17 +108,19 @@ const NewsPage = () => (
 
 function App() {
   return (
-    <Router>
-      <AppLayout>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/vehicles" element={<VehiclesPage />} />
-          <Route path="/market" element={<MarketPage />} />
-          <Route path="/news" element={<NewsPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AppLayout>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <AppLayout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/vehicles" element={<VehiclesPage />} />
+            <Route path="/market" element={<MarketPage />} />
+            <Route path="/news" element={<NewsPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AppLayout>
+      </Router>
+    </ThemeProvider>
   );
 }
 

@@ -70,6 +70,12 @@
 - **Touch-Friendly:** Optimize for touch interactions on mobile devices
 - **Performance:** Fast loading times for data-heavy pages
 
+#### 4.4 Theme Customization
+- **Theme Switching:** Ability to switch between light mode and dark mode themes
+- **User Preference Persistence:** Remember user's theme choice across sessions
+- **Accessibility:** Ensure both themes meet accessibility standards for contrast and readability
+- **Data Visualization Adaptation:** Charts and graphs automatically adapt to selected theme for optimal visibility
+
 ### 5. Technical Requirements
 
 #### 5.1 Frontend Technology Stack
