@@ -4,9 +4,15 @@ import { useLayoutStore } from '@/stores/layout-store';
 import { Button } from '@/components/ui/button';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 import { Menu, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
   const { navigationItems, sidebarOpen } = useLayoutStore();
+  const navigate = useNavigate();
+
+  const handleTitleClick = () => {
+    navigate('/');
+  };
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
@@ -15,12 +21,17 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
           {/* Logo and Brand */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                DataStorm
-              </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Electric Vehicle Data Hub
-              </p>
+              <button
+                onClick={handleTitleClick}
+                className="text-left hover:opacity-80 transition-opacity cursor-pointer"
+              >
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                  DataStorm
+                </h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Electric Vehicle Data Hub
+                </p>
+              </button>
             </div>
           </div>
 
