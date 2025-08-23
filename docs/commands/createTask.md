@@ -1,13 +1,23 @@
 # Task Implementation Template
 
+## What This Command Does
+
+The `@createTask` command is executed by an AI agent from within Cursor IDE to create a comprehensive, detailed task definition for the Electric Vehicle Data Hub project. When this command is invoked, the agent will:
+
+1. **Analyze Project Status**: The agent will automatically review the current project status from taskList.md
+2. **Guide Task Creation**: The agent will help you define a task that fits within the 4-hour constraint
+3. **Validate Requirements**: The agent will ensure the task aligns with project priorities and dependencies
+4. **Generate Task File**: The agent will create a properly formatted task file following project standards
+
 ## Project Status Consultation
-**Before creating a task, consult the current project status:**
+**The agent will automatically consult the current project status:**
 - **Task List:** `tasks/taskList.md` - Current project status, completed tasks, and pending priorities
-- **PRD:** `docs/PRD.md` - Project Requirements Document defining core features and objectives
-- **Technical Spec:** `docs/TECHNICAL_SPEC.md` - Technical architecture and implementation guidelines
-- **UI Spec:** `docs/USER_INTERFACE_SPEC.md` - User interface design system and component guidelines
+- **PRD:** `docs/specs/PRD.md` - Project Requirements Document defining core features and objectives
+- **Technical Spec:** `docs/specs/TECHNICAL_SPEC.md` - Technical architecture and implementation guidelines
+- **UI Spec:** `docs/specs/USER_INTERFACE_SPEC.md` - User interface design system and component guidelines
 
 ### Task List Integration Checklist
+**The agent will automatically verify:**
 - [ ] Review `tasks/taskList.md` for current project status and priorities
 - [ ] Check if task aligns with current implementation phase
 - [ ] Verify task doesn't duplicate or conflict with existing work
@@ -17,17 +27,20 @@
 - [ ] Check if task fits within the current development phase
 
 ### Current Project Status (from taskList.md)
-**Last Updated:** [Check taskList.md for current date]
-**Current Phase:** [Phase 1/2/3/4 from roadmap]
-**Next Milestone:** [From taskList.md]
-**Available Effort:** [Based on current team capacity and timeline]
+**The agent will automatically retrieve:**
+**Last Updated:** [Agent checks taskList.md for current date]
+**Current Phase:** [Agent determines Phase 1/2/3/4 from roadmap]
+**Next Milestone:** [Agent identifies from taskList.md]
+**Available Effort:** [Agent assesses based on current team capacity and timeline]
 
 ### Priority Alignment Check
+**The agent will automatically verify:**
 - [ ] **HIGH PRIORITY** - Core Features (Must Complete First) - Check if this is the right time
 - [ ] **MEDIUM PRIORITY** - Supporting Features - Verify dependencies are met
 - [ ] **LOW PRIORITY** - Enhancement Features - Ensure core features are complete first
 
 ### Dependency Verification
+**The agent will automatically verify:**
 - [ ] All required tasks from previous phases are completed
 - [ ] Required infrastructure and components are in place
 - [ ] Database schema and services support the new task
@@ -52,6 +65,7 @@
 **CRITICAL: This task must be completable in 4 hours (half a day) by a single developer.**
 
 ### Scope Validation Checklist
+**The agent will automatically verify:**
 - [ ] Task can be completed in 4 hours or less
 - [ ] Scope is focused on a single, specific deliverable
 - [ ] No complex integrations or multi-component work
@@ -60,7 +74,7 @@
 - [ ] Single responsibility principle followed
 
 ### If Task is Too Large
-**Break down into multiple 4-hour tasks:**
+**The agent will automatically break down into multiple 4-hour tasks:**
 - [ ] Split into smaller, focused components
 - [ ] Separate data logic from UI components
 - [ ] Create individual tasks for each major feature
@@ -218,56 +232,50 @@ Before marking task complete, verify:
 
 # Task Generator
 
-## How to Create a New Task
+## How the Agent Creates a New Task
 
-### 1. Consult Current Project Status
-**First, review the current project status:**
-```bash
-# Read the current task list to understand project status
-cat tasks/taskList.md
-```
-
-**Key information to check:**
+### 1. Agent Automatically Consults Current Project Status
+**The agent will automatically review the current project status:**
 - Current project phase and milestone
 - Completed tasks and their status
 - Pending task priorities and dependencies
 - Available effort and timeline
 - Next actions and roadmap
 
-### 2. Verify Task Priority and Phase Alignment
-**Ensure your task aligns with:**
+### 2. Agent Verifies Task Priority and Phase Alignment
+**The agent will automatically ensure your task aligns with:**
 - Current development phase (Phase 1/2/3/4)
 - Priority order (HIGH → MEDIUM → LOW)
 - Dependencies are already completed
 - Timeline fits within current milestone
 
-### 3. Validate Task Scope (CRITICAL)
-**Ensure your task fits the 4-hour constraint:**
+### 3. Agent Validates Task Scope (CRITICAL)
+**The agent will automatically ensure your task fits the 4-hour constraint:**
 - [ ] Task can be completed in half a day maximum
 - [ ] Scope is focused and specific
 - [ ] Limited to 1-2 files maximum
 - [ ] Single responsibility principle
 - [ ] Clear, testable deliverable
 
-**If task is too large, break it down:**
+**If task is too large, the agent will automatically break it down:**
 - Split into multiple 4-hour tasks
 - Separate components and logic
 - Create individual tasks for each feature
 - Ensure each subtask is independently testable
 
-### 4. Fill Out the Template Above
-Complete all sections of the template above with specific details for your task, ensuring alignment with current project status and 4-hour time constraint.
+### 4. Agent Fills Out the Template
+The agent will automatically complete all sections of the template above with specific details for your task, ensuring alignment with current project status and 4-hour time constraint.
 
-### 5. Generate Task File
-Use the following naming convention for your task file:
+### 5. Agent Generates Task File
+The agent will automatically use the following naming convention for your task file:
 ```
 tasks/[YYYY-MM-DD]-[task-name].md
 ```
 
 Example: `tasks/2024-01-15-create-vehicle-list-component.md`
 
-### 6. Task File Structure
-Each task file should follow this exact structure:
+### 6. Agent Creates Task File Structure
+The agent will automatically create each task file following this exact structure:
 
 ```markdown
 # Task: [Task Name]
@@ -315,28 +323,13 @@ Each task file should follow this exact structure:
 [Add notes when task is completed]
 ```
 
-### 7. Task Management Commands
+### 7. Task Management (Handled by Agent)
 
 #### Create a New Task
-```bash
-# Navigate to tasks directory
-cd tasks
-
-# Create new task file with current date
-touch $(date +%Y-%m-%d)-[task-name].md
-```
+The agent will automatically create new task files with the proper naming convention and structure.
 
 #### List All Tasks
-```bash
-# List all task files
-ls -la tasks/
-
-# List tasks by date
-ls -la tasks/ | sort
-
-# Check current project status
-cat tasks/taskList.md
-```
+The agent can automatically list and analyze all existing tasks to understand project status.
 
 #### Update Task Status
 - **Not Started**: Task is created but not yet begun
@@ -370,12 +363,12 @@ See `tasks/example-task.md` for a complete example of a filled-out task file.
 ---
 
 ## Quick Start
-1. **Consult taskList.md** for current project status and priorities
-2. **Verify task alignment** with current phase and dependencies
-3. **Validate task scope** - ensure 4-hour completion time
-4. **Copy this template** and fill in your specific task details
-5. **Save as** `tasks/[date]-[name].md`
-6. **Begin implementation** following the steps
+1. **Use @createTask command** - the agent will handle everything automatically
+2. **Provide task details** when prompted by the agent
+3. **Agent validates everything** - scope, priority, dependencies, and alignment
+4. **Agent creates task file** with proper naming and structure
+5. **Agent ensures compliance** with project standards and 4-hour constraint
+6. **Begin implementation** following the agent-created task steps
 7. **Update progress** as you work
 8. **Mark complete** when finished
 9. **Update taskList.md** to reflect completion
@@ -385,6 +378,7 @@ See `tasks/example-task.md` for a complete example of a filled-out task file.
 ## Integration with Project Management
 
 ### Before Starting Any Task
+**The agent automatically handles:**
 1. **Read taskList.md** to understand current project status
 2. **Check phase alignment** - ensure task fits current development timeline
 3. **Verify dependencies** - confirm all required work is completed
@@ -398,6 +392,7 @@ See `tasks/example-task.md` for a complete example of a filled-out task file.
 4. **Verify next actions** and update roadmap if needed
 
 ### Continuous Integration
+**The agent automatically manages:**
 - **Daily**: Check taskList.md for current priorities
 - **Half-Day**: Review progress against planned 4-hour tasks
 - **After each task**: Update project status and next actions
@@ -411,3 +406,7 @@ See `tasks/example-task.md` for a complete example of a filled-out task file.
 - **Documentation**: Include code comments and basic documentation
 - **Integration**: Test integration with existing components
 - **Time Management**: Respect the 4-hour constraint strictly
+
+---
+
+**Note**: The `@createTask` command is executed by an AI agent from within Cursor IDE. The agent automatically handles all the complex work of analyzing project status, validating requirements, and creating properly formatted task files. Simply use the command and provide the task details when prompted - the agent will ensure everything follows project standards and the 4-hour constraint.

@@ -11,7 +11,14 @@ The Project Manager Agent is an AI-powered assistant integrated into the Cursor 
 - **Progress Assessment**: Analyze task completion patterns to determine what's been accomplished
 - **Gap Analysis**: Identify missing functionality based on completed tasks vs. project requirements
 
-### 2. Task Prioritization and Planning
+### 2. Feature Management and Task Creation
+- **Feature Addition**: When `@addFeature` is used, create comprehensive task breakdown in taskList.md
+- **Task Breakdown**: Break down new features into 4-hour tasks following project standards
+- **Priority Assignment**: Assign appropriate priorities to new feature tasks
+- **Dependency Mapping**: Identify dependencies between new and existing tasks
+- **Roadmap Updates**: Integrate new feature timeline into implementation roadmap
+
+### 3. Task Prioritization and Planning
 - **Priority Assessment**: Evaluate task importance based on:
   - PRD requirements and success metrics
   - Technical dependencies and prerequisites
@@ -21,7 +28,7 @@ The Project Manager Agent is an AI-powered assistant integrated into the Cursor 
 - **Resource Planning**: Estimate effort and complexity for remaining tasks
 - **Timeline Planning**: Suggest implementation order and milestones
 
-### 3. Development Guidance
+### 4. Development Guidance
 - **Task Recommendations**: Suggest which tasks should be implemented next
 - **Implementation Strategy**: Provide guidance on how to approach complex tasks
 - **Code Review**: Review implementations for alignment with project standards
@@ -35,6 +42,14 @@ The Project Manager Agent is an AI-powered assistant integrated into the Cursor 
 2. **Analyze Completed Tasks**: Review all completed tasks in the tasks/ folder to understand progress
 3. **Reference Documentation**: Consult PRD.md and TECHNICAL_SPEC.md only for specific requirements when needed
 4. **Progress Assessment**: Determine what's been accomplished based on task completion history
+
+### Phase 0: Feature Management (When Needed)
+1. **Feature Addition**: Use `@addFeature` to add new features to the application
+2. **Feature Removal**: Use `@removeFeature` to remove features from the application
+3. **Specification Updates**: Update PRD, technical specs, and UI specs as needed
+4. **Task Impact Analysis**: Assess impact of feature changes on existing tasks
+5. **Priority Rebalancing**: Adjust task priorities based on feature changes
+6. **Task Creation**: Create new tasks for added features following 4-hour constraints
 
 ## Token Efficiency Strategy
 
@@ -68,6 +83,14 @@ The Project Manager Agent is an AI-powered assistant integrated into the Cursor 
 3. **Update Priorities**: Mark task priorities and dependencies
 4. **Implementation Order**: Specify the recommended order of execution
 
+### Phase 5: Feature Task Creation (When @addFeature is used)
+1. **Analyze Feature Scope**: Determine what tasks are needed for implementation
+2. **Create Task Breakdown**: Break down feature into 4-hour tasks following project standards
+3. **Set Task Priorities**: Assign appropriate priorities based on feature importance
+4. **Map Dependencies**: Identify dependencies between new and existing tasks
+5. **Update Roadmap**: Integrate new feature timeline into implementation roadmap
+6. **Rebalance Priorities**: Adjust existing task priorities if needed
+
 ## Agent Commands and Interactions
 
 ### Available Commands
@@ -76,6 +99,8 @@ The Project Manager Agent is an AI-powered assistant integrated into the Cursor 
 - **`@projectManager prioritize`**: Re-evaluate task priorities based on task history
 - **`@projectManager suggest-next`**: Suggest which task should be implemented next
 - **`@projectManager roadmap`**: Generate development roadmap based on task progress
+- **`@removeFeature`**: Remove a feature and update project specifications
+- **`@addFeature`**: Add a new feature and update project specifications
 
 ### Response Format
 The agent should provide:
@@ -129,12 +154,15 @@ The agent should provide:
 ### Task Sizing and Scope
 **All tasks must be scoped to be completable in 4 hours (half a day) by a single developer.**
 
+**Note**: When features are added using `@addFeature`, new tasks must be created following the 4-hour constraint. When features are removed using `@removeFeature`, related tasks must be removed or updated to maintain project consistency and prevent orphaned references.
+
 ### Task Breakdown Strategy
 - **Large Features**: Break down into multiple 4-hour tasks
 - **Complex Components**: Split into smaller, focused implementation tasks
 - **Integration Work**: Separate into discrete, testable units
 - **UI Components**: Create individual components as separate tasks
 - **Data Management**: Split data fetching, processing, and display into separate tasks
+- **New Features**: When adding features with `@addFeature`, break down into 4-hour tasks
 
 ### Task List Structure
 - **Main Tasks**: High-level, one-sentence descriptions of what needs to be accomplished
@@ -150,6 +178,7 @@ The agent should provide:
 - **Files to Modify**: Which components and files will be affected
 - **Technical Requirements**: Include in subtasks when main task needs implementation details
 - **UI Requirements**: Reference USER_INTERFACE_SPEC for component design and theming
+- **Feature Integration**: For new features, include integration requirements with existing systems
 
 ## Integration with Cursor IDE
 
@@ -205,6 +234,14 @@ When the agent runs `@projectManager analyze`, it should:
 - **Half-Day Check**: Assess progress against planned 4-hour tasks
 - **Dependency Updates**: Update task dependencies as work progresses
 - **Priority Adjustments**: Re-evaluate priorities based on task completion patterns
+- **Feature Scope Review**: Ensure project scope remains clean and focused
+
+### Feature Task Management
+- **New Feature Tasks**: When `@addFeature` is used, immediately create task breakdown in taskList.md
+- **Task Sizing**: Ensure all new feature tasks follow the 4-hour constraint
+- **Priority Assignment**: Assign appropriate priorities based on feature importance and dependencies
+- **Roadmap Integration**: Update implementation roadmap to include new feature timeline
+- **Dependency Validation**: Ensure all task dependencies are properly mapped and realistic
 
 ### Continuous Improvement
 - **Pattern Recognition**: Identify common implementation patterns
@@ -213,6 +250,7 @@ When the agent runs `@projectManager analyze`, it should:
 - **Performance Monitoring**: Track performance metrics and suggest optimizations
 - **Quality Assurance**: Ensure code quality and adherence to standards
 - **Theme Consistency**: Maintain consistent theming across all new components
+- **Feature Management**: Maintain clean project scope through proper feature addition and removal
 
 ### Task Sizing Guidelines
 - **Component Creation**: 1 component per 4-hour task
@@ -221,7 +259,8 @@ When the agent runs `@projectManager analyze`, it should:
 - **Testing**: Include basic testing and validation in each task
 - **Documentation**: Include code comments and basic documentation
 - **Integration**: Test integration with existing components
+- **New Feature Tasks**: Must follow 4-hour constraint and include integration testing
 
 ---
 
-**Note**: This agent should be used regularly during development to maintain project focus, track progress, and ensure alignment with project requirements. The agent's analysis focuses on task history to minimize token usage while providing accurate project status. All tasks must be scoped to be completable in 4 hours (half a day) to maintain consistent development velocity and progress tracking.
+**Note**: This agent should be used regularly during development to maintain project focus, track progress, and ensure alignment with project requirements. The agent's analysis focuses on task history to minimize token usage while providing accurate project status. All tasks must be scoped to be completable in 4 hours (half a day) to maintain consistent development velocity and progress tracking. When features need to be added, use the `@addFeature` command to create proper task breakdown. When features need to be removed, use the `@removeFeature` command to maintain project consistency and prevent orphaned references.

@@ -1,7 +1,19 @@
 # Boss Agent for Cursor IDE
 
 ## Overview
-The Boss Agent is the top-level AI coordinator for the Electric Vehicle Data Hub project. This agent works in coordination with the Project Manager Agent to determine what needs to be done next, creates detailed task definitions using the Task Creation system, and then implements those tasks. The Boss Agent ensures project momentum by continuously driving development forward through systematic task execution.
+The Boss Agent is an AI-powered assistant integrated into the Cursor IDE that serves as the top-level coordinator for the Electric Vehicle Data Hub project. This intelligent agent works in coordination with the Project Manager Agent to determine what needs to be done next, creates detailed task definitions using the Task Creation system, and then implements those tasks. The Boss Agent ensures project momentum by continuously driving development forward through systematic task execution.
+
+## What This Agent Does
+
+The Boss Agent is an AI coordinator that can:
+
+1. **Analyze Project Status**: Automatically review current project status, completed tasks, and priorities
+2. **Create Detailed Tasks**: Generate comprehensive task definitions that fit within 4-hour constraints
+3. **Implement Features**: Write code, create components, and implement functionality according to project specifications
+4. **Manage Project Flow**: Coordinate with other agents to maintain continuous development momentum
+5. **Ensure Quality**: Validate that all work meets PRD objectives, technical specifications, and UI standards
+6. **Handle Feature Management**: Add or remove features using `@addFeature` and `@removeFeature` commands
+7. **Maintain Consistency**: Ensure all work follows established project patterns and constraints
 
 ## Agent Responsibilities
 
@@ -31,6 +43,13 @@ The Boss Agent is the top-level AI coordinator for the Electric Vehicle Data Hub
 3. **Select Next Task**: Identify the highest priority task that can be started immediately
 4. **Validate Readiness**: Ensure all prerequisites and dependencies are met
 
+### Phase 0: Feature Management (When Needed)
+1. **Feature Addition**: Use `@addFeature` to add new features to the application
+2. **Feature Removal**: Use `@removeFeature` to remove features from the application
+3. **Specification Updates**: Update PRD, technical specs, and UI specs
+4. **Task Management**: Create or remove related tasks in taskList.md
+5. **Agent Updates**: Update agent documentation to add/remove feature-specific responsibilities
+
 ### Phase 2: Task Definition Creation
 1. **Consult Task Template**: Use `@createTask` template to structure the task
 2. **Fill Task Details**: Complete all sections with specific requirements and implementation steps
@@ -47,36 +66,39 @@ The Boss Agent is the top-level AI coordinator for the Electric Vehicle Data Hub
 ## Agent Commands and Interactions
 
 ### Available Commands
-- **`@boss execute-next`**: Complete workflow - analyze, create task, and implement
-- **`@boss analyze`**: Consult project manager and determine next task
-- **`@boss create-task`**: Generate detailed task definition for next priority
-- **`@boss implement`**: Execute the most recently created task
-- **`@boss status`**: Get current project status and next actions
+- **`@boss execute-next`**: Complete workflow - the agent analyzes, creates a task, and implements it
+- **`@boss analyze`**: The agent consults the project manager and determines the next task to work on
+- **`@boss create-task`**: The agent generates a detailed task definition for the next priority item
+- **`@boss implement`**: The agent executes the most recently created task
+- **`@boss status`**: The agent provides current project status and next actions
+- **`@removeFeature`**: The agent removes a feature from the application and updates all specifications
+- **`@addFeature`**: The agent adds a new feature to the application and updates all specifications
 
 ### Integration Commands
-- **`@projectManager analyze`**: Get project status and priorities
-- **`@projectManager suggest-next`**: Get specific task recommendations
-- **`@createTask`**: Use task creation template for detailed planning
+- **`@projectManager analyze`**: The agent gets project status and priorities from the project manager
+- **`@projectManager suggest-next`**: The agent gets specific task recommendations from the project manager
+- **`@createTask`**: The agent uses the task creation template for detailed planning
+- **`@removeFeature`**: The agent removes features and updates project specifications
+- **`@addFeature`**: The agent adds features and updates project specifications
 
 ## Task Execution Process
 
 ### 1. Project Analysis Command
-```bash
-@projectManager analyze
-```
+**Command**: `@projectManager analyze`
 **Purpose**: Get comprehensive project status, identify gaps, and determine priorities
 **Output**: Project status summary, missing functionality, and prioritized task list
 
 ### 2. Task Selection Decision
-**Criteria for selecting next task:**
+**The agent automatically evaluates these criteria when selecting the next task:**
 - **Priority Level**: HIGH → MEDIUM → LOW order
 - **Dependencies**: All prerequisites must be completed
 - **Scope**: Must fit within 4-hour constraint
 - **Phase Alignment**: Must align with current development phase
 - **Resource Availability**: Required components and infrastructure must exist
+- **Feature Status**: No pending feature changes that would affect task scope
 
 ### 3. Task Definition Creation
-**Using @createTask template:**
+**The agent automatically uses the @createTask template to create:**
 - **Task Overview**: Name, priority, complexity, phase, dependencies
 - **Requirements**: Functional, non-functional, and technical requirements
 - **Implementation Steps**: 6-phase breakdown with time allocations
@@ -84,7 +106,7 @@ The Boss Agent is the top-level AI coordinator for the Electric Vehicle Data Hub
 - **Acceptance Criteria**: Clear, measurable success metrics
 
 ### 4. Task Implementation Execution
-**Following created task definition:**
+**The agent automatically follows the created task definition through these phases:**
 - **Phase 1 (30 min)**: Setup, planning, and analysis
 - **Phase 2 (2.5 hours)**: Core implementation
 - **Phase 3 (30 min)**: Integration with existing systems
@@ -167,57 +189,45 @@ The Boss Agent is the top-level AI coordinator for the Electric Vehicle Data Hub
 ## Example Workflow Execution
 
 ### Complete Task Execution Example
-```bash
-# 1. Analyze project status
-@projectManager analyze
+**The agent will execute this workflow:**
 
-# 2. Get next task recommendation
-@projectManager suggest-next
-
-# 3. Create detailed task definition
-@createTask
-
-# 4. Implement the task
-@boss implement
-
-# 5. Update project status
-@projectManager analyze
-```
+1. **Analyze project status** using `@projectManager analyze`
+2. **Get next task recommendation** using `@projectManager suggest-next`
+3. **Create detailed task definition** using `@createTask`
+4. **Implement the task** using `@boss implement`
+5. **Update project status** using `@projectManager analyze`
 
 ### Task Definition Example
-```markdown
-# Task: Create Vehicle List Component
+**The agent will create tasks following this structure:**
 
-**Created:** 2024-01-15
-**Priority:** HIGH
-**Complexity:** Half-Day (4 hours)
-**Phase:** Phase 1
-**Status:** Not Started
-**Dependencies:** Basic layout setup, database schema
+**Task**: Create Vehicle List Component
+**Created**: 2024-01-15
+**Priority**: HIGH
+**Complexity**: Half-Day (4 hours)
+**Phase**: Phase 1
+**Status**: Not Started
+**Dependencies**: Basic layout setup, database schema
 
-## Task Description
-Build the vehicle list component with basic data display and theme-aware styling.
+**Task Description**: Build the vehicle list component with basic data display and theme-aware styling.
 
-## Requirements
+**Requirements**:
 - Display vehicle data in responsive table format
 - Follow theme system and design patterns
 - Mobile-responsive with touch interactions
 - Meet accessibility standards
 
-## Implementation Steps
-[6-phase breakdown with time allocations]
+**Implementation Steps**: 6-phase breakdown with time allocations
 
-## Files to Modify/Create
+**Files to Modify/Create**:
 - `src/components/vehicles/VehicleList.tsx`
 - `src/stores/vehicle-store.ts`
 
-## Acceptance Criteria
+**Acceptance Criteria**:
 - Component displays vehicle data correctly
 - Follows theme system
 - Mobile-responsive
 - No console errors
 - Meets accessibility standards
-```
 
 ## Maintenance and Updates
 
@@ -226,12 +236,14 @@ Build the vehicle list component with basic data display and theme-aware styling
 - **Task Completion**: Update project status after each task
 - **Quality Checks**: Ensure completed work meets all standards
 - **Dependency Updates**: Track and update task dependencies
+- **Feature Scope Review**: Ensure project scope remains clean and focused
 
 ### Continuous Improvement
 - **Process Optimization**: Refine task creation and implementation workflows
 - **Template Updates**: Improve task definition templates based on experience
 - **Standard Updates**: Keep aligned with evolving project requirements
 - **Performance Monitoring**: Track and improve execution efficiency
+- **Feature Management**: Maintain clean project scope through proper feature removal
 
 ## Integration with Development Workflow
 
@@ -255,4 +267,4 @@ Build the vehicle list component with basic data display and theme-aware styling
 
 ---
 
-**Note**: The Boss Agent is the primary driver of project execution, working in coordination with the Project Manager Agent to ensure continuous development momentum. All tasks must be properly scoped, defined, and executed within the 4-hour constraint to maintain consistent development velocity. The agent should be used regularly to maintain project focus and ensure alignment with project requirements and technical standards.
+**Note**: The Boss Agent is an AI-powered assistant integrated into the Cursor IDE that serves as the primary driver of project execution. It works in coordination with the Project Manager Agent to ensure continuous development momentum. All tasks must be properly scoped, defined, and executed within the 4-hour constraint to maintain consistent development velocity. The agent should be used regularly to maintain project focus and ensure alignment with project requirements and technical standards. When features need to be added or removed, use the `@addFeature` or `@removeFeature` commands to maintain project consistency and prevent orphaned references.
