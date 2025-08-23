@@ -26,5 +26,6 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 | **Implement Vehicle Search and Filtering** | Advanced search and filter capabilities | HIGH | ✅ Completed |
 | **Integrate Vehicle Components** | Final integration and testing of vehicle components | HIGH | ✅ Completed |
 | **Implement Vehicle Specification Table** | Comprehensive vehicle specification display component | HIGH | ✅ Completed |
+| **Modify Vehicle List to Use TanStack Table** | Replace HTML table with TanStack table for better performance and sorting | MEDIUM | ✅ Completed |
 | **Implement Vehicle Comparison Tools** | Side-by-side vehicle comparison functionality | MEDIUM | ⏳ Not Started |
 | **Implement News Aggregation System** | Industry news, rumors, and updates system | MEDIUM | ⏳ Not Started |

@@ -1,19 +1,12 @@
 # Task Implementation Template
 
-## What This Command Does
+## Purpose
+The `@createTask` command helps AI agents create focused, 4-hour tasks for the Electric Vehicle Data Hub project.
 
-The `@createTask` command helps AI agents create focused, 4-hour tasks for the Electric Vehicle Data Hub project. The agent will:
-
-1. **Check Project Status** - Review current progress from `tasks/taskList.md`
-2. **Validate Task Scope** - Ensure task fits within 4-hour constraint
+## Agent Workflow
+1. **Check Project Status** - Review `tasks/taskList.md`, PRD, Technical Spec, and UI Spec
+2. **Validate Scope** - Ensure task fits within 4-hour constraint
 3. **Create Task File** - Generate properly formatted task following project standards
-
-## Project Status Check
-**The agent automatically reviews:**
-- **Task List:** `tasks/taskList.md` - Current status and priorities
-- **PRD:** `docs/specs/PRD.md` - Project requirements
-- **Technical Spec:** `docs/specs/TECHNICAL_SPEC.md` - Architecture guidelines
-- **UI Spec:** `docs/specs/USER_INTERFACE_SPEC.md` - Design system
 
 ## Task Overview
 **Task Name:** [Descriptive, focused name]
@@ -23,12 +16,12 @@ The `@createTask` command helps AI agents create focused, 4-hour tasks for the E
 **Dependencies:** [List completed tasks this depends on]
 
 ## Requirements
-### Functional Requirements
+### Functional
 - [ ] [Specific functionality requirement 1]
 - [ ] [Specific functionality requirement 2]
 - [ ] [Specific functionality requirement 3]
 
-### Technical Requirements
+### Technical
 - [ ] [Framework/library requirement]
 - [ ] [API integration requirement]
 - [ ] [Database requirement]
@@ -36,11 +29,11 @@ The `@createTask` command helps AI agents create focused, 4-hour tasks for the E
 
 ## Implementation Steps
 
-### Setup and Planning (30 minutes)
-1. [ ] Review project status and relevant documentation
-2. [ ] Analyze existing codebase structure
+### Setup & Planning (30 min)
+1. [ ] Review project status and documentation
+2. [ ] Analyze codebase structure
 3. [ ] Plan component architecture
-4. [ ] Set up required dependencies
+4. [ ] Set up dependencies
 
 ### Core Implementation (2.5 hours)
 1. [ ] [Create/modify specific component/function]
@@ -48,25 +41,25 @@ The `@createTask` command helps AI agents create focused, 4-hour tasks for the E
 3. [ ] [Handle edge cases and errors]
 4. [ ] [Add necessary imports]
 
-### Integration (30 minutes)
+### Integration (30 min)
 1. [ ] [Integrate with existing components]
 2. [ ] [Update routing if needed]
 3. [ ] [Connect to state management if required]
 4. [ ] [Verify data flow]
 
-### Styling and UI (30 minutes)
-1. [ ] [Apply consistent styling with Tailwind CSS]
+### Styling & UI (30 min)
+1. [ ] [Apply Tailwind CSS styling]
 2. [ ] [Ensure responsive design]
 3. [ ] [Add loading states and animations]
 4. [ ] [Implement accessibility features]
 
-### Testing and Validation (15 minutes)
+### Testing & Validation (15 min)
 1. [ ] [Test functionality manually]
 2. [ ] [Verify edge cases and errors]
 3. [ ] [Check for console errors]
 4. [ ] [Validate against requirements]
 
-### Final Review (15 minutes)
+### Final Review (15 min)
 1. [ ] [Code review and cleanup]
 2. [ ] [Remove debug code]
 3. [ ] [Optimize performance]
@@ -82,13 +75,10 @@ The `@createTask` command helps AI agents create focused, 4-hour tasks for the E
 - [ ] [Package name] - [version] - [purpose]
 
 ## Testing Checklist
-- [ ] [Test case 1]
-- [ ] [Test case 2]
-- [ ] [Test case 3]
-- [ ] [Cross-browser testing]
-- [ ] [Mobile responsiveness]
-- [ ] [Performance testing]
-- [ ] [Integration testing]
+- [ ] [Builds successfully]
+- [ ] [No lint errors]
+- [ ] [No runtime errors]
+- [ ] [Aligns with project specifications]
 
 ## Acceptance Criteria
 - [ ] [Criterion 1 - specific and measurable]
@@ -132,10 +122,10 @@ The `@createTask` command helps AI agents create focused, 4-hour tasks for the E
 
 The agent automatically creates task files with this naming convention:
 ```
-tasks/[YYYY-MM-DD]-[task-name].md
+tasks/[task-name].md
 ```
 
-Example: `tasks/2024-01-15-create-vehicle-list-component.md`
+Example: `tasks/create-vehicle-list-component.md`
 
 ### Task File Content
 ```markdown

@@ -1,7 +1,16 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
+} from '@tanstack/react-table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import VehicleSearch from './VehicleSearch'
 import {
   useVehicles,
@@ -13,6 +22,7 @@ import {
   useVehicleTotalCount,
   useVehicleStore
 } from '@/stores/vehicle-store'
+import type { Vehicle } from '@/types/database'
 
 interface VehicleListProps {
   showHeader?: boolean
@@ -28,6 +38,8 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
   const pagination = useVehiclePagination()
   const totalCount = useVehicleTotalCount()
   
+  const [sorting, setSorting] = useState<SortingState>([])
+  
   const {
     fetchVehicles,
     fetchManufacturers,
@@ -38,8 +50,6 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
     clearError
   } = useVehicleStore()
 
-
-
   useEffect(() => {
     fetchVehicles()
     fetchManufacturers()
@@ -48,6 +58,96 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
   const handleVehicleClick = (vehicleId: string) => {
     navigate(`/vehicles/${vehicleId}`)
   }
+
+  // Define table columns with TanStack table
+  const columns = useMemo<ColumnDef<Vehicle>[]>(() => [
+    {
+      accessorKey: 'model',
+      header: 'Model',
+      cell: ({ row }) => {
+        const vehicle = row.original
+        return (
+          <div className="font-medium text-foreground">
+            {vehicle.model}
+            {vehicle.trim && (
+              <span className="text-sm text-muted-foreground ml-2">
+                {vehicle.trim}
+              </span>
+            )}
+          </div>
+        )
+      },
+      sortingFn: 'alphanumeric',
+    },
+    {
+      accessorKey: 'manufacturer',
+      header: 'Manufacturer',
+      cell: ({ row }) => {
+        const vehicle = row.original
+        return (
+          <span className="text-foreground">
+            {vehicle.manufacturer?.name || vehicle.manufacturer_id}
+          </span>
+        )
+      },
+      sortingFn: (rowA, rowB) => {
+        const nameA = rowA.original.manufacturer?.name || rowA.original.manufacturer_id
+        const nameB = rowB.original.manufacturer?.name || rowB.original.manufacturer_id
+        return nameA.localeCompare(nameB)
+      },
+    },
+    {
+      accessorKey: 'year',
+      header: 'Year',
+      cell: ({ row }) => (
+        <span className="text-foreground">{row.original.year}</span>
+      ),
+      sortingFn: (rowA, rowB) => rowA.original.year - rowB.original.year,
+    },
+    {
+      accessorKey: 'body_style',
+      header: 'Body Style',
+      cell: ({ row }) => (
+        <span className="text-foreground">
+          {row.original.body_style || 'N/A'}
+        </span>
+      ),
+      sortingFn: 'alphanumeric',
+    },
+    {
+      accessorKey: 'is_electric',
+      header: 'Type',
+      cell: ({ row }) => {
+        const vehicle = row.original
+        return (
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              vehicle.is_electric
+                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+            }`}
+          >
+            {vehicle.is_electric ? 'Electric' : 'Hybrid/Other'}
+          </span>
+        )
+      },
+      sortingFn: (rowA, rowB) => {
+        return (rowA.original.is_electric === rowB.original.is_electric) ? 0 : rowA.original.is_electric ? 1 : -1
+      },
+    },
+  ], [])
+
+  // Initialize TanStack table
+  const table = useReactTable({
+    data: vehicles,
+    columns,
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
 
   const totalPages = Math.ceil(totalCount / pagination.pageSize)
 
@@ -122,51 +222,50 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
             </div>
           ) : (
             <>
-              {/* Vehicle Table */}
+              {/* TanStack Table */}
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-3 px-4 font-medium text-foreground">Model</th>
-                      <th className="text-left py-3 px-4 font-medium text-foreground">Manufacturer</th>
-                      <th className="text-left py-3 px-4 font-medium text-foreground">Year</th>
-                      <th className="text-left py-3 px-4 font-medium text-foreground">Body Style</th>
-                      <th className="text-left py-3 px-4 font-medium text-foreground">Type</th>
-                    </tr>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <tr key={headerGroup.id} className="border-b border-border">
+                        {headerGroup.headers.map((header) => (
+                          <th
+                            key={header.id}
+                            className="text-left py-3 px-4 font-medium text-foreground cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            <div className="flex items-center gap-2">
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                              {{
+                                asc: <ChevronUp className="h-4 w-4" />,
+                                desc: <ChevronDown className="h-4 w-4" />,
+                              }[header.column.getIsSorted() as string] ?? (
+                                <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
                   </thead>
                   <tbody>
-                    {vehicles.map((vehicle) => (
+                    {table.getRowModel().rows.map((row) => (
                       <tr
-                        key={vehicle.id}
-                        onClick={() => handleVehicleClick(vehicle.id)}
+                        key={row.id}
+                        onClick={() => handleVehicleClick(row.original.id)}
                         className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
                       >
-                        <td className="py-3 px-4 font-medium text-foreground">
-                          {vehicle.model}
-                          {vehicle.trim && (
-                            <span className="text-sm text-muted-foreground ml-2">
-                              {vehicle.trim}
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-foreground">
-                          {vehicle.manufacturer?.name || vehicle.manufacturer_id}
-                        </td>
-                        <td className="py-3 px-4 text-foreground">{vehicle.year}</td>
-                        <td className="py-3 px-4 text-foreground">
-                          {vehicle.body_style || 'N/A'}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              vehicle.is_electric
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                            }`}
-                          >
-                            {vehicle.is_electric ? 'Electric' : 'Hybrid/Other'}
-                          </span>
-                        </td>
+                        {row.getVisibleCells().map((cell) => (
+                          <td key={cell.id} className="py-3 px-4">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </td>
+                        ))}
                       </tr>
                     ))}
                   </tbody>
