@@ -2,25 +2,13 @@ import type { SidebarProps } from '@/types/layout';
 import { Navigation } from './Navigation';
 import { useLayoutStore } from '@/stores/layout-store';
 import { Button } from '@/components/ui/button';
-import { X, Filter, Search, BarChart3, Newspaper } from 'lucide-react';
+import { X, BarChart3, Newspaper } from 'lucide-react';
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { navigationItems } = useLayoutStore();
 
   const sidebarItems = [
     ...navigationItems,
-    {
-      id: 'filters',
-      label: 'Filters',
-      href: '/filters',
-      icon: Filter,
-    },
-    {
-      id: 'search',
-      label: 'Advanced Search',
-      href: '/search',
-      icon: Search,
-    },
   ];
 
   return (

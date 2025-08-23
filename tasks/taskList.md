@@ -14,6 +14,7 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 - [x] **Setup Basic Application Layout** (2024-01-15) - Complete layout system with responsive navigation
 - [x] **Implement Theme Switcher** (2024-01-15) - Light/dark mode switching with persistence
 - [x] **Remove Market Data Features** (2024-01-15) - Market data and market trends features removed from specifications
+- [x] **Remove Market Data Code** (2024-01-15) - All market data code cleaned up from codebase
 
 ---
 
@@ -190,7 +191,28 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ### 🟢 LOW PRIORITY - Enhancement Features
 
-#### 6. Implement Advanced Search and Filtering
+#### 6. Remove Sidebar Filters and Search Links (NEW - LOW PRIORITY)
+**Priority:** LOW  
+**Effort:** Half-Day (4 hours)  
+**Dependencies:** None - can be done immediately  
+**Status:** Not Started
+
+**Description:** Clean up sidebar navigation by removing the "Filters" and "Advanced Search" links to simplify the navigation interface. This only removes the sidebar links - all filtering and search functionality remains available through other components.
+
+**Files to Modify:**
+- `src/components/layout/Sidebar.tsx` - Remove Filters and Advanced Search navigation items
+
+**Acceptance Criteria:**
+- "Filters" and "Advanced Search" links removed from sidebar
+- Sidebar displays only Vehicle Database and Industry News items
+- All remaining navigation functions correctly
+- Mobile sidebar functionality preserved
+- Filtering and search functionality remains available in other components
+- No TypeScript compilation errors
+
+---
+
+#### 7. Implement Advanced Search and Filtering
 **Priority:** LOW  
 **Effort:** Moderate (3-5 days)  
 **Dependencies:** Vehicle Database Core (#2)  
@@ -221,7 +243,7 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ---
 
-#### 7. Implement Data Visualization Components
+#### 8. Implement Data Visualization Components
 **Priority:** LOW  
 **Effort:** Complex (1-2 weeks)  
 **Dependencies:** Vehicle Specifications (#3)  
@@ -252,7 +274,7 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ---
 
-#### 8. Implement User Preferences and Personalization
+#### 9. Implement User Preferences and Personalization
 **Priority:** LOW  
 **Effort:** Simple (1-2 days)  
 **Dependencies:** Authentication system  
@@ -294,12 +316,12 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 4. **Week 4**: Implement News Aggregation System (#5)
 
 ### Phase 3: Search and Visualization (Weeks 5-6)
-5. **Week 5**: Implement Advanced Search and Filtering (#6)
-6. **Week 6**: Implement Data Visualization Components (#7)
+5. **Week 5**: Implement Advanced Search and Filtering (#7)
+6. **Week 6**: Implement Data Visualization Components (#8)
 
 ### Phase 4: Polish and Personalization (Weeks 7-8)
-7. **Week 7**: Implement User Preferences and Personalization (#8)
-8. **Week 8**: Final Testing and Optimization (#9)
+7. **Week 7**: Remove Sidebar Filters and Search Links (#6) + Implement User Preferences and Personalization (#9)
+8. **Week 8**: Final Testing and Optimization (#10)
 
 ---
 
