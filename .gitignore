@@ -29,6 +29,8 @@ build
 *.njsproj
 *.sln
 *.sw?
+.cursor
+
 
 # Logs
 logs

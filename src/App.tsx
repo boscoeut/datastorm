@@ -1,7 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import DatabaseTest from '@/components/DatabaseTest';
 
 // Placeholder page components - these will be replaced with actual implementations
 const HomePage = () => (
@@ -106,20 +108,30 @@ const NewsPage = () => (
   </div>
 );
 
+const DatabaseTestPage = () => (
+  <div className="space-y-6">
+    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Database Test</h1>
+    <DatabaseTest />
+  </div>
+);
+
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/vehicles" element={<VehiclesPage />} />
-            <Route path="/market" element={<MarketPage />} />
-            <Route path="/news" element={<NewsPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </AppLayout>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/vehicles" element={<VehiclesPage />} />
+              <Route path="/market" element={<MarketPage />} />
+              <Route path="/news" element={<NewsPage />} />
+              <Route path="/database-test" element={<DatabaseTestPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </AppLayout>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
