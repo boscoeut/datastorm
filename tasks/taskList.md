@@ -119,40 +119,11 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ---
 
-#### 4. Implement Market Data Dashboard
-**Priority:** MEDIUM  
-**Effort:** Complex (1-2 weeks)  
-**Dependencies:** Vehicle Database Core (#1)  
-**Status:** Not Started
 
-**Description:** Create a comprehensive market data dashboard for sales figures, trends, and pricing analysis.
-
-**Subtasks:**
-- Build sales data visualization components
-- Implement market trend analysis tools
-- Create pricing comparison functionality
-- Add regional market data display
-- Integrate inventory and availability metrics
-
-**Files to Create/Modify:**
-- `src/components/market/MarketDashboard.tsx`
-- `src/components/market/SalesCharts.tsx`
-- `src/components/market/PricingAnalysis.tsx`
-- `src/components/market/MarketTrends.tsx`
-- `src/stores/market-store.ts`
-- `src/types/market.ts`
-- `src/pages/MarketPage.tsx` (replace placeholder)
-
-**Acceptance Criteria:**
-- Market data is clearly visualized
-- Sales trends are easy to understand
-- Pricing comparisons are accurate
-- Data updates in real-time
-- Mobile-responsive dashboard
 
 ---
 
-#### 5. Implement News Aggregation System
+#### 4. Implement News Aggregation System
 **Priority:** MEDIUM  
 **Effort:** Moderate (3-5 days)  
 **Dependencies:** None  
@@ -187,10 +158,10 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ### 🟢 LOW PRIORITY - Enhancement Features
 
-#### 6. Implement Advanced Search and Filtering
+#### 5. Implement Advanced Search and Filtering
 **Priority:** LOW  
 **Effort:** Moderate (3-5 days)  
-**Dependencies:** Vehicle Database Core (#1), Market Data (#4)  
+**Dependencies:** Vehicle Database Core (#1)  
 **Status:** Not Started
 
 **Description:** Enhance search and filtering capabilities across all data types for powerful data discovery.
@@ -218,10 +189,10 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ---
 
-#### 7. Implement Data Visualization Components
+#### 6. Implement Data Visualization Components
 **Priority:** LOW  
 **Effort:** Complex (1-2 weeks)  
-**Dependencies:** Vehicle Specifications (#2), Market Data (#4)  
+**Dependencies:** Vehicle Specifications (#2)  
 **Status:** Not Started
 
 **Description:** Create comprehensive data visualization components using Chart.js for performance data and market trends.
@@ -249,7 +220,7 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ---
 
-#### 8. Implement User Preferences and Personalization
+#### 7. Implement User Preferences and Personalization
 **Priority:** LOW  
 **Effort:** Simple (1-2 days)  
 **Dependencies:** Authentication system  
@@ -286,17 +257,17 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 1. **Week 1**: Implement Vehicle Database Core Functionality (#1)
 2. **Week 2**: Implement Vehicle Specifications Display (#2)
 
-### Phase 2: Comparison and Market Data (Weeks 3-4)
+### Phase 2: Comparison and News (Weeks 3-4)
 3. **Week 3**: Implement Vehicle Comparison Tools (#3)
-4. **Week 4**: Implement Market Data Dashboard (#4)
+4. **Week 4**: Implement News Aggregation System (#4)
 
-### Phase 3: News and Search (Weeks 5-6)
-5. **Week 5**: Implement News Aggregation System (#5)
-6. **Week 6**: Implement Advanced Search and Filtering (#6)
+### Phase 3: Search and Visualization (Weeks 5-6)
+5. **Week 5**: Implement Advanced Search and Filtering (#5)
+6. **Week 6**: Implement Data Visualization Components (#6)
 
-### Phase 4: Visualization and Polish (Weeks 7-8)
-7. **Week 7**: Implement Data Visualization Components (#7)
-8. **Week 8**: Implement User Preferences and Personalization (#8)
+### Phase 4: Polish and Personalization (Weeks 7-8)
+7. **Week 7**: Implement User Preferences and Personalization (#7)
+8. **Week 8**: Final Testing and Optimization (#8)
 
 ---
 
@@ -310,14 +281,14 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ### Phase 2 Completion Criteria
 - [ ] Vehicle comparison tools work correctly
-- [ ] Market data dashboard is functional
+- [ ] News aggregation system is functional
 - [ ] Data visualizations are clear and useful
 - [ ] Mobile responsiveness is maintained
 
 ### Phase 3 Completion Criteria
-- [ ] News system aggregates and displays content
 - [ ] Advanced search works across all data
 - [ ] Filtering is powerful and intuitive
+- [ ] Data visualizations are clear and useful
 - [ ] User experience is smooth and fast
 
 ### Phase 4 Completion Criteria

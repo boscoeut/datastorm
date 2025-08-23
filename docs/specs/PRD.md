@@ -5,13 +5,13 @@
 
 **Project Name:** Electric Vehicle Data Hub  
 **Project Type:** Data-centric web application  
-**Primary Goal:** Provide comprehensive, data-rich information about electric vehicles with emphasis on technical specifications, sales figures, and industry news.
+**Primary Goal:** Provide comprehensive, data-rich information about electric vehicles with emphasis on technical specifications, performance data, and industry news.
 
 ### 2. Project Objectives
 
 - Create a comprehensive database of electric vehicle makes, models, and specifications
 - Display rich, interactive data visualizations for technical specifications
-- Provide detailed sales figures and market analysis data
+- Provide comprehensive vehicle specifications and performance data
 - Aggregate and display latest EV industry news and rumors
 - Maintain a data-first approach with minimal text content
 - Optimize for data density and information discovery
@@ -35,13 +35,7 @@
   - Efficiency metrics and real-world testing results
   - Charging infrastructure compatibility
 
-#### 3.3 Sales and Market Data
-- **Market Intelligence Dashboard**
-  - Monthly/quarterly sales figures by model
-  - Market share analysis by manufacturer
-  - Regional sales data and trends
-  - Price analysis and depreciation data
-  - Inventory levels and availability metrics
+
 
 #### 3.4 News and Industry Updates
 - **Real-time Information Hub**
@@ -49,7 +43,7 @@
   - Rumors and upcoming releases
   - Regulatory updates and policy changes
   - Technology breakthroughs and innovations
-  - Market analysis and expert insights
+  - Industry analysis and expert insights
 
 ### 4. User Experience Requirements
 
@@ -86,18 +80,14 @@ Refer to the TECHNICAL_SPEC.md and USER_INTERFACE_SPEC.md
 - **Manufacturer Information:** Company details, headquarters, history
 - **Model Data:** Complete model lineup with year ranges
 - **Technical Specs:** Detailed performance and capability metrics
-- **Pricing Information:** MSRP, current market prices, lease options
+- **Pricing Information:** MSRP, current pricing, lease options
 - **Availability Data:** Production status, delivery timelines
 
-#### 6.2 Market and Sales Data
-- **Sales Figures:** Monthly/quarterly sales by model and region
-- **Market Trends:** Growth rates, adoption patterns, seasonal variations
-- **Competitive Analysis:** Market share, positioning, competitive advantages
-- **Economic Factors:** Impact of incentives, regulations, and market conditions
+
 
 #### 6.3 News and Content Data
 - **Industry News:** Real-time updates from multiple sources
 - **Rumor Mill:** Unconfirmed information and speculation
 - **Expert Analysis:** Industry expert opinions and insights
-- **Regulatory Updates:** Policy changes and their impact on the EV market
+- **Regulatory Updates:** Policy changes and their impact on the EV industry
 

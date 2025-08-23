@@ -115,13 +115,13 @@ The agent should provide:
 ### Current Project: Electric Vehicle Data Hub
 - **Type**: Data-centric web application for EV information
 - **Tech Stack**: React 19 + TypeScript, Supabase, Tailwind CSS, Zustand
-- **Core Features**: Vehicle database, market data, news aggregation, data visualization
+- **Core Features**: Vehicle database, news aggregation, data visualization
 - **Design Philosophy**: Data-first approach with minimal text content
 
 ### Key Requirements from PRD
 - Comprehensive EV catalog with technical specifications
 - Interactive data visualizations and comparison tools
-- Real-time market data and sales figures
+- Real-time vehicle specifications and performance data
 - Industry news aggregation and updates
 - Mobile-first responsive design
 - Theme customization (light/dark mode)
@@ -199,9 +199,9 @@ The agent should provide:
 When the agent runs `@projectManager analyze`, it should:
 
 1. **Analyze Task History**: "Reviewed completed tasks - basic layout complete, database setup done, theme system implemented"
-2. **Identify Gaps**: "Missing: vehicle database functionality, market data implementation, news aggregation, data visualization"
+2. **Identify Gaps**: "Missing: vehicle database functionality, news aggregation, data visualization"
 3. **Progress Summary**: "Completed 3 of 8 planned tasks - foundation work complete, ready for core features"
-4. **Prioritize Tasks**: "High Priority: Vehicle database components (broken into 4-hour tasks), Medium: Market data components, Low: News aggregation components"
+4. **Prioritize Tasks**: "High Priority: Vehicle database components (broken into 4-hour tasks), Medium: News aggregation components, Low: Data visualization components"
 5. **Update Task List**: "Updated taskList.md with half-day sized tasks for detailed implementation"
 6. **Recommend Next**: "Next task: Create vehicle list component with basic data display (4 hours)"
 

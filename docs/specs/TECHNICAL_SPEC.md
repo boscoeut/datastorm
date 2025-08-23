@@ -71,7 +71,6 @@ src/
 │   ├── ui/                    # Shadcn/ui base components
 │   ├── data-display/          # Data visualization components
 │   ├── vehicle/               # Vehicle-related components
-│   ├── market/                # Market data components
 │   ├── news/                  # News and content components
 │   └── layout/                # Layout and navigation components
 ├── stores/                    # Zustand state stores
@@ -118,7 +117,6 @@ export const useVehicleStore = create<VehicleStoreState & VehicleStoreActions>((
 
 ### 4.2 Store Organization
 - **Vehicle Store:** Vehicle data, specifications, and comparison state
-- **Market Store:** Sales data, market trends, and analytics
 - **News Store:** News articles, rumors, and industry updates
 - **UI Store:** Global UI state, navigation, and user preferences
 - **Filter Store:** Search and filtering state across all data types
@@ -135,7 +133,7 @@ export const useVehicleStore = create<VehicleStoreState & VehicleStoreActions>((
 
 ### 5.0 Database Architecture
 - **Supabase Integration:** PostgreSQL database with built-in authentication and authorization
-- **Database Schema:** Normalized schema for vehicles, specifications, market data, and user preferences
+- **Database Schema:** Normalized schema for vehicles, specifications, and user preferences
 - **Row Level Security:** Implement RLS policies for data access control
 - **Real-time Subscriptions:** Live updates for collaborative features and data changes
 - **Database Migrations:** Version-controlled schema changes using Supabase migrations
@@ -143,7 +141,6 @@ export const useVehicleStore = create<VehicleStoreState & VehicleStoreActions>((
 
 ### 5.1 Data Sources and APIs
 - **Vehicle Specifications:** NHTSA API, manufacturer APIs, EV database APIs
-- **Market Data:** Industry reports, sales APIs, market analysis services
 - **News Content:** RSS feeds, news APIs, industry publications
 - **Real-time Updates:** Supabase real-time subscriptions for live data feeds
 - **Database:** Supabase PostgreSQL with Row Level Security (RLS)
@@ -214,7 +211,6 @@ interface VehicleSpecifications {
 
 ### 7.2 Visualization Components
 - **PerformanceCharts:** Vehicle performance comparisons
-- **MarketTrends:** Sales and market analysis charts
 - **SpecificationRadar:** Multi-dimensional specification comparisons
 - **TimelineCharts:** Historical data and trend analysis
 
@@ -349,7 +345,7 @@ describe('VehicleCard', () => {
 ## 14. Future Technical Considerations
 
 ### 14.1 Scalability
-- **Data Volume:** Handle increasing amounts of vehicle and market data
+- **Data Volume:** Handle increasing amounts of vehicle data
 - **User Load:** Support for concurrent users and high traffic
 - **API Limits:** Manage third-party API rate limits and quotas
 - **Caching Strategy:** Implement distributed caching for high availability
