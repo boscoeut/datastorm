@@ -1,13 +1,13 @@
 # Project Requirements Document (PRD)
 ## Electric Vehicle Data Hub
 
-### 1. Project Overview
+### Project Overview
 
 **Project Name:** Electric Vehicle Data Hub  
 **Project Type:** Data-centric web application  
 **Primary Goal:** Provide comprehensive, data-rich information about electric vehicles with emphasis on technical specifications, performance data, and industry news.
 
-### 2. Project Objectives
+### Project Objectives
 
 - Create a comprehensive database of electric vehicle makes, models, and specifications
 - Display rich, interactive data visualizations for technical specifications
@@ -16,9 +16,9 @@
 - Maintain a data-first approach with minimal text content
 - Optimize for data density and information discovery
 
-### 3. Core Features
+### Core Features
 
-#### 3.1 Vehicle Database
+#### Vehicle Database
 - **Comprehensive EV Catalog**
   - All major EV manufacturers and models
   - Detailed technical specifications for each vehicle
@@ -27,7 +27,7 @@
   - Dimensions, weight, and cargo capacity
   - Safety ratings and features
 
-#### 3.2 Technical Specifications Display
+#### Technical Specifications Display
 - **Data-Rich Specification Tables**
   - Side-by-side comparison tools
   - Interactive specification charts
@@ -37,7 +37,7 @@
 
 
 
-#### 3.4 News and Industry Updates
+#### News and Industry Updates
 - **Real-time Information Hub**
   - Latest EV industry news
   - Rumors and upcoming releases
@@ -45,49 +45,46 @@
   - Technology breakthroughs and innovations
   - Industry analysis and expert insights
 
-### 4. User Experience Requirements
+### User Experience Requirements
 
-#### 4.1 Data-Centric Design Philosophy
+#### Data-Centric Design Philosophy
 - **Primary Focus:** Maximize data display and minimize text content
 - **Information Density:** Pack maximum relevant data into available screen real estate
 - **Visual Hierarchy:** Use data visualization as primary content, text as supporting information
 - **Interactive Elements:** Enable users to drill down into specific data points
 
-#### 4.2 Navigation and Information Architecture
+#### Navigation and Information Architecture
 - **Intuitive Data Discovery:** Easy access to specific vehicle information
 - **Advanced Filtering:** Multiple filter criteria for finding relevant vehicles
 - **Search Functionality:** Powerful search across all data fields
 - **Comparison Tools:** Side-by-side vehicle comparison capabilities
 
-#### 4.3 Responsive Design
+#### Responsive Design
 - **Mobile Optimization:** Ensure data remains accessible on all device sizes
 - **Touch-Friendly:** Optimize for touch interactions on mobile devices
 - **Performance:** Fast loading times for data-heavy pages
 
-#### 4.4 Theme Customization
+#### Theme Customization
 - **Theme Switching:** Ability to switch between light mode and dark mode themes
 - **User Preference Persistence:** Remember user's theme choice across sessions
 - **Accessibility:** Ensure both themes meet accessibility standards for contrast and readability
 - **Data Visualization Adaptation:** Charts and graphs automatically adapt to selected theme for optimal visibility
 
-### 5. Technical Requirements
+### Technical Requirements
 
 Refer to the TECHNICAL_SPEC.md and USER_INTERFACE_SPEC.md
 
-### 6. Data Requirements
+### Data Requirements
 
-#### 6.1 Vehicle Specifications Data
+#### Vehicle Specifications Data
 - **Manufacturer Information:** Company details, headquarters, history
 - **Model Data:** Complete model lineup with year ranges
 - **Technical Specs:** Detailed performance and capability metrics
 - **Pricing Information:** MSRP, current pricing, lease options
 - **Availability Data:** Production status, delivery timelines
 
-
-
-#### 6.3 News and Content Data
+#### News and Content Data
 - **Industry News:** Real-time updates from multiple sources
 - **Rumor Mill:** Unconfirmed information and speculation
 - **Expert Analysis:** Industry expert opinions and insights
 - **Regulatory Updates:** Policy changes and their impact on the EV industry
-

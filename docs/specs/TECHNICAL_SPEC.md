@@ -7,9 +7,9 @@
 
 ---
 
-## 1. System Architecture Overview
+## System Architecture Overview
 
-### 1.1 Technology Stack
+### Technology Stack
 - **Development Environment:** Cursor IDE with AI-powered development assistance
 - **Frontend Framework:** React 19 with TypeScript
 - **Build Tool:** Vite with hot module replacement
@@ -24,7 +24,7 @@
 - **Testing:** React Testing Library + Jest
 - **Code Quality:** ESLint + Prettier
 
-### 1.2 Required Dependencies
+### Required Dependencies
 ```json
 {
   "dependencies": {
@@ -34,13 +34,13 @@
 }
 ```
 
-### 1.3 Development Environment
+### Development Environment
 - **IDE:** Cursor IDE with AI-powered development assistance and intelligent code completion
 - **Database Integration:** Supabase MCP Tool integration for direct database operations, migrations, and management
 - **AI Assistance:** AI-powered code generation, refactoring, and debugging support
 - **Version Control:** Git integration with enhanced AI-powered commit message generation and code review assistance
 
-### 1.4 Architecture Pattern
+### Architecture Pattern
 - **Component Architecture:** Feature-based organization with reusable UI components
 - **State Management:** Multiple focused Zustand stores with TypeScript interfaces
 - **Data Flow:** Unidirectional data flow with centralized state management
@@ -49,23 +49,23 @@
 
 ---
 
-## 2. Development Tools and Workflow
+## Development Tools and Workflow
 
-### 2.1 Cursor IDE Features
+### Cursor IDE Features
 - **AI-Powered Development:** Intelligent code completion, refactoring suggestions, and bug detection
 - **Supabase Integration:** Direct database access through MCP Tool for schema management, data queries, and migrations
 - **Enhanced Git Workflow:** AI-assisted commit messages, code review suggestions, and conflict resolution
 - **Real-time Collaboration:** Built-in collaboration features for team development
 - **Performance Insights:** AI-powered performance analysis and optimization suggestions
 
-### 2.2 Database Development Workflow
+### Database Development Workflow
 - **Schema Management:** Direct database schema modifications through Cursor's Supabase MCP Tool
 - **Migration Management:** Automated migration creation and application from within the IDE
 - **Data Operations:** Direct SQL execution and data manipulation for development and testing
 - **Real-time Monitoring:** Database performance and query optimization insights
 - **Backup and Recovery:** Development branch management and data restoration capabilities
 
-### 2.3 Supabase MCP Tool Integration
+### Supabase MCP Tool Integration
 - **Direct Database Access:** Execute SQL queries, create tables, and manage schema directly from Cursor
 - **Migration Management:** Create, apply, and rollback database migrations without leaving the IDE
 - **Development Branches:** Create and manage development database branches for feature development
@@ -73,9 +73,9 @@
 - **Data Management:** Insert, update, and delete test data directly from the development environment
 - **Schema Visualization:** View table structures, relationships, and constraints through the MCP Tool interface
 
-## 3. Frontend Architecture
+## Frontend Architecture
 
-### 3.1 Project Structure
+### Project Structure
 ```
 src/
 ├── components/
@@ -92,7 +92,7 @@ src/
 └── pages/                     # Page-level components
 ```
 
-### 3.2 Component Architecture
+### Component Architecture
 - **Atomic Design:** Atoms → Molecules → Organisms → Templates → Pages
 - **Composition Pattern:** Prefer composition over inheritance
 - **Props Interface:** All components must have typed props interfaces
@@ -101,9 +101,9 @@ src/
 
 ---
 
-## 4. State Management Architecture
+## State Management Architecture
 
-### 4.1 Zustand Store Structure
+### Zustand Store Structure
 ```typescript
 // Example store pattern following project rules
 interface VehicleStoreState {
@@ -126,13 +126,13 @@ export const useVehicleStore = create<VehicleStoreState & VehicleStoreActions>((
 }));
 ```
 
-### 4.2 Store Organization
+### Store Organization
 - **Vehicle Store:** Vehicle data, specifications, and comparison state
 - **News Store:** News articles, rumors, and industry updates
 - **UI Store:** Global UI state, navigation, and user preferences
 - **Filter Store:** Search and filtering state across all data types
 
-### 4.3 State Persistence
+### State Persistence
 - **Local Storage:** User preferences and recent searches
 - **Session Storage:** Temporary filter states and navigation
 - **Store Hydration:** Proper state restoration on page reload
@@ -140,9 +140,9 @@ export const useVehicleStore = create<VehicleStoreState & VehicleStoreActions>((
 
 ---
 
-## 5. Data Management
+## Data Management
 
-### 5.0 Database Architecture
+### Database Architecture
 - **Supabase Integration:** PostgreSQL database with built-in authentication and authorization
 - **Database Schema:** Normalized schema for vehicles, specifications, and user preferences
 - **Row Level Security:** Implement RLS policies for data access control
@@ -150,13 +150,13 @@ export const useVehicleStore = create<VehicleStoreState & VehicleStoreActions>((
 - **Database Migrations:** Version-controlled schema changes using Supabase migrations
 - **Backup Strategy:** Automated daily backups with point-in-time recovery
 
-### 5.1 Data Sources and APIs
+### Data Sources and APIs
 - **Vehicle Specifications:** NHTSA API, manufacturer APIs, EV database APIs
 - **News Content:** RSS feeds, news APIs, industry publications
 - **Real-time Updates:** Supabase real-time subscriptions for live data feeds
 - **Database:** Supabase PostgreSQL with Row Level Security (RLS)
 
-### 5.2 Data Models
+### Data Models
 ```typescript
 interface Vehicle {
   id: string;
@@ -179,7 +179,7 @@ interface VehicleSpecifications {
 }
 ```
 
-### 5.3 Data Validation and Caching
+### Data Validation and Caching
 - **Input Validation:** Zod schemas for runtime type validation
 - **Data Caching:** React Query for server state management
 - **Cache Strategy:** Stale-while-revalidate with background updates
@@ -212,9 +212,9 @@ interface VehicleSpecifications {
 
 ---
 
-## 7. Data Grids and Tables
+## Data Grids and Tables
 
-### 7.1 TanStack Table Integration
+### TanStack Table Integration
 - **Primary Data Grid:** TanStack Table (React Table v8) for all data table implementations
 - **Installation:** `npm install @tanstack/react-table`
 - **Features:** Sorting, filtering, pagination, column resizing, row selection, virtualization
@@ -222,7 +222,7 @@ interface VehicleSpecifications {
 - **Customization:** Highly customizable with TypeScript support and theme integration
 - **Bundle Size:** Lightweight (~15KB) with tree-shaking support
 
-### 7.2 Data Grid Implementation Standards
+### Data Grid Implementation Standards
 - **Column Definitions:** Type-safe column definitions with accessorKey and header properties
 - **Sorting:** Built-in sorting with custom sort functions for complex data
 - **Filtering:** Global and column-specific filtering with debounced search
@@ -230,13 +230,13 @@ interface VehicleSpecifications {
 - **Row Selection:** Single and multi-row selection with keyboard navigation
 - **Responsive Design:** Mobile-optimized with column hiding and touch interactions
 
-### 7.3 Data Grid Components
+### Data Grid Components
 - **VehicleListTable:** Main vehicle listing with TanStack Table implementation
 - **ComparisonTable:** Side-by-side vehicle comparison using TanStack Table
 - **SpecificationTable:** Vehicle specifications display with sortable columns
 - **FilterableDataGrid:** Advanced filtering and search capabilities
 
-### 7.4 TanStack Table Implementation Example
+### TanStack Table Implementation Example
 ```typescript
 // Example implementation pattern for vehicle data tables
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel } from '@tanstack/react-table'
@@ -295,20 +295,20 @@ const VehicleTable: React.FC<VehicleTableProps> = ({ data, onRowSelect }) => {
 }
 ```
 
-## 8. Data Visualization
+## Data Visualization
 
-### 8.1 Chart Library Integration
+### Chart Library Integration
 - **Shadcn Charts:** Primary charting library with React wrappers (https://ui.shadcn.com/charts/)
 - **Chart Types:** Bar charts, line charts, radar charts, comparison charts, area charts
 - **Interactivity:** Hover effects, zoom, pan, and drill-down capabilities
 - **Responsiveness:** Charts that adapt to container size changes
 
-### 8.2 Visualization Components
+### Visualization Components
 - **PerformanceCharts:** Vehicle performance comparisons
 - **SpecificationRadar:** Multi-dimensional specification comparisons
 - **TimelineCharts:** Historical data and trend analysis
 
-### 7.3 Data Density Optimization
+### Data Density Optimization
 - **Information Hierarchy:** Clear visual hierarchy for data presentation
 - **Color Coding:** Consistent color schemes for data categories
 - **Interactive Elements:** Tooltips, legends, and data point highlighting
@@ -316,23 +316,23 @@ const VehicleTable: React.FC<VehicleTableProps> = ({ data, onRowSelect }) => {
 
 ---
 
-## 9. Performance Optimization
+## Performance Optimization
 
-### 9.1 React Performance
+### React Performance
 - **React.memo:** Memoize components that receive stable props
 - **useCallback:** Stable function references for event handlers
 - **useMemo:** Expensive calculations and derived state
 - **Code Splitting:** Lazy loading for route-based code splitting
 - **Bundle Optimization:** Tree shaking and dynamic imports
 
-### 9.2 Data Performance
+### Data Performance
 - **Virtualization:** Virtual scrolling for large datasets
 - **Pagination:** Efficient data loading and rendering
 - **Debouncing:** Search input debouncing for API calls
 - **Caching:** Intelligent caching strategies for frequently accessed data
 - **Lazy Loading:** Progressive loading of data and images
 
-### 9.3 Build Optimization
+### Build Optimization
 - **Vite Configuration:** Optimized build settings for production
 - **Bundle Analysis:** Regular bundle size monitoring
 - **Tree Shaking:** Remove unused code from production builds
@@ -340,19 +340,11 @@ const VehicleTable: React.FC<VehicleTableProps> = ({ data, onRowSelect }) => {
 
 ---
 
-## 10. Testing Strategy
+## Testing Strategy
 
-### 10.1 Testing Framework
+### Testing Framework
 - **Unit Testing:** Jest for utility functions and hooks
 - **Component Testing:** React Testing Library for component behavior
-- **Integration Testing:** Component interaction testing
-- **E2E Testing:** Playwright for critical user journeys
-
-### 10.2 Test Coverage Requirements
-- **Unit Tests:** > 90% coverage for utility functions
-- **Component Tests:** > 80% coverage for all components
-- **Integration Tests:** Critical user flows and data interactions
-- **Performance Tests:** Load time and interaction performance
 
 ### 10.3 Testing Patterns
 ```typescript
@@ -370,105 +362,19 @@ describe('VehicleCard', () => {
 
 ---
 
-## 11. Security and Data Protection
+## Security and Data Protection
 
-### 11.1 Input Validation
+### Input Validation
 - **Client-Side Validation:** Zod schemas for form inputs
 - **Server-Side Validation:** Supabase RLS policies and database constraints
 - **XSS Prevention:** Sanitize all user inputs before rendering
 - **CSRF Protection:** Supabase built-in CSRF protection for API requests
 
-### 11.2 Data Privacy
+### Data Privacy
 - **User Data:** Minimal collection and secure storage in Supabase
 - **Third-Party APIs:** Secure API key management
 - **HTTPS:** Enforce HTTPS in production
 - **Data Encryption:** Supabase provides encryption at rest and in transit
 - **Authentication:** Supabase Auth with JWT tokens and refresh token rotation
 
----
 
-## 12. Accessibility Requirements
-
-### 12.1 WCAG Compliance
-- **WCAG 2.1 AA:** Minimum compliance level
-- **Keyboard Navigation:** Full keyboard accessibility
-- **Screen Reader Support:** Proper ARIA labels and semantic HTML
-- **Color Contrast:** Sufficient contrast ratios for text and UI elements
-
-### 12.2 Accessibility Features
-- **Focus Management:** Clear focus indicators and logical tab order
-- **Alternative Text:** Descriptive alt text for images and charts
-- **Semantic HTML:** Proper use of HTML5 semantic elements
-- **ARIA Attributes:** Appropriate ARIA roles and properties
-
----
-
-## 13. Deployment and Infrastructure
-
-### 13.1 Build Configuration
-- **Environment Variables:** Separate configurations for dev/staging/prod
-- **Build Optimization:** Production builds with minification
-- **Asset Optimization:** Image compression and font optimization
-- **Bundle Analysis:** Regular bundle size monitoring
-
-### 13.2 Deployment Pipeline
-- **CI/CD:** GitHub Actions for automated testing and deployment
-- **Environment Management:** Separate environments for development stages
-- **Rollback Strategy:** Quick rollback capabilities for production issues
-- **Monitoring:** Application performance monitoring and error tracking
-- **Database Deployment:** Supabase project management with environment-specific databases
-
----
-
-## 14. Monitoring and Analytics
-
-### 14.1 Performance Monitoring
-- **Core Web Vitals:** LCP, FID, CLS monitoring
-- **Page Load Times:** Track and optimize page performance
-- **User Interactions:** Monitor user engagement with data visualizations
-- **Error Tracking:** Comprehensive error logging and alerting
-
-### 14.2 User Analytics
-- **User Behavior:** Track user interactions with data components
-- **Feature Usage:** Monitor which features are most popular
-- **Performance Metrics:** User experience performance data
-- **Conversion Tracking:** User journey and goal completion rates
-
----
-
-## 15. Future Technical Considerations
-
-### 15.1 Scalability
-- **Data Volume:** Handle increasing amounts of vehicle data
-- **User Load:** Support for concurrent users and high traffic
-- **API Limits:** Manage third-party API rate limits and quotas
-- **Caching Strategy:** Implement distributed caching for high availability
-- **Database Scaling:** Supabase auto-scaling with read replicas for high-traffic scenarios
-
-### 15.2 Technology Evolution
-- **React Updates:** Plan for React 19+ features and improvements
-- **TypeScript Evolution:** Leverage new TypeScript features
-- **Performance Tools:** Adopt new performance optimization techniques
-- **Testing Tools:** Evolve testing strategies with new tools
-
----
-
-## 16. Risk Mitigation
-
-### 16.1 Technical Risks
-- **Data Quality Issues:** Implement comprehensive validation and fallback strategies
-- **Performance Degradation:** Regular performance monitoring and optimization
-- **API Dependencies:** Multiple data sources and graceful degradation
-- **Browser Compatibility:** Progressive enhancement and polyfill strategies
-
-### 16.2 Mitigation Strategies
-- **Comprehensive Testing:** Automated testing at all levels
-- **Performance Budgets:** Set and enforce performance targets
-- **Error Boundaries:** Graceful error handling throughout the application
-- **Monitoring:** Real-time monitoring and alerting for critical issues
-
----
-
-**Document Version:** 1.0  
-**Last Updated:** [Current Date]  
-**Next Review:** [Date + 2 weeks]
