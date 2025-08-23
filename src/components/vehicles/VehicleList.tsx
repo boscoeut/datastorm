@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import VehicleSearch from './VehicleSearch'
 import {
   useVehicles,
   useVehicleLoading,
@@ -14,7 +13,6 @@ import {
   useVehicleTotalCount,
   useVehicleStore
 } from '@/stores/vehicle-store'
-import type { VehicleFilters } from '@/types/database'
 
 const VehicleList: React.FC = () => {
   const navigate = useNavigate()
@@ -36,40 +34,12 @@ const VehicleList: React.FC = () => {
     clearError
   } = useVehicleStore()
 
-  // Local state for filter inputs
-  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
-  const [localFilters, setLocalFilters] = useState<VehicleFilters>(filters)
+
 
   useEffect(() => {
     fetchVehicles()
     fetchManufacturers()
   }, [fetchVehicles, fetchManufacturers])
-
-  useEffect(() => {
-    setLocalSearchQuery(searchQuery)
-  }, [searchQuery])
-
-  useEffect(() => {
-    setLocalFilters(filters)
-  }, [filters])
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSearchQuery(localSearchQuery)
-    // For now, search is just stored in state - will be implemented in future tasks
-    // This provides the foundation for search functionality
-  }
-
-  const handleFilterChange = (key: keyof VehicleFilters, value: any) => {
-    const newFilters = { ...localFilters, [key]: value }
-    setLocalFilters(newFilters)
-    updateFilters(newFilters)
-  }
-
-  const handleClearFilters = () => {
-    setLocalFilters({})
-    clearFilters()
-  }
 
   const handleVehicleClick = (vehicleId: string) => {
     navigate(`/vehicles/${vehicleId}`)
@@ -109,100 +79,12 @@ const VehicleList: React.FC = () => {
       </div>
 
       {/* Search and Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Search & Filters</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="flex gap-2">
-            <div className="flex-1">
-              <Label htmlFor="search" className="sr-only">
-                Search vehicles
-              </Label>
-              <Input
-                id="search"
-                type="text"
-                placeholder="Search by model, manufacturer, or year..."
-                value={localSearchQuery}
-                onChange={(e) => setLocalSearchQuery(e.target.value)}
-                className="w-full"
-              />
-            </div>
-            <Button type="submit" disabled={loading}>
-              Search
-            </Button>
-          </form>
-
-          {/* Filters */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                          <div>
-                <Label htmlFor="year-min">Year Min</Label>
-                <Input
-                  id="year-min"
-                  type="number"
-                  placeholder="2020"
-                  value={localFilters.year_min || ''}
-                  onChange={(e) => handleFilterChange('year_min', e.target.value ? parseInt(e.target.value) : undefined)}
-                  min="1900"
-                  max="2030"
-                  aria-describedby="year-min-help"
-                />
-                <p id="year-min-help" className="text-xs text-muted-foreground mt-1">
-                  Minimum year for vehicle search
-                </p>
-              </div>
-              <div>
-                <Label htmlFor="year-max">Year Max</Label>
-                <Input
-                  id="year-max"
-                  type="number"
-                  placeholder="2024"
-                  value={localFilters.year_max || ''}
-                  onChange={(e) => handleFilterChange('year_max', e.target.value ? parseInt(e.target.value) : undefined)}
-                  min="1900"
-                  max="2030"
-                  aria-describedby="year-max-help"
-                />
-                <p id="year-max-help" className="text-xs text-muted-foreground mt-1">
-                  Maximum year for vehicle search
-                </p>
-              </div>
-              <div>
-                <Label htmlFor="body-style">Body Style</Label>
-                <select
-                  id="body-style"
-                  value={localFilters.body_style || ''}
-                  onChange={(e) => handleFilterChange('body_style', e.target.value || undefined)}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                  aria-describedby="body-style-help"
-                >
-                  <option value="">All Styles</option>
-                  <option value="sedan">Sedan</option>
-                  <option value="suv">SUV</option>
-                  <option value="hatchback">Hatchback</option>
-                  <option value="wagon">Wagon</option>
-                  <option value="coupe">Coupe</option>
-                  <option value="convertible">Convertible</option>
-                  <option value="pickup">Pickup</option>
-                </select>
-                <p id="body-style-help" className="text-xs text-muted-foreground mt-1">
-                  Filter by vehicle body style
-                </p>
-              </div>
-            <div className="flex items-end">
-              <Button
-                onClick={handleClearFilters}
-                variant="outline"
-                className="w-full"
-                disabled={loading}
-              >
-                Clear Filters
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <VehicleSearch
+        onSearchChange={setSearchQuery}
+        onFilterChange={updateFilters}
+        filters={filters}
+        searchQuery={searchQuery}
+      />
 
       {/* Results */}
       <Card>
@@ -224,7 +106,7 @@ const VehicleList: React.FC = () => {
               </p>
               {(searchQuery || Object.keys(filters).length > 0) && (
                 <Button
-                  onClick={handleClearFilters}
+                  onClick={clearFilters}
                   variant="outline"
                   className="mt-2"
                 >
