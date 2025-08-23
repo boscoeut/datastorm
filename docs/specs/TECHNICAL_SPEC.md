@@ -16,20 +16,31 @@
 - **Styling:** Tailwind CSS with CSS variables
 - **State Management:** Zustand with TypeScript
 - **UI Components:** Shadcn/ui with Radix UI primitives
-- **Data Visualization:** Shadcn charts.  https://ui.shadcn.com/charts/area
+- **Data Visualization:** Shadcn charts (https://ui.shadcn.com/charts/)
+- **Data Grids:** TanStack Table (React Table v8) for sortable, filterable data tables
 - **HTTP Client:** Axios with interceptors
 - **Database:** Supabase (PostgreSQL) with real-time subscriptions
 - **Database Tools:** Supabase MCP Tool integration in Cursor for direct database operations
 - **Testing:** React Testing Library + Jest
 - **Code Quality:** ESLint + Prettier
 
-### 1.2 Development Environment
+### 1.2 Required Dependencies
+```json
+{
+  "dependencies": {
+    "@tanstack/react-table": "^8.x.x",
+    "recharts": "^2.x.x"
+  }
+}
+```
+
+### 1.3 Development Environment
 - **IDE:** Cursor IDE with AI-powered development assistance and intelligent code completion
 - **Database Integration:** Supabase MCP Tool integration for direct database operations, migrations, and management
 - **AI Assistance:** AI-powered code generation, refactoring, and debugging support
 - **Version Control:** Git integration with enhanced AI-powered commit message generation and code review assistance
 
-### 1.3 Architecture Pattern
+### 1.4 Architecture Pattern
 - **Component Architecture:** Feature-based organization with reusable UI components
 - **State Management:** Multiple focused Zustand stores with TypeScript interfaces
 - **Data Flow:** Unidirectional data flow with centralized state management
@@ -180,9 +191,9 @@ interface VehicleSpecifications {
 ## 6. User Interface Components
 
 ### 6.1 Data Display Components
-- **DataTable:** Sortable, filterable tables with virtualization
-- **ComparisonGrid:** Side-by-side vehicle comparison
-- **ChartComponents:** Interactive charts using Chart.js
+- **DataTable:** TanStack Table implementation for sortable, filterable tables with virtualization
+- **ComparisonGrid:** Side-by-side vehicle comparison using TanStack Table
+- **ChartComponents:** Interactive charts using Shadcn charts (https://ui.shadcn.com/charts/)
 - **SpecificationCards:** Detailed vehicle specification displays
 - **FilterPanel:** Advanced filtering with multiple criteria
 
@@ -201,15 +212,98 @@ interface VehicleSpecifications {
 
 ---
 
-## 7. Data Visualization
+## 7. Data Grids and Tables
 
-### 7.1 Chart Library Integration
-- **Shadcn Charts:** Primary charting library with React wrappers https://ui.shadcn.com/charts/area
-- **Chart Types:** Bar charts, line charts, radar charts, comparison charts
+### 7.1 TanStack Table Integration
+- **Primary Data Grid:** TanStack Table (React Table v8) for all data table implementations
+- **Installation:** `npm install @tanstack/react-table`
+- **Features:** Sorting, filtering, pagination, column resizing, row selection, virtualization
+- **Performance:** Optimized for large datasets with virtual scrolling support
+- **Customization:** Highly customizable with TypeScript support and theme integration
+- **Bundle Size:** Lightweight (~15KB) with tree-shaking support
+
+### 7.2 Data Grid Implementation Standards
+- **Column Definitions:** Type-safe column definitions with accessorKey and header properties
+- **Sorting:** Built-in sorting with custom sort functions for complex data
+- **Filtering:** Global and column-specific filtering with debounced search
+- **Pagination:** Server-side or client-side pagination based on data source
+- **Row Selection:** Single and multi-row selection with keyboard navigation
+- **Responsive Design:** Mobile-optimized with column hiding and touch interactions
+
+### 7.3 Data Grid Components
+- **VehicleListTable:** Main vehicle listing with TanStack Table implementation
+- **ComparisonTable:** Side-by-side vehicle comparison using TanStack Table
+- **SpecificationTable:** Vehicle specifications display with sortable columns
+- **FilterableDataGrid:** Advanced filtering and search capabilities
+
+### 7.4 TanStack Table Implementation Example
+```typescript
+// Example implementation pattern for vehicle data tables
+import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel } from '@tanstack/react-table'
+
+interface VehicleTableProps {
+  data: Vehicle[]
+  onRowSelect?: (vehicle: Vehicle) => void
+}
+
+const VehicleTable: React.FC<VehicleTableProps> = ({ data, onRowSelect }) => {
+  const columns = [
+    { accessorKey: 'manufacturer.name', header: 'Manufacturer' },
+    { accessorKey: 'model', header: 'Model' },
+    { accessorKey: 'year', header: 'Year' },
+    { accessorKey: 'battery_capacity', header: 'Battery (kWh)' },
+    { accessorKey: 'range_miles', header: 'Range (mi)' },
+    { accessorKey: 'price', header: 'Price' },
+  ]
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+  })
+
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.map((row) => (
+            <TableRow key={row.id} onClick={() => onRowSelect?.(row.original)}>
+              {row.getVisibleCells().map((cell) => (
+                <TableCell key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+```
+
+## 8. Data Visualization
+
+### 8.1 Chart Library Integration
+- **Shadcn Charts:** Primary charting library with React wrappers (https://ui.shadcn.com/charts/)
+- **Chart Types:** Bar charts, line charts, radar charts, comparison charts, area charts
 - **Interactivity:** Hover effects, zoom, pan, and drill-down capabilities
 - **Responsiveness:** Charts that adapt to container size changes
 
-### 7.2 Visualization Components
+### 8.2 Visualization Components
 - **PerformanceCharts:** Vehicle performance comparisons
 - **SpecificationRadar:** Multi-dimensional specification comparisons
 - **TimelineCharts:** Historical data and trend analysis
@@ -222,23 +316,23 @@ interface VehicleSpecifications {
 
 ---
 
-## 8. Performance Optimization
+## 9. Performance Optimization
 
-### 8.1 React Performance
+### 9.1 React Performance
 - **React.memo:** Memoize components that receive stable props
 - **useCallback:** Stable function references for event handlers
 - **useMemo:** Expensive calculations and derived state
 - **Code Splitting:** Lazy loading for route-based code splitting
 - **Bundle Optimization:** Tree shaking and dynamic imports
 
-### 8.2 Data Performance
+### 9.2 Data Performance
 - **Virtualization:** Virtual scrolling for large datasets
 - **Pagination:** Efficient data loading and rendering
 - **Debouncing:** Search input debouncing for API calls
 - **Caching:** Intelligent caching strategies for frequently accessed data
 - **Lazy Loading:** Progressive loading of data and images
 
-### 8.3 Build Optimization
+### 9.3 Build Optimization
 - **Vite Configuration:** Optimized build settings for production
 - **Bundle Analysis:** Regular bundle size monitoring
 - **Tree Shaking:** Remove unused code from production builds
@@ -246,21 +340,21 @@ interface VehicleSpecifications {
 
 ---
 
-## 9. Testing Strategy
+## 10. Testing Strategy
 
-### 9.1 Testing Framework
+### 10.1 Testing Framework
 - **Unit Testing:** Jest for utility functions and hooks
 - **Component Testing:** React Testing Library for component behavior
 - **Integration Testing:** Component interaction testing
 - **E2E Testing:** Playwright for critical user journeys
 
-### 9.2 Test Coverage Requirements
+### 10.2 Test Coverage Requirements
 - **Unit Tests:** > 90% coverage for utility functions
 - **Component Tests:** > 80% coverage for all components
 - **Integration Tests:** Critical user flows and data interactions
 - **Performance Tests:** Load time and interaction performance
 
-### 9.3 Testing Patterns
+### 10.3 Testing Patterns
 ```typescript
 // Example test pattern following project rules
 describe('VehicleCard', () => {
@@ -276,15 +370,15 @@ describe('VehicleCard', () => {
 
 ---
 
-## 10. Security and Data Protection
+## 11. Security and Data Protection
 
-### 10.1 Input Validation
+### 11.1 Input Validation
 - **Client-Side Validation:** Zod schemas for form inputs
 - **Server-Side Validation:** Supabase RLS policies and database constraints
 - **XSS Prevention:** Sanitize all user inputs before rendering
 - **CSRF Protection:** Supabase built-in CSRF protection for API requests
 
-### 10.2 Data Privacy
+### 11.2 Data Privacy
 - **User Data:** Minimal collection and secure storage in Supabase
 - **Third-Party APIs:** Secure API key management
 - **HTTPS:** Enforce HTTPS in production
@@ -293,15 +387,15 @@ describe('VehicleCard', () => {
 
 ---
 
-## 11. Accessibility Requirements
+## 12. Accessibility Requirements
 
-### 11.1 WCAG Compliance
+### 12.1 WCAG Compliance
 - **WCAG 2.1 AA:** Minimum compliance level
 - **Keyboard Navigation:** Full keyboard accessibility
 - **Screen Reader Support:** Proper ARIA labels and semantic HTML
 - **Color Contrast:** Sufficient contrast ratios for text and UI elements
 
-### 11.2 Accessibility Features
+### 12.2 Accessibility Features
 - **Focus Management:** Clear focus indicators and logical tab order
 - **Alternative Text:** Descriptive alt text for images and charts
 - **Semantic HTML:** Proper use of HTML5 semantic elements
@@ -309,15 +403,15 @@ describe('VehicleCard', () => {
 
 ---
 
-## 12. Deployment and Infrastructure
+## 13. Deployment and Infrastructure
 
-### 12.1 Build Configuration
+### 13.1 Build Configuration
 - **Environment Variables:** Separate configurations for dev/staging/prod
 - **Build Optimization:** Production builds with minification
 - **Asset Optimization:** Image compression and font optimization
 - **Bundle Analysis:** Regular bundle size monitoring
 
-### 12.2 Deployment Pipeline
+### 13.2 Deployment Pipeline
 - **CI/CD:** GitHub Actions for automated testing and deployment
 - **Environment Management:** Separate environments for development stages
 - **Rollback Strategy:** Quick rollback capabilities for production issues
@@ -326,15 +420,15 @@ describe('VehicleCard', () => {
 
 ---
 
-## 13. Monitoring and Analytics
+## 14. Monitoring and Analytics
 
-### 13.1 Performance Monitoring
+### 14.1 Performance Monitoring
 - **Core Web Vitals:** LCP, FID, CLS monitoring
 - **Page Load Times:** Track and optimize page performance
 - **User Interactions:** Monitor user engagement with data visualizations
 - **Error Tracking:** Comprehensive error logging and alerting
 
-### 13.2 User Analytics
+### 14.2 User Analytics
 - **User Behavior:** Track user interactions with data components
 - **Feature Usage:** Monitor which features are most popular
 - **Performance Metrics:** User experience performance data
@@ -342,16 +436,16 @@ describe('VehicleCard', () => {
 
 ---
 
-## 14. Future Technical Considerations
+## 15. Future Technical Considerations
 
-### 14.1 Scalability
+### 15.1 Scalability
 - **Data Volume:** Handle increasing amounts of vehicle data
 - **User Load:** Support for concurrent users and high traffic
 - **API Limits:** Manage third-party API rate limits and quotas
 - **Caching Strategy:** Implement distributed caching for high availability
 - **Database Scaling:** Supabase auto-scaling with read replicas for high-traffic scenarios
 
-### 14.2 Technology Evolution
+### 15.2 Technology Evolution
 - **React Updates:** Plan for React 19+ features and improvements
 - **TypeScript Evolution:** Leverage new TypeScript features
 - **Performance Tools:** Adopt new performance optimization techniques
@@ -359,15 +453,15 @@ describe('VehicleCard', () => {
 
 ---
 
-## 15. Risk Mitigation
+## 16. Risk Mitigation
 
-### 15.1 Technical Risks
+### 16.1 Technical Risks
 - **Data Quality Issues:** Implement comprehensive validation and fallback strategies
 - **Performance Degradation:** Regular performance monitoring and optimization
 - **API Dependencies:** Multiple data sources and graceful degradation
 - **Browser Compatibility:** Progressive enhancement and polyfill strategies
 
-### 15.2 Mitigation Strategies
+### 16.2 Mitigation Strategies
 - **Comprehensive Testing:** Automated testing at all levels
 - **Performance Budgets:** Set and enforce performance targets
 - **Error Boundaries:** Graceful error handling throughout the application
