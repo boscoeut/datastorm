@@ -3,7 +3,6 @@ import type {
   Manufacturer,
   Vehicle,
   VehicleSpecification,
-  MarketData,
   NewsArticle,
   UserPreferences,
   VehicleFilters,
@@ -250,8 +249,7 @@ export class VehicleService {
         .select(`
           *,
           manufacturer:manufacturers(*),
-          specifications:vehicle_specifications(*),
-          market_data:market_data(*)
+          specifications:vehicle_specifications(*)
         `)
         .eq('id', id)
         .single()
@@ -351,42 +349,7 @@ export class VehicleSpecificationService {
   }
 }
 
-// Market Data service
-export class MarketDataService {
-  static async create(marketData: Partial<MarketData>) {
-    return DatabaseService.create<MarketData>('market_data', marketData)
-  }
 
-  static async getById(id: string) {
-    return DatabaseService.read<MarketData>('market_data', id)
-  }
-
-  static async update(id: string, marketData: Partial<MarketData>) {
-    return DatabaseService.update<MarketData>('market_data', id, marketData)
-  }
-
-  static async delete(id: string) {
-    return DatabaseService.delete('market_data', id)
-  }
-
-  static async getByVehicleId(vehicleId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('market_data')
-        .select('*')
-        .eq('vehicle_id', vehicleId)
-        .order('data_date', { ascending: false })
-
-      if (error) {
-        return { data: [], error: DatabaseService.handleError(error) }
-      }
-
-      return { data: data || [], error: null }
-    } catch (error) {
-      return { data: [], error: DatabaseService.handleError(error) }
-    }
-  }
-}
 
 // News Article service
 export class NewsArticleService {

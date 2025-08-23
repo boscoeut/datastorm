@@ -32,17 +32,7 @@ const HomePage = () => (
         </CardContent>
       </Card>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Market Data</CardTitle>
-          <CardDescription>Sales figures, trends, and market analysis</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-600 dark:text-gray-400">
-            Stay informed with real-time market data, sales trends, and competitive analysis.
-          </p>
-        </CardContent>
-      </Card>
+
       
       <Card>
         <CardHeader>
@@ -61,22 +51,7 @@ const HomePage = () => (
 
 
 
-const MarketPage = () => (
-  <div className="space-y-6">
-    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Market Data</h1>
-    <Card>
-      <CardHeader>
-        <CardTitle>Coming Soon</CardTitle>
-        <CardDescription>Market data implementation in progress</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-600 dark:text-gray-400">
-          This section will contain sales figures, market trends, and competitive analysis.
-        </p>
-      </CardContent>
-    </Card>
-  </div>
-);
+
 
 const NewsPage = () => (
   <div className="space-y-6">
@@ -112,7 +87,6 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/vehicles" element={<VehiclesPage />} />
               <Route path="/vehicles/:id" element={<VehicleDetail />} />
-              <Route path="/market" element={<MarketPage />} />
               <Route path="/news" element={<NewsPage />} />
               <Route path="/database-test" element={<DatabaseTestPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

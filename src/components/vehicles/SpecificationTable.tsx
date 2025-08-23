@@ -1,10 +1,9 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import type { VehicleSpecification, MarketData, Manufacturer } from '@/types/database'
+import type { VehicleSpecification, Manufacturer } from '@/types/database'
 
 interface SpecificationTableProps {
   specifications?: VehicleSpecification | null
-  marketData?: MarketData | null
   manufacturer?: Manufacturer | null
   isElectric?: boolean
   loading?: boolean
@@ -27,7 +26,6 @@ interface SpecificationSection {
 
 const SpecificationTable: React.FC<SpecificationTableProps> = ({
   specifications: specs,
-  marketData,
   manufacturer,
   isElectric = false,
   loading = false,
@@ -151,33 +149,6 @@ const SpecificationTable: React.FC<SpecificationTableProps> = ({
       ]
     },
     {
-      title: 'Market Information',
-      icon: '💰',
-      condition: !!marketData,
-      rows: [
-        {
-          label: 'MSRP',
-          value: marketData?.msrp,
-          formatter: (value: number) => `$${formatNumber(value)}`
-        },
-        {
-          label: 'Current Price',
-          value: marketData?.current_price,
-          formatter: (value: number) => `$${formatNumber(value)}`
-        },
-        {
-          label: 'Market Trend',
-          value: marketData?.market_trend,
-          formatter: (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
-        },
-        {
-          label: 'Inventory',
-          value: marketData?.inventory_count,
-          unit: 'units'
-        }
-      ]
-    },
-    {
       title: 'Manufacturer',
       icon: '🏭',
       condition: !!manufacturer,
@@ -226,7 +197,7 @@ const SpecificationTable: React.FC<SpecificationTableProps> = ({
   }
 
   // No data state
-  if (!specs && !marketData && !manufacturer) {
+  if (!specs && !manufacturer) {
     return (
       <Card>
         <CardHeader>

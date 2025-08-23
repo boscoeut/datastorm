@@ -13,6 +13,7 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 - [x] **Setup Initial Database** (2024-12-19) - Database schema, RLS policies, and services implemented
 - [x] **Setup Basic Application Layout** (2024-01-15) - Complete layout system with responsive navigation
 - [x] **Implement Theme Switcher** (2024-01-15) - Light/dark mode switching with persistence
+- [x] **Remove Market Data Features** (2024-01-15) - Market data and market trends features removed from specifications
 
 ---
 
@@ -20,7 +21,38 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ### 🔴 HIGH PRIORITY - Core Features (Must Complete First)
 
-#### 1. Implement Vehicle Database Core Functionality
+#### 1. Remove Market Data Code (NEW - HIGH PRIORITY)
+**Priority:** HIGH  
+**Effort:** Half-Day (4 hours)  
+**Dependencies:** None - can be done immediately  
+**Status:** Not Started
+
+**Description:** Clean up all existing code related to the removed Market Data and Market Trends features to ensure codebase consistency and prevent orphaned code.
+
+**Files to Modify:**
+- `src/types/database.ts` - Remove MarketData interface and related types
+- `src/services/database.ts` - Remove market data service methods
+- `src/App.tsx` - Remove market data route and page component
+- `src/stores/layout-store.ts` - Remove market data navigation items
+- `src/components/vehicles/VehicleDetail.tsx` - Remove market data references
+- `src/components/vehicles/SpecificationTable.tsx` - Remove market data references
+- `src/components/layout/Sidebar.tsx` - Remove market data navigation
+- `src/components/layout/Footer.tsx` - Remove market data references
+- `src/pages/VehiclesPage.tsx` - Remove market data navigation
+- `src/lib/supabase.ts` - Remove market data types
+
+**Acceptance Criteria:**
+- All MarketData interfaces and types completely removed
+- No market data service methods remain
+- Market data route and page completely removed
+- No market data navigation items visible in UI
+- Vehicle components work correctly without market data
+- TypeScript compilation succeeds without errors
+- No console errors related to market data
+
+---
+
+#### 2. Implement Vehicle Database Core Functionality
 **Priority:** HIGH  
 **Effort:** Multiple Half-Day Tasks (4 hours each)  
 **Dependencies:** None - Database and layout ready  
@@ -54,10 +86,10 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ---
 
-#### 2. Implement Vehicle Specifications Display
+#### 3. Implement Vehicle Specifications Display
 **Priority:** HIGH  
 **Effort:** Multiple Half-Day Tasks (4 hours each)  
-**Dependencies:** Vehicle Database Core (#1)  
+**Dependencies:** Vehicle Database Core (#2)  
 **Status:** In Progress - First task completed ✅
 
 **Description:** Create comprehensive vehicle specification display components for technical data presentation.
@@ -88,10 +120,10 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ### 🟡 MEDIUM PRIORITY - Supporting Features
 
-#### 3. Implement Vehicle Comparison Tools
+#### 4. Implement Vehicle Comparison Tools
 **Priority:** MEDIUM  
 **Effort:** Moderate (3-5 days)  
-**Dependencies:** Vehicle Specifications (#2)  
+**Dependencies:** Vehicle Specifications (#3)  
 **Status:** Not Started
 
 **Description:** Build side-by-side vehicle comparison functionality for multiple vehicle analysis.
@@ -123,7 +155,7 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ---
 
-#### 4. Implement News Aggregation System
+#### 5. Implement News Aggregation System
 **Priority:** MEDIUM  
 **Effort:** Moderate (3-5 days)  
 **Dependencies:** None  
@@ -158,10 +190,10 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ### 🟢 LOW PRIORITY - Enhancement Features
 
-#### 5. Implement Advanced Search and Filtering
+#### 6. Implement Advanced Search and Filtering
 **Priority:** LOW  
 **Effort:** Moderate (3-5 days)  
-**Dependencies:** Vehicle Database Core (#1)  
+**Dependencies:** Vehicle Database Core (#2)  
 **Status:** Not Started
 
 **Description:** Enhance search and filtering capabilities across all data types for powerful data discovery.
@@ -189,10 +221,10 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ---
 
-#### 6. Implement Data Visualization Components
+#### 7. Implement Data Visualization Components
 **Priority:** LOW  
 **Effort:** Complex (1-2 weeks)  
-**Dependencies:** Vehicle Specifications (#2)  
+**Dependencies:** Vehicle Specifications (#3)  
 **Status:** Not Started
 
 **Description:** Create comprehensive data visualization components using Chart.js for performance data and market trends.
@@ -220,7 +252,7 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ---
 
-#### 7. Implement User Preferences and Personalization
+#### 8. Implement User Preferences and Personalization
 **Priority:** LOW  
 **Effort:** Simple (1-2 days)  
 **Dependencies:** Authentication system  
@@ -253,27 +285,28 @@ The Electric Vehicle Data Hub is a data-centric web application that provides co
 
 ## Implementation Roadmap
 
-### Phase 1: Core Vehicle Database (Weeks 1-2)
-1. **Week 1**: Implement Vehicle Database Core Functionality (#1)
-2. **Week 2**: Implement Vehicle Specifications Display (#2)
+### Phase 1: Core Vehicle Database and Cleanup (Weeks 1-2)
+1. **Week 1**: Remove Market Data Code (#1) + Implement Vehicle Database Core Functionality (#2)
+2. **Week 2**: Implement Vehicle Specifications Display (#3)
 
 ### Phase 2: Comparison and News (Weeks 3-4)
-3. **Week 3**: Implement Vehicle Comparison Tools (#3)
-4. **Week 4**: Implement News Aggregation System (#4)
+3. **Week 3**: Implement Vehicle Comparison Tools (#4)
+4. **Week 4**: Implement News Aggregation System (#5)
 
 ### Phase 3: Search and Visualization (Weeks 5-6)
-5. **Week 5**: Implement Advanced Search and Filtering (#5)
-6. **Week 6**: Implement Data Visualization Components (#6)
+5. **Week 5**: Implement Advanced Search and Filtering (#6)
+6. **Week 6**: Implement Data Visualization Components (#7)
 
 ### Phase 4: Polish and Personalization (Weeks 7-8)
-7. **Week 7**: Implement User Preferences and Personalization (#7)
-8. **Week 8**: Final Testing and Optimization (#8)
+7. **Week 7**: Implement User Preferences and Personalization (#8)
+8. **Week 8**: Final Testing and Optimization (#9)
 
 ---
 
 ## Success Metrics
 
 ### Phase 1 Completion Criteria
+- [ ] Market data code completely removed from codebase
 - [ ] Vehicle database is fully functional
 - [ ] Users can browse and search vehicles
 - [ ] Vehicle detail pages show complete information
@@ -345,4 +378,4 @@ This breakdown ensures each task is completable in half a day while maintaining 
 
 ---
 
-**Next Action**: Begin implementation of Task #1 (Vehicle Database Core Functionality) as it is the foundation for all other features and has no dependencies.
+**Next Action**: Begin implementation of Task #1 (Remove Market Data Code) to clean up the codebase, then proceed with Task #2 (Vehicle Database Core Functionality) as it is the foundation for all other features.

@@ -139,47 +139,7 @@ export type Database = {
           updated_at?: string
         }
       }
-      market_data: {
-        Row: {
-          id: string
-          vehicle_id: string
-          msrp: number | null
-          current_price: number | null
-          inventory_count: number | null
-          days_on_market: number | null
-          market_trend: string | null
-          region: string | null
-          data_date: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          vehicle_id: string
-          msrp?: number | null
-          current_price?: number | null
-          inventory_count?: number | null
-          days_on_market?: number | null
-          market_trend?: string | null
-          region?: string | null
-          data_date: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          vehicle_id?: string
-          msrp?: number | null
-          current_price?: number | null
-          inventory_count?: number | null
-          days_on_market?: number | null
-          market_trend?: string | null
-          region?: string | null
-          data_date?: string
-          created_at?: string
-          updated_at?: string
-        }
-      }
+
       news_articles: {
         Row: {
           id: string

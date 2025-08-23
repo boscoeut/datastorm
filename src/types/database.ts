@@ -24,7 +24,6 @@ export interface Vehicle {
   // Relations
   manufacturer?: Manufacturer
   specifications?: VehicleSpecification
-  market_data?: MarketData[]
 }
 
 export interface VehicleSpecification {
@@ -48,21 +47,7 @@ export interface VehicleSpecification {
   vehicle?: Vehicle
 }
 
-export interface MarketData {
-  id: string
-  vehicle_id: string
-  msrp?: number
-  current_price?: number
-  inventory_count?: number
-  days_on_market?: number
-  market_trend?: string
-  region?: string
-  data_date: string
-  created_at: string
-  updated_at: string
-  // Relations
-  vehicle?: Vehicle
-}
+
 
 export interface NewsArticle {
   id: string
@@ -93,7 +78,6 @@ export interface UserPreferences {
 export interface VehicleWithDetails extends Vehicle {
   manufacturer: Manufacturer
   specifications: VehicleSpecification
-  market_data: MarketData[]
 }
 
 export interface ManufacturerWithVehicles extends Manufacturer {

@@ -8,11 +8,6 @@ const defaultNavigationItems: NavigationItem[] = [
     href: '/vehicles',
   },
   {
-    id: 'market',
-    label: 'Market Data',
-    href: '/market',
-  },
-  {
     id: 'news',
     label: 'Industry News',
     href: '/news',

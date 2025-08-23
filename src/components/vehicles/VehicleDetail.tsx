@@ -95,7 +95,6 @@ const VehicleDetail: React.FC = () => {
 
   const specs = vehicle.specifications
   const manufacturer = vehicle.manufacturer
-  const marketData = vehicle.market_data?.[0] // Get most recent market data
 
   return (
     <div className="space-y-6">
@@ -136,7 +135,6 @@ const VehicleDetail: React.FC = () => {
       {/* Vehicle Specifications */}
       <SpecificationTable 
         specifications={specs}
-        marketData={marketData}
         manufacturer={manufacturer}
         isElectric={vehicle.is_electric}
         loading={false}

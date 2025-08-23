@@ -12,7 +12,7 @@ export const Footer: React.FC<FooterProps> = () => {
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Comprehensive Electric Vehicle Data Hub providing technical specifications, 
-              market analysis, and industry insights.
+              performance data, and industry insights.
             </p>
           </div>
 
@@ -30,14 +30,7 @@ export const Footer: React.FC<FooterProps> = () => {
                   Vehicle Database
                 </a>
               </li>
-              <li>
-                <a 
-                  href="/market" 
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >
-                  Market Data
-                </a>
-              </li>
+
               <li>
                 <a 
                   href="/news" 

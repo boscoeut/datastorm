@@ -97,13 +97,7 @@ const VehiclesPage: React.FC = () => {
           >
             ← Back to Home
           </Button>
-          <Button
-            onClick={() => navigate('/market')}
-            variant="outline"
-            size="sm"
-          >
-            View Market Data →
-          </Button>
+
           <Button
             onClick={() => navigate('/news')}
             variant="outline"

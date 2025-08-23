@@ -2,7 +2,7 @@ import type { SidebarProps } from '@/types/layout';
 import { Navigation } from './Navigation';
 import { useLayoutStore } from '@/stores/layout-store';
 import { Button } from '@/components/ui/button';
-import { X, Filter, Search, BarChart3, TrendingUp, Newspaper } from 'lucide-react';
+import { X, Filter, Search, BarChart3, Newspaper } from 'lucide-react';
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { navigationItems } = useLayoutStore();
@@ -85,14 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               Compare Vehicles
             </Button>
             
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => {/* TODO: Implement quick actions */}}
-            >
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Market Trends
-            </Button>
+
             
             <Button
               variant="outline"
