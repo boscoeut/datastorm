@@ -165,12 +165,12 @@ The agent should provide:
 - **New Features**: When adding features with `@addFeature`, break down into 4-hour tasks
 
 ### Task List Structure
-- **Main Tasks**: High-level, one-sentence descriptions of what needs to be accomplished
-- **Subtasks**: Detailed breakdown when main tasks need more specific implementation steps
-- **Priority Levels**: High, Medium, Low with clear reasoning
-- **Dependencies**: Mark which tasks depend on others
-- **Effort Estimates**: **Half-Day (4 hours)** - all tasks must fit this constraint
-- **Implementation Order**: Numbered sequence for optimal development flow
+- **Task Table**: Simple table format with Task Name, Description, Priority, and Status
+- **Priority Levels**: HIGH, MEDIUM, LOW (sorted by priority order)
+- **Status Tracking**: ✅ Completed, 🔄 In Progress, ⏳ Not Started
+- **Dependencies**: Check task dependencies before starting
+- **Effort Constraint**: **Half-Day (4 hours)** - all tasks must fit this constraint
+- **No Task Numbering**: Tasks are managed by priority and status, not by numbers
 
 ### Task Content Requirements
 - **Acceptance Criteria**: Clear success metrics for each main task
@@ -207,9 +207,8 @@ When the agent runs `@projectManager analyze`, it should:
 
 ### Example Task Structure (Half-Day Sized)
 ```
-#### 1. Create Vehicle List Component
+**Task Name:** Create Vehicle List Component
 **Priority:** HIGH  
-**Effort:** Half-Day (4 hours)  
 **Description:** Build the vehicle list component with basic data display and theme-aware styling.
 
 **Acceptance Criteria:**
@@ -260,6 +259,14 @@ When the agent runs `@projectManager analyze`, it should:
 - **Documentation**: Include code comments and basic documentation
 - **Integration**: Test integration with existing components
 - **New Feature Tasks**: Must follow 4-hour constraint and include integration testing
+- **Task Management**: Use streamlined table format for easy updates and maintenance
+
+### Streamlined Task List Format
+- **Table Structure**: Simple table with Task Name, Description, Priority, and Status
+- **No Task Numbers**: Tasks are managed by priority and status, not by sequential numbering
+- **Easy Updates**: Simple table format makes it easy to add, remove, or update tasks
+- **Priority Sorting**: HIGH priority tasks appear at the top, followed by MEDIUM and LOW
+- **Status Tracking**: Clear visual indicators (✅ 🔄 ⏳) for task progress
 
 ---
 

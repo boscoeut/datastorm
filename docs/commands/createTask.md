@@ -25,6 +25,7 @@ The `@createTask` command is executed by an AI agent from within Cursor IDE to c
 - [ ] Confirm task dependencies are already completed or in progress
 - [ ] Align with current milestone and roadmap timeline
 - [ ] Check if task fits within the current development phase
+- [ ] Verify task will be added to the streamlined task table format
 
 ### Current Project Status (from taskList.md)
 **The agent will automatically retrieve:**
@@ -51,15 +52,15 @@ The `@createTask` command is executed by an AI agent from within Cursor IDE to c
 
 ## Task Overview
 **Task Name:** [Descriptive task name - must be specific and focused]
-**Priority:** [High/Medium/Low - must align with taskList.md priority order]
-**Complexity:** [Half-Day (4 hours) - all tasks must fit this constraint]
+**Priority:** [HIGH/MEDIUM/LOW - must align with taskList.md priority order]
+**Description:** [Clear, focused description of what needs to be accomplished in 4 hours]
 **Phase:** [Phase 1/2/3/4 from roadmap]
 **Related PRD Section:** [Section number and title from PRD]
 **Related Technical Spec Section:** [Section number and title from TECHNICAL_SPEC]
 **Dependencies:** [List specific completed tasks this depends on from taskList.md]
 
 ## Task Description
-[Provide a clear, focused description of what needs to be accomplished in 4 hours. Keep scope narrow and specific. Include context, background information, and any relevant constraints. Reference specific PRD requirements and technical specifications where applicable. Explain how this task fits into the current project phase and roadmap.]
+[This section is now combined with Task Overview above. Provide a clear, focused description of what needs to be accomplished in 4 hours. Keep scope narrow and specific. Include context, background information, and any relevant constraints. Reference specific PRD requirements and technical specifications where applicable. Explain how this task fits into the current project phase and roadmap.]
 
 ## Task Scope Requirements
 **CRITICAL: This task must be completable in 4 hours (half a day) by a single developer.**
@@ -281,14 +282,11 @@ The agent will automatically create each task file following this exact structur
 # Task: [Task Name]
 
 **Created:** [YYYY-MM-DD]
-**Priority:** [High/Medium/Low]
-**Complexity:** [Half-Day (4 hours)]
+**Priority:** [HIGH/MEDIUM/LOW]
+**Description:** [Clear, focused description of what needs to be accomplished in 4 hours]
 **Phase:** [Phase 1/2/3/4]
 **Status:** [Not Started/In Progress/Completed/Blocked]
 **Dependencies:** [List completed tasks this depends on]
-
-## Task Description
-[Copy the completed task description here]
 
 ## Requirements
 [Copy the completed requirements here]
