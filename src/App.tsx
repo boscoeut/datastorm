@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DatabaseTest from '@/components/DatabaseTest';
-import VehicleList from '@/components/vehicles/VehicleList';
+import VehiclesPage from '@/pages/VehiclesPage';
 import VehicleDetail from '@/components/vehicles/VehicleDetail';
 
 // Placeholder page components - these will be replaced with actual implementations
@@ -59,7 +59,7 @@ const HomePage = () => (
   </div>
 );
 
-const VehiclesPage = () => <VehicleList />;
+
 
 const MarketPage = () => (
   <div className="space-y-6">

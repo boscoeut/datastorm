@@ -14,7 +14,11 @@ import {
   useVehicleStore
 } from '@/stores/vehicle-store'
 
-const VehicleList: React.FC = () => {
+interface VehicleListProps {
+  showHeader?: boolean
+}
+
+const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
   const navigate = useNavigate()
   const vehicles = useVehicles()
   const loading = useVehicleLoading()
@@ -66,17 +70,19 @@ const VehicleList: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Vehicle Database</h1>
-          <p className="text-muted-foreground">
-            Browse and search electric vehicles in our comprehensive database
-          </p>
+      {showHeader && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Vehicle Database</h1>
+            <p className="text-muted-foreground">
+              Browse and search electric vehicles in our comprehensive database
+            </p>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {totalCount > 0 && `${totalCount} vehicles found`}
+          </div>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {totalCount > 0 && `${totalCount} vehicles found`}
-        </div>
-      </div>
+      )}
 
       {/* Search and Filters */}
       <VehicleSearch
