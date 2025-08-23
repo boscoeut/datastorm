@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DatabaseTest from '@/components/DatabaseTest';
 import VehicleList from '@/components/vehicles/VehicleList';
+import VehicleDetail from '@/components/vehicles/VehicleDetail';
 
 // Placeholder page components - these will be replaced with actual implementations
 const HomePage = () => (
@@ -110,6 +111,7 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/vehicles" element={<VehiclesPage />} />
+              <Route path="/vehicles/:id" element={<VehicleDetail />} />
               <Route path="/market" element={<MarketPage />} />
               <Route path="/news" element={<NewsPage />} />
               <Route path="/database-test" element={<DatabaseTestPage />} />

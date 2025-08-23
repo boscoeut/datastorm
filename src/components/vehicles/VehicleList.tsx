@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +17,7 @@ import {
 import type { VehicleFilters } from '@/types/database'
 
 const VehicleList: React.FC = () => {
+  const navigate = useNavigate()
   const vehicles = useVehicles()
   const loading = useVehicleLoading()
   const error = useVehicleError()
@@ -67,6 +69,10 @@ const VehicleList: React.FC = () => {
   const handleClearFilters = () => {
     setLocalFilters({})
     clearFilters()
+  }
+
+  const handleVehicleClick = (vehicleId: string) => {
+    navigate(`/vehicles/${vehicleId}`)
   }
 
   const totalPages = Math.ceil(totalCount / pagination.pageSize)
@@ -244,7 +250,8 @@ const VehicleList: React.FC = () => {
                     {vehicles.map((vehicle) => (
                       <tr
                         key={vehicle.id}
-                        className="border-b border-border hover:bg-muted/50 transition-colors"
+                        onClick={() => handleVehicleClick(vehicle.id)}
+                        className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
                       >
                         <td className="py-3 px-4 font-medium text-foreground">
                           {vehicle.model}
