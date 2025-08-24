@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import VehicleList from '@/components/vehicles/VehicleList'
+import VehicleComparison from '@/components/vehicles/VehicleComparison'
 import {
   useVehicleStore,
   useVehicleLoading,
@@ -83,6 +84,9 @@ const VehiclesPage: React.FC = () => {
 
       {/* Vehicle List with integrated search and filters */}
       <VehicleList showHeader={false} />
+
+      {/* Vehicle Comparison */}
+      <VehicleComparison />
 
       {/* Quick Actions */}
       <Card>

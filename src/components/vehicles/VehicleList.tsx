@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import VehicleSearch from './VehicleSearch'
+import ComparisonButton from './ComparisonButton'
 import {
   useVehicles,
   useVehicleLoading,
@@ -133,6 +134,19 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
       },
       sortingFn: (rowA, rowB) => {
         return (rowA.original.is_electric === rowB.original.is_electric) ? 0 : rowA.original.is_electric ? 1 : -1
+      },
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const vehicle = row.original
+        
+        return (
+          <div className="flex items-center gap-2">
+            <ComparisonButton vehicle={vehicle} />
+          </div>
+        )
       },
     },
   ], [])

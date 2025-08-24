@@ -258,6 +258,12 @@ export class VehicleService {
         return { data: null, error: DatabaseService.handleError(error) }
       }
 
+      // Transform the data to match the expected interface
+      if (data && data.specifications && Array.isArray(data.specifications)) {
+        // Take the first specification if it's an array
+        data.specifications = data.specifications[0] || null
+      }
+
       return { data, error: null }
     } catch (error) {
       return { data: null, error: DatabaseService.handleError(error) }

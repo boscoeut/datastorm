@@ -22,6 +22,10 @@ interface VehicleState {
   
   // Sorting
   sortBy: SortOption | null
+  
+  // Comparison
+  comparisonVehicles: Vehicle[]
+  maxComparisonVehicles: number
 }
 
 interface VehicleActions {
@@ -40,6 +44,12 @@ interface VehicleActions {
   
   // Sorting
   setSortBy: (sortBy: SortOption | null) => void
+  
+  // Comparison
+  addToComparison: (vehicle: Vehicle) => void
+  removeFromComparison: (vehicleId: string) => void
+  clearComparison: () => void
+  setMaxComparisonVehicles: (max: number) => void
   
   // State management
   setLoading: (loading: boolean) => void
@@ -61,7 +71,9 @@ const initialState: VehicleState = {
     pageSize: 20
   },
   totalCount: 0,
-  sortBy: null
+  sortBy: null,
+  comparisonVehicles: [],
+  maxComparisonVehicles: 4
 }
 
 export const useVehicleStore = create<VehicleStore>()(
@@ -179,6 +191,56 @@ export const useVehicleStore = create<VehicleStore>()(
         get().fetchVehicles()
       },
 
+      // Comparison
+      addToComparison: async (vehicle: Vehicle) => {
+        const { comparisonVehicles, maxComparisonVehicles } = get()
+        
+        // Check if vehicle is already in comparison
+        if (comparisonVehicles.some(v => v.id === vehicle.id)) {
+          return
+        }
+        
+        // Check if we've reached the maximum
+        if (comparisonVehicles.length >= maxComparisonVehicles) {
+          return
+        }
+        
+        try {
+          // Fetch full vehicle details with specifications
+          const result = await VehicleService.getWithDetails(vehicle.id)
+          if (result.error) {
+            console.error('Failed to fetch vehicle details:', result.error)
+            // Still add the vehicle but without specs
+            set({ comparisonVehicles: [...comparisonVehicles, vehicle] })
+          } else if (result.data) {
+            // Add vehicle with full details
+            set({ comparisonVehicles: [...comparisonVehicles, result.data] })
+          } else {
+            // Fallback to adding vehicle without specs
+            set({ comparisonVehicles: [...comparisonVehicles, vehicle] })
+          }
+        } catch (error) {
+          console.error('Error fetching vehicle details:', error)
+          // Fallback to adding vehicle without specs
+          set({ comparisonVehicles: [...comparisonVehicles, vehicle] })
+        }
+      },
+
+      removeFromComparison: (vehicleId: string) => {
+        const { comparisonVehicles } = get()
+        set({ 
+          comparisonVehicles: comparisonVehicles.filter(v => v.id !== vehicleId) 
+        })
+      },
+
+      clearComparison: () => {
+        set({ comparisonVehicles: [] })
+      },
+
+      setMaxComparisonVehicles: (max: number) => {
+        set({ maxComparisonVehicles: max })
+      },
+
       // State management
       setLoading: (loading: boolean) => set({ loading }),
       setError: (error: string | null) => set({ error }),
@@ -200,3 +262,11 @@ export const useVehiclePagination = () => useVehicleStore((state) => state.pagin
 export const useVehicleTotalCount = () => useVehicleStore((state) => state.totalCount)
 export const useVehicleSortBy = () => useVehicleStore((state) => state.sortBy)
 export const useManufacturers = () => useVehicleStore((state) => state.manufacturers)
+
+// Comparison selectors
+export const useComparisonVehicles = () => useVehicleStore((state) => state.comparisonVehicles)
+export const useMaxComparisonVehicles = () => useVehicleStore((state) => state.maxComparisonVehicles)
+export const useComparisonCount = () => useVehicleStore((state) => state.comparisonVehicles.length)
+export const useCanAddToComparison = () => useVehicleStore((state) => 
+  state.comparisonVehicles.length < state.maxComparisonVehicles
+)
