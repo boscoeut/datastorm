@@ -56,34 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             items={sidebarItems} 
             variant="vertical"
             className="mb-6"
-          />
-
-          {/* Quick Actions */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-              Quick Actions
-            </h3>
-            
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => {/* TODO: Implement quick actions */}}
-            >
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Compare Vehicles
-            </Button>
-            
-
-            
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => {/* TODO: Implement quick actions */}}
-            >
-              <Newspaper className="w-4 h-4 mr-2" />
-              Latest News
-            </Button>
-          </div>
+          />       
         </div>
       </aside>
     </>
