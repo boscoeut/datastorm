@@ -24,8 +24,6 @@ import {
   useNewsFilters,
   useNewsPagination,
   useNewsTotalCount,
-  useNewsCategories,
-  useNewsTags,
   useNewsStore
 } from '@/stores/news-store'
 
