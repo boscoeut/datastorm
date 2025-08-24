@@ -3,8 +3,10 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import DatabaseTest from '@/components/DatabaseTest';
 import VehiclesPage from '@/pages/VehiclesPage';
+import NewsPage from '@/pages/NewsPage';
 import VehicleDetail from '@/components/vehicles/VehicleDetail';
 
 // Placeholder page components - these will be replaced with actual implementations
@@ -40,9 +42,12 @@ const HomePage = () => (
           <CardDescription>Latest updates and industry insights</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             Get the latest news, rumors, and expert analysis from the electric vehicle industry.
           </p>
+          <Button asChild>
+            <a href="/news">Browse News</a>
+          </Button>
         </CardContent>
       </Card>
     </div>
@@ -53,22 +58,7 @@ const HomePage = () => (
 
 
 
-const NewsPage = () => (
-  <div className="space-y-6">
-    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Industry News</h1>
-    <Card>
-      <CardHeader>
-        <CardTitle>Coming Soon</CardTitle>
-        <CardDescription>News aggregation implementation in progress</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-600 dark:text-gray-400">
-          This section will contain the latest industry news, rumors, and expert insights.
-        </p>
-      </CardContent>
-    </Card>
-  </div>
-);
+
 
 const DatabaseTestPage = () => (
   <div className="space-y-6">
