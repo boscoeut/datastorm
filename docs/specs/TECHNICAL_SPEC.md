@@ -21,6 +21,7 @@
 - **HTTP Client:** Axios with interceptors
 - **Database:** Supabase (PostgreSQL) with real-time subscriptions
 - **Database Tools:** Supabase MCP Tool integration in Cursor for direct database operations
+- **Serverless Functions:** Supabase Edge Functions for backend logic and API endpoints
 - **Testing:** React Testing Library + Jest
 - **Code Quality:** ESLint + Prettier
 
@@ -72,24 +73,36 @@
 - **Real-time Operations:** Monitor database logs, performance metrics, and real-time subscriptions
 - **Data Management:** Insert, update, and delete test data directly from the development environment
 - **Schema Visualization:** View table structures, relationships, and constraints through the MCP Tool interface
+- **Edge Function Management:** Deploy, update, and manage Edge Functions directly from the IDE
 
 ## Frontend Architecture
 
 ### Project Structure
 ```
-src/
-├── components/
-│   ├── ui/                    # Shadcn/ui base components
-│   ├── data-display/          # Data visualization components
-│   ├── vehicle/               # Vehicle-related components
-│   ├── news/                  # News and content components
-│   └── layout/                # Layout and navigation components
-├── stores/                    # Zustand state stores
-├── lib/                       # Utility functions and helpers
-├── types/                     # TypeScript type definitions
-├── hooks/                     # Custom React hooks
-├── services/                  # API and external service integrations
-└── pages/                     # Page-level components
+datastorm/
+├── src/                       # Frontend application source
+│   ├── components/
+│   │   ├── ui/               # Shadcn/ui base components
+│   │   ├── data-display/     # Data visualization components
+│   │   ├── vehicle/          # Vehicle-related components
+│   │   ├── news/             # News and content components
+│   │   └── layout/           # Layout and navigation components
+│   ├── stores/               # Zustand state stores
+│   ├── lib/                  # Utility functions and helpers
+│   ├── types/                # TypeScript type definitions
+│   ├── hooks/                # Custom React hooks
+│   ├── services/             # API and external service integrations
+│   └── pages/                # Page-level components
+├── supabase/                  # Supabase configuration and functions
+│   ├── functions/            # Edge Functions
+│   │   ├── vehicle-api/      # Vehicle-related API endpoints
+│   │   ├── news-api/         # News and content API endpoints
+│   │   ├── auth/             # Authentication and user management
+│   │   ├── webhooks/         # External service webhooks
+│   │   └── utils/            # Shared utility functions
+│   ├── migrations/           # Database migrations
+│   └── config/               # Supabase configuration files
+└── database/                  # Database schema and seed data
 ```
 
 ### Component Architecture
@@ -155,6 +168,7 @@ export const useVehicleStore = create<VehicleStoreState & VehicleStoreActions>((
 - **News Content:** RSS feeds, news APIs, industry publications
 - **Real-time Updates:** Supabase real-time subscriptions for live data feeds
 - **Database:** Supabase PostgreSQL with Row Level Security (RLS)
+- **Backend APIs:** Supabase Edge Functions for custom business logic and external API integrations
 
 ### Data Models
 ```typescript
@@ -185,26 +199,74 @@ interface VehicleSpecifications {
 - **Cache Strategy:** Stale-while-revalidate with background updates
 - **Error Handling:** Graceful degradation for missing or invalid data
 - **Database Operations:** Supabase client with optimistic updates and offline support
+- **API Validation:** Edge Function input validation with Zod schemas and proper error responses
 
 ---
 
-## 6. User Interface Components
+## Edge Functions Architecture
 
-### 6.1 Data Display Components
+### Edge Function Overview
+- **Purpose:** Serverless backend logic for complex business operations, external API integrations, and data processing
+- **Runtime:** Deno runtime with TypeScript support
+- **Deployment:** Automatic deployment through Supabase CLI and MCP Tool integration
+- **Scaling:** Automatic scaling based on demand with cold start optimization
+
+### Edge Function Organization
+```
+supabase/functions/
+├── vehicle-api/               # Vehicle-related API endpoints
+│   ├── index.ts              # Main vehicle API router
+│   ├── specifications.ts     # Vehicle specification processing
+│   ├── comparison.ts         # Vehicle comparison logic
+│   └── search.ts             # Advanced search algorithms
+├── news-api/                  # News and content API endpoints
+│   ├── index.ts              # Main news API router
+│   ├── aggregator.ts         # News aggregation from multiple sources
+│   ├── processor.ts          # Content processing and enrichment
+│   └── webhooks.ts           # External news service webhooks
+├── auth/                      # Authentication and user management
+│   ├── index.ts              # Auth middleware and utilities
+│   ├── permissions.ts        # Role-based access control
+│   └── webhooks.ts           # Auth webhook handlers
+├── webhooks/                  # External service integrations
+│   ├── nhtsa-webhook.ts      # NHTSA API webhook handler
+│   ├── manufacturer-webhook.ts # Manufacturer API webhook handler
+│   └── news-webhook.ts       # News service webhook handler
+└── utils/                     # Shared utility functions
+    ├── validation.ts          # Common validation schemas
+    ├── database.ts            # Database connection helpers
+    ├── external-apis.ts       # External API client utilities
+    └── response.ts            # Standardized response formatting
+```
+
+### Edge Function Implementation Standards
+- **TypeScript:** All functions must be written in TypeScript with strict type checking
+- **Error Handling:** Comprehensive error handling with proper HTTP status codes
+- **Input Validation:** Zod schemas for request validation and type safety
+- **Response Format:** Consistent JSON response structure across all endpoints
+- **Logging:** Structured logging for debugging and monitoring
+- **Security:** Proper authentication, authorization, and input sanitization
+
+
+---
+
+## User Interface Components
+
+### Data Display Components
 - **DataTable:** TanStack Table implementation for sortable, filterable tables with virtualization
 - **ComparisonGrid:** Side-by-side vehicle comparison using TanStack Table
 - **ChartComponents:** Interactive charts using Shadcn charts (https://ui.shadcn.com/charts/)
 - **SpecificationCards:** Detailed vehicle specification displays
 - **FilterPanel:** Advanced filtering with multiple criteria
 
-### 6.2 Navigation Components
+### Navigation Components
 - **MainNavigation:** Primary navigation with breadcrumbs
 - **SearchBar:** Global search with autocomplete
 - **FilterSidebar:** Collapsible filter panel
 - **Pagination:** Efficient navigation through large datasets
 - **Breadcrumbs:** Clear navigation hierarchy
 
-### 6.3 Responsive Design
+### Responsive Design
 - **Mobile-First:** Design for mobile devices first
 - **Breakpoints:** Tailwind CSS responsive breakpoints
 - **Touch Optimization:** Touch-friendly interactions and gestures
@@ -345,6 +407,7 @@ const VehicleTable: React.FC<VehicleTableProps> = ({ data, onRowSelect }) => {
 ### Testing Framework
 - **Unit Testing:** Jest for utility functions and hooks
 - **Component Testing:** React Testing Library for component behavior
+- **Edge Function Testing:** Deno testing framework for serverless function testing
 
 ### 10.3 Testing Patterns
 ```typescript
@@ -360,21 +423,22 @@ describe('VehicleCard', () => {
 });
 ```
 
----
 
 ## Security and Data Protection
 
 ### Input Validation
 - **Client-Side Validation:** Zod schemas for form inputs
 - **Server-Side Validation:** Supabase RLS policies and database constraints
+- **Edge Function Validation:** Zod schemas for API input validation with proper error responses
 - **XSS Prevention:** Sanitize all user inputs before rendering
 - **CSRF Protection:** Supabase built-in CSRF protection for API requests
 
 ### Data Privacy
 - **User Data:** Minimal collection and secure storage in Supabase
-- **Third-Party APIs:** Secure API key management
-- **HTTPS:** Enforce HTTPS in production
+- **Third-Party APIs:** Secure API key management through environment variables
+- **HTTPS:** Enforce HTTPS in production for all Edge Function endpoints
 - **Data Encryption:** Supabase provides encryption at rest and in transit
 - **Authentication:** Supabase Auth with JWT tokens and refresh token rotation
+- **Edge Function Security:** Proper CORS configuration, rate limiting, and input sanitization
 
 
