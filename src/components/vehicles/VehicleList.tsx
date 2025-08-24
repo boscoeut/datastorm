@@ -182,22 +182,7 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      {showHeader && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Vehicle Database</h1>
-            <p className="text-muted-foreground">
-              Browse and search electric vehicles in our comprehensive database
-            </p>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            {totalCount > 0 && `${totalCount} vehicles found`}
-          </div>
-        </div>
-      )}
-
+    <div className="space-y-4">
       {/* Search and Filters */}
       <VehicleSearch
         onSearchChange={setSearchQuery}

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { ChevronDown, ChevronUp, Search, Filter, X } from 'lucide-react'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useVehicleStore, useManufacturers } from '@/stores/vehicle-store'
 import type { VehicleFilters } from '@/types/database'
@@ -33,6 +34,7 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
   
   // Filter state for UI
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   
   // Fetch manufacturers on component mount
   useEffect(() => {
@@ -84,272 +86,285 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
   ).length + (localSearchQuery.length > 0 ? 1 : 0)
   
   return (
-    <Card>
-      <CardHeader>
+    <Card className="transition-all duration-200">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle>Search & Filters</CardTitle>
-          {hasActiveFilters && (
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
-                {activeFilterCount} active
-              </Badge>
-              <Button
-                onClick={handleClearAll}
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2 text-xs"
-              >
-                Clear All
-              </Button>
+          <div className="flex items-center gap-3">
+            <Search className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <CardTitle className="text-lg">Search & Filters</CardTitle>
+              {hasActiveFilters && (
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="secondary" className="text-xs">
+                    {activeFilterCount} active
+                  </Badge>
+                  <Button
+                    onClick={handleClearAll}
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                  >
+                    Clear All
+                  </Button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Search Bar */}
-        <div className="space-y-2">
-          <Label htmlFor="search" className="text-sm font-medium">
-            Search Vehicles
-          </Label>
-          <div className="flex gap-2">
-            <Input
-              id="search"
-              type="text"
-              placeholder="Search by model, manufacturer, or specifications..."
-              value={localSearchQuery}
-              onChange={(e) => setLocalSearchQuery(e.target.value)}
-              className="flex-1"
-              aria-describedby="search-help"
-            />
+          </div>
+          <div className="flex items-center gap-2">
             <Button
-              onClick={() => onSearchChange?.(localSearchQuery)}
-              disabled={localSearchQuery === searchQuery}
+              onClick={() => setIsExpanded(!isExpanded)}
+              variant="ghost"
               size="sm"
+              className="h-8 w-8 p-0"
             >
-              Search
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
           </div>
-          <p id="search-help" className="text-xs text-muted-foreground">
-            Search across vehicle models, manufacturers, and technical specifications
-          </p>
         </div>
-        
-        {/* Basic Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Manufacturer Filter */}
+      </CardHeader>
+      
+      {isExpanded && (
+        <CardContent className="space-y-4 pt-0">
+          {/* Compact Search Bar */}
           <div className="space-y-2">
-            <Label htmlFor="manufacturer" className="text-sm font-medium">
-              Manufacturer
+            <Label htmlFor="search" className="text-sm font-medium">
+              Search Vehicles
             </Label>
-            <select
-              id="manufacturer"
-              value={localFilters.manufacturer_id || ''}
-              onChange={(e) => handleFilterChange('manufacturer_id', e.target.value || undefined)}
-              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-sm"
-            >
-              <option value="">All Manufacturers</option>
-              {manufacturers.map((manufacturer: { id: string; name: string }) => (
-                <option key={manufacturer.id} value={manufacturer.id}>
-                  {manufacturer.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          {/* Year Range Filters */}
-          <div className="space-y-2">
-            <Label htmlFor="year-min" className="text-sm font-medium">
-              Year Min
-            </Label>
-            <Input
-              id="year-min"
-              type="number"
-              placeholder="2020"
-              value={localFilters.year_min || ''}
-              onChange={(e) => handleFilterChange('year_min', e.target.value ? parseInt(e.target.value) : undefined)}
-              min="1900"
-              max="2030"
-              className="text-sm"
-              aria-describedby="year-min-help"
-            />
-            <p id="year-min-help" className="text-xs text-muted-foreground">
-              Minimum year
+            <div className="flex gap-2">
+              <Input
+                id="search"
+                type="text"
+                placeholder="Search by model, manufacturer, or specifications..."
+                value={localSearchQuery}
+                onChange={(e) => setLocalSearchQuery(e.target.value)}
+                className="flex-1"
+                aria-describedby="search-help"
+              />
+              <Button
+                onClick={() => onSearchChange?.(localSearchQuery)}
+                disabled={localSearchQuery === searchQuery}
+                size="sm"
+              >
+                Search
+              </Button>
+            </div>
+            <p id="search-help" className="text-xs text-muted-foreground">
+              Search across vehicle models, manufacturers, and technical specifications
             </p>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="year-max" className="text-sm font-medium">
-              Year Max
-            </Label>
-            <Input
-              id="year-max"
-              type="number"
-              placeholder="2024"
-              value={localFilters.year_max || ''}
-              onChange={(e) => handleFilterChange('year_max', e.target.value ? parseInt(e.target.value) : undefined)}
-              min="1900"
-              max="2030"
-              className="text-sm"
-              aria-describedby="year-max-help"
-            />
-            <p id="year-max-help" className="text-xs text-muted-foreground">
-              Maximum year
-            </p>
-          </div>
-          
-          {/* Body Style Filter */}
-          <div className="space-y-2">
-            <Label htmlFor="body-style" className="text-sm font-medium">
-              Body Style
-            </Label>
-            <select
-              id="body-style"
-              value={localFilters.body_style || ''}
-              onChange={(e) => handleFilterChange('body_style', e.target.value || undefined)}
-              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-sm"
-            >
-              <option value="">All Styles</option>
-              <option value="sedan">Sedan</option>
-              <option value="suv">SUV</option>
-              <option value="hatchback">Hatchback</option>
-              <option value="wagon">Wagon</option>
-              <option value="coupe">Coupe</option>
-              <option value="convertible">Convertible</option>
-              <option value="pickup">Pickup</option>
-            </select>
-          </div>
-        </div>
-        
-        {/* Advanced Filters Toggle */}
-        <div className="flex justify-center">
-          <Button
-            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            variant="ghost"
-            size="sm"
-            className="text-xs"
-          >
-            {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
-          </Button>
-        </div>
-        
-        {/* Advanced Filters */}
-        {showAdvancedFilters && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-border">
-            {/* Electric Vehicle Filter */}
+          {/* Basic Filters - Horizontal Layout */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Manufacturer Filter */}
             <div className="space-y-2">
-              <Label htmlFor="is-electric" className="text-sm font-medium">
-                Vehicle Type
+              <Label htmlFor="manufacturer" className="text-sm font-medium">
+                Manufacturer
               </Label>
               <select
-                id="is-electric"
-                value={localFilters.is_electric !== undefined ? localFilters.is_electric.toString() : ''}
-                onChange={(e) => handleFilterChange('is_electric', e.target.value === '' ? undefined : e.target.value === 'true')}
+                id="manufacturer"
+                value={localFilters.manufacturer_id || ''}
+                onChange={(e) => handleFilterChange('manufacturer_id', e.target.value || undefined)}
                 className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-sm"
               >
-                <option value="">All Types</option>
-                <option value="true">Electric Only</option>
-                <option value="false">Hybrid/Other</option>
+                <option value="">All Manufacturers</option>
+                {manufacturers.map((manufacturer: { id: string; name: string }) => (
+                  <option key={manufacturer.id} value={manufacturer.id}>
+                    {manufacturer.name}
+                  </option>
+                ))}
               </select>
             </div>
             
-            {/* Range Filters */}
+            {/* Year Range Filters */}
             <div className="space-y-2">
-              <Label htmlFor="range-min" className="text-sm font-medium">
-                Range Min (miles)
+              <Label htmlFor="year-min" className="text-sm font-medium">
+                Year Min
               </Label>
               <Input
-                id="range-min"
+                id="year-min"
                 type="number"
-                placeholder="200"
-                value={localFilters.range_min || ''}
-                onChange={(e) => handleFilterChange('range_min', e.target.value ? parseInt(e.target.value) : undefined)}
-                min="0"
-                max="1000"
+                placeholder="2020"
+                value={localFilters.year_min || ''}
+                onChange={(e) => handleFilterChange('year_min', e.target.value ? parseInt(e.target.value) : undefined)}
+                min="1900"
+                max="2030"
                 className="text-sm"
+                aria-describedby="year-min-help"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="range-max" className="text-sm font-medium">
-                Range Max (miles)
+              <Label htmlFor="year-max" className="text-sm font-medium">
+                Year Max
               </Label>
               <Input
-                id="range-max"
+                id="year-max"
                 type="number"
-                placeholder="400"
-                value={localFilters.range_max || ''}
-                onChange={(e) => handleFilterChange('range_max', e.target.value ? parseInt(e.target.value) : undefined)}
-                min="0"
-                max="1000"
+                placeholder="2024"
+                value={localFilters.year_max || ''}
+                onChange={(e) => handleFilterChange('year_max', e.target.value ? parseInt(e.target.value) : undefined)}
+                min="1900"
+                max="2030"
                 className="text-sm"
+                aria-describedby="year-max-help"
               />
             </div>
             
-            {/* Price Filters */}
+            {/* Body Style Filter */}
             <div className="space-y-2">
-              <Label htmlFor="price-min" className="text-sm font-medium">
-                Price Min ($)
+              <Label htmlFor="body-style" className="text-sm font-medium">
+                Body Style
               </Label>
-              <Input
-                id="price-min"
-                type="number"
-                placeholder="30000"
-                value={localFilters.price_min || ''}
-                onChange={(e) => handleFilterChange('price_min', e.target.value ? parseInt(e.target.value) : undefined)}
-                min="0"
-                step="1000"
-                className="text-sm"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="price-max" className="text-sm font-medium">
-                Price Max ($)
-              </Label>
-              <Input
-                id="price-max"
-                type="number"
-                placeholder="80000"
-                value={localFilters.price_max || ''}
-                onChange={(e) => handleFilterChange('price_max', e.target.value ? parseInt(e.target.value) : undefined)}
-                min="0"
-                step="1000"
-                className="text-sm"
-              />
+              <select
+                id="body-style"
+                value={localFilters.body_style || ''}
+                onChange={(e) => handleFilterChange('body_style', e.target.value || undefined)}
+                className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-sm"
+              >
+                <option value="">All Styles</option>
+                <option value="sedan">Sedan</option>
+                <option value="suv">SUV</option>
+                <option value="hatchback">Hatchback</option>
+                <option value="wagon">Wagon</option>
+                <option value="coupe">Coupe</option>
+                <option value="convertible">Convertible</option>
+                <option value="pickup">Pickup</option>
+              </select>
             </div>
           </div>
-        )}
-        
-        {/* Active Filters Display */}
-        {hasActiveFilters && (
-          <div className="pt-4 border-t border-border">
-            <div className="flex flex-wrap gap-2">
-              {localSearchQuery && (
-                <Badge variant="outline" className="text-xs">
-                  Search: "{localSearchQuery}"
-                </Badge>
-              )}
-              {Object.entries(localFilters).map(([key, value]) => {
-                if (value === undefined || value === '') return null
-                
-                let displayValue = value
-                if (key === 'is_electric') {
-                  displayValue = value ? 'Electric Only' : 'Hybrid/Other'
-                } else if (key === 'manufacturer_id') {
-                  const manufacturer = manufacturers.find((m: { id: string; name: string }) => m.id === value)
-                  displayValue = manufacturer?.name || value
-                }
-                
-                return (
-                  <Badge key={key} variant="outline" className="text-xs">
-                    {key.replace(/_/g, ' ')}: {displayValue}
+          
+          {/* Advanced Filters Toggle */}
+          <div className="flex justify-center">
+            <Button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              variant="ghost"
+              size="sm"
+              className="text-xs flex items-center gap-2"
+            >
+              <Filter className="h-3 w-3" />
+              {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
+            </Button>
+          </div>
+          
+          {/* Advanced Filters */}
+          {showAdvancedFilters && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-border">
+              {/* Electric Vehicle Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="is-electric" className="text-sm font-medium">
+                  Vehicle Type
+                </Label>
+                <select
+                  id="is-electric"
+                  value={localFilters.is_electric !== undefined ? localFilters.is_electric.toString() : ''}
+                  onChange={(e) => handleFilterChange('is_electric', e.target.value === '' ? undefined : e.target.value === 'true')}
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-sm"
+                >
+                  <option value="">All Types</option>
+                  <option value="true">Electric Only</option>
+                  <option value="false">Hybrid/Other</option>
+                </select>
+              </div>
+              
+              {/* Range Filters */}
+              <div className="space-y-2">
+                <Label htmlFor="range-min" className="text-sm font-medium">
+                  Range Min (miles)
+                </Label>
+                <Input
+                  id="range-min"
+                  type="number"
+                  placeholder="200"
+                  value={localFilters.range_min || ''}
+                  onChange={(e) => handleFilterChange('range_min', e.target.value ? parseInt(e.target.value) : undefined)}
+                  min="0"
+                  max="1000"
+                  className="text-sm"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="range-max" className="text-sm font-medium">
+                  Range Max (miles)
+                </Label>
+                <Input
+                  id="range-max"
+                  type="number"
+                  placeholder="400"
+                  value={localFilters.range_max || ''}
+                  onChange={(e) => handleFilterChange('range_max', e.target.value ? parseInt(e.target.value) : undefined)}
+                  min="0"
+                  max="1000"
+                  className="text-sm"
+                />
+              </div>
+              
+              {/* Price Filters */}
+              <div className="space-y-2">
+                <Label htmlFor="price-min" className="text-sm font-medium">
+                  Price Min ($)
+                </Label>
+                <Input
+                  id="price-min"
+                  type="number"
+                  placeholder="30000"
+                  value={localFilters.price_min || ''}
+                  onChange={(e) => handleFilterChange('price_min', e.target.value ? parseInt(e.target.value) : undefined)}
+                  min="0"
+                  step="1000"
+                  className="text-sm"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="price-max" className="text-sm font-medium">
+                  Price Max ($)
+                </Label>
+                <Input
+                  id="price-max"
+                  type="number"
+                  placeholder="80000"
+                  value={localFilters.price_max || ''}
+                  onChange={(e) => handleFilterChange('price_max', e.target.value ? parseInt(e.target.value) : undefined)}
+                  min="0"
+                  step="1000"
+                  className="text-sm"
+                />
+              </div>
+            </div>
+          )}
+          
+          {/* Active Filters Display */}
+          {hasActiveFilters && (
+            <div className="pt-4 border-t border-border">
+              <div className="flex flex-wrap gap-2">
+                {localSearchQuery && (
+                  <Badge variant="outline" className="text-xs">
+                    Search: "{localSearchQuery}"
                   </Badge>
-                )
-              })}
+                )}
+                {Object.entries(localFilters).map(([key, value]) => {
+                  if (value === undefined || value === '') return null
+                  
+                  let displayValue = value
+                  if (key === 'is_electric') {
+                    displayValue = value ? 'Electric Only' : 'Hybrid/Other'
+                  } else if (key === 'manufacturer_id') {
+                    const manufacturer = manufacturers.find((m: { id: string; name: string }) => m.id === value)
+                    displayValue = manufacturer?.name || value
+                  }
+                  
+                  return (
+                    <Badge key={key} variant="outline" className="text-xs">
+                      {key.replace(/_/g, ' ')}: {displayValue}
+                    </Badge>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        )}
-      </CardContent>
+          )}
+        </CardContent>
+      )}
     </Card>
   )
 }

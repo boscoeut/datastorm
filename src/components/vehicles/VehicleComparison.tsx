@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { X, BarChart3, Plus } from 'lucide-react'
+import { X, BarChart3, Plus, ChevronUp, ChevronDown } from 'lucide-react'
 import {
   useComparisonVehicles,
   useMaxComparisonVehicles,
@@ -25,6 +25,7 @@ const VehicleComparison: React.FC<VehicleComparisonProps> = ({
   const maxComparisonVehicles = useMaxComparisonVehicles()
   const comparisonCount = useComparisonCount()
   const canAddToComparison = useCanAddToComparison()
+  const [isExpanded, setIsExpanded] = useState(false)
   
   const { removeFromComparison, clearComparison } = useVehicleStore()
 
@@ -109,42 +110,72 @@ const VehicleComparison: React.FC<VehicleComparisonProps> = ({
 
   if (comparisonCount === 0) {
     return (
-      <Card className={`${className}`}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Vehicle Comparison
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p className="mb-4">No vehicles selected for comparison</p>
-            <Button onClick={onAddVehicle} disabled={!canAddToComparison}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Vehicle to Compare
+      <Card className={`${className} transition-all duration-200`}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="h-5 w-5 text-muted-foreground" />
+              <CardTitle className="text-lg">Vehicle Comparison</CardTitle>
+            </div>
+            <Button
+              onClick={() => setIsExpanded(!isExpanded)}
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+            >
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
-            <p className="text-sm mt-2">
-              Select up to {maxComparisonVehicles} vehicles to compare specifications
-            </p>
           </div>
-        </CardContent>
+        </CardHeader>
+        {isExpanded && (
+          <CardContent className="pt-0">
+            <div className="text-center py-8 text-muted-foreground">
+              <p className="mb-4">No vehicles selected for comparison</p>
+              <Button onClick={onAddVehicle} disabled={!canAddToComparison}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Vehicle to Compare
+              </Button>
+              <p className="text-sm mt-2">
+                Select up to {maxComparisonVehicles} vehicles to compare specifications
+              </p>
+            </div>
+          </CardContent>
+        )}
       </Card>
     )
   }
 
   return (
-    <Card className={`${className}`}>
-      <CardHeader>
+    <Card className={`${className} transition-all duration-200`}>
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Vehicle Comparison ({comparisonCount}/{maxComparisonVehicles})
-          </CardTitle>
+          <div className="flex items-center gap-3">
+            <BarChart3 className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <CardTitle className="text-lg">
+                Vehicle Comparison ({comparisonCount}/{maxComparisonVehicles})
+              </CardTitle>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex flex-wrap gap-1">
+                  {comparisonVehicles.slice(0, 3).map((vehicle) => (
+                    <Badge key={vehicle.id} variant="outline" className="text-xs">
+                      {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}
+                    </Badge>
+                  ))}
+                  {comparisonVehicles.length > 3 && (
+                    <Badge variant="secondary" className="text-xs">
+                      +{comparisonVehicles.length - 3} more
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             {onAddVehicle && canAddToComparison && (
               <Button variant="outline" size="sm" onClick={onAddVehicle}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Vehicle
+                Add
               </Button>
             )}
             <Button 
@@ -155,90 +186,101 @@ const VehicleComparison: React.FC<VehicleComparisonProps> = ({
             >
               Clear All
             </Button>
+            <Button
+              onClick={() => setIsExpanded(!isExpanded)}
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+            >
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <div className="min-w-full">
-            {/* Vehicle Headers */}
-            <div className="grid grid-cols-1 gap-4 mb-6">
-              {comparisonVehicles.map((vehicle) => (
-                <div key={vehicle.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">
-                      {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {vehicle.year} {vehicle.trim && `• ${vehicle.trim}`}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeFromComparison(vehicle.id)}
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-
-            {/* Specifications Grid */}
-            <div className="border rounded-lg overflow-hidden">
-              {/* Grid Header Row */}
-              <div className={`grid gap-0 ${comparisonCount === 1 ? 'grid-cols-2' : comparisonCount === 2 ? 'grid-cols-3' : comparisonCount === 3 ? 'grid-cols-4' : 'grid-cols-5'}`}>
-                <div className="p-4 bg-muted font-medium text-sm border-r">
-                  Feature
-                </div>
+      
+      {isExpanded && (
+        <CardContent className="pt-0">
+          <div className="overflow-x-auto">
+            <div className="min-w-full">
+              {/* Vehicle Headers */}
+              <div className="grid grid-cols-1 gap-4 mb-6">
                 {comparisonVehicles.map((vehicle) => (
-                  <div key={vehicle.id} className="p-4 bg-muted font-medium text-sm border-r last:border-r-0">
-                    {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}
+                  <div key={vehicle.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">
+                        {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {vehicle.year} {vehicle.trim && `• ${vehicle.trim}`}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFromComparison(vehicle.id)}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
               </div>
-              
-              {/* Grid Data Rows */}
-              {specificationKeys.map(key => {
-                const displayName = key
-                  .split('_')
-                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(' ')
-                
-                return (
-                  <div key={key} className={`grid gap-0 ${comparisonCount === 1 ? 'grid-cols-2' : comparisonCount === 2 ? 'grid-cols-3' : comparisonCount === 3 ? 'grid-cols-4' : 'grid-cols-5'}`}>
-                    <div className="p-4 font-medium text-sm border-r border-t bg-card">
-                      {displayName}
-                    </div>
-                    {comparisonVehicles.map((vehicle) => {
-                      const spec = vehicle.specifications
-                      const value = spec && typeof spec === 'object' ? spec[key as keyof VehicleSpecification] : undefined
-                      const formattedValue = formatSpecValue(value, key)
-                      const isBest = isBestValue(value, key)
-                      
-                      return (
-                        <div key={`${vehicle.id}-${key}`} className="p-4 border-r border-t last:border-r-0 bg-card">
-                          <div className="flex items-center justify-center gap-2">
-                            <span className={`text-sm ${isBest ? 'font-semibold text-primary' : ''}`}>
-                              {formattedValue}
-                            </span>
-                            {isBest && (
-                              <Badge variant="secondary" className="text-xs">
-                                Best
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })}
+
+              {/* Specifications Grid */}
+              <div className="border rounded-lg overflow-hidden">
+                {/* Grid Header Row */}
+                <div className={`grid gap-0 ${comparisonCount === 1 ? 'grid-cols-2' : comparisonCount === 2 ? 'grid-cols-3' : comparisonCount === 3 ? 'grid-cols-4' : 'grid-cols-5'}`}>
+                  <div className="p-4 bg-muted font-medium text-sm border-r">
+                    Feature
                   </div>
-                )
-              })}
+                  {comparisonVehicles.map((vehicle) => (
+                    <div key={vehicle.id} className="p-4 bg-muted font-medium text-sm border-r last:border-r-0">
+                      {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Grid Data Rows */}
+                {specificationKeys.map(key => {
+                  const displayName = key
+                    .split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ')
+                  
+                  return (
+                    <div key={key} className={`grid gap-0 ${comparisonCount === 1 ? 'grid-cols-2' : comparisonCount === 2 ? 'grid-cols-3' : comparisonCount === 3 ? 'grid-cols-4' : 'grid-cols-5'}`}>
+                      <div className="p-4 font-medium text-sm border-r border-t bg-card">
+                        {displayName}
+                      </div>
+                      {comparisonVehicles.map((vehicle) => {
+                        const spec = vehicle.specifications
+                        const value = spec && typeof spec === 'object' ? spec[key as keyof VehicleSpecification] : undefined
+                        const formattedValue = formatSpecValue(value, key)
+                        const isBest = isBestValue(value, key)
+                        
+                        return (
+                          <div key={`${vehicle.id}-${key}`} className="p-4 border-r border-t last:border-r-0 bg-card">
+                            <div className="flex items-center justify-center gap-2">
+                              <span className={`text-sm ${isBest ? 'font-semibold text-primary' : ''}`}>
+                                {formattedValue}
+                              </span>
+                              {isBest && (
+                                <Badge variant="secondary" className="text-xs">
+                                  Best
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   )
 }

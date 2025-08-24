@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import VehicleList from '@/components/vehicles/VehicleList'
 import VehicleComparison from '@/components/vehicles/VehicleComparison'
+import FloatingComparisonButton from '@/components/vehicles/FloatingComparisonButton'
 import {
   useVehicleStore,
   useVehicleLoading,
@@ -13,6 +14,7 @@ import {
 
 const VehiclesPage: React.FC = () => {
   const navigate = useNavigate()
+  const [isComparisonVisible, setIsComparisonVisible] = useState(true)
 
   const { fetchVehicles, fetchManufacturers, clearError } = useVehicleStore()
   const loading = useVehicleLoading()
@@ -25,7 +27,9 @@ const VehiclesPage: React.FC = () => {
     fetchManufacturers()
   }, [fetchVehicles, fetchManufacturers])
 
-
+  const toggleComparison = () => {
+    setIsComparisonVisible(!isComparisonVisible)
+  }
 
   // Handle errors gracefully
   if (error) {
@@ -58,7 +62,7 @@ const VehiclesPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -85,8 +89,8 @@ const VehiclesPage: React.FC = () => {
       {/* Vehicle List with integrated search and filters */}
       <VehicleList showHeader={false} />
 
-      {/* Vehicle Comparison */}
-      <VehicleComparison />
+      {/* Vehicle Comparison - Conditionally visible */}
+      {isComparisonVisible && <VehicleComparison />}
 
       {/* Quick Actions */}
       <Card>
@@ -111,6 +115,12 @@ const VehiclesPage: React.FC = () => {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Floating Comparison Button */}
+      <FloatingComparisonButton
+        onToggleComparison={toggleComparison}
+        isComparisonVisible={isComparisonVisible}
+      />
     </div>
   )
 }
