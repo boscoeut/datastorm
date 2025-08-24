@@ -161,9 +161,9 @@ const VehicleComparison: React.FC<VehicleComparisonProps> = ({
       <CardContent>
         <div className="overflow-x-auto">
           <div className="min-w-full">
-                         {/* Vehicle Headers */}
-             <div className="grid grid-cols-1 gap-4 mb-6">
-               {comparisonVehicles.map((vehicle) => (
+            {/* Vehicle Headers */}
+            <div className="grid grid-cols-1 gap-4 mb-6">
+              {comparisonVehicles.map((vehicle) => (
                 <div key={vehicle.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">
@@ -185,8 +185,21 @@ const VehicleComparison: React.FC<VehicleComparisonProps> = ({
               ))}
             </div>
 
-            {/* Specifications Table */}
-            <div className="space-y-4">
+            {/* Specifications Grid */}
+            <div className="border rounded-lg overflow-hidden">
+              {/* Grid Header Row */}
+              <div className={`grid gap-0 ${comparisonCount === 1 ? 'grid-cols-2' : comparisonCount === 2 ? 'grid-cols-3' : comparisonCount === 3 ? 'grid-cols-4' : 'grid-cols-5'}`}>
+                <div className="p-4 bg-muted font-medium text-sm border-r">
+                  Feature
+                </div>
+                {comparisonVehicles.map((vehicle) => (
+                  <div key={vehicle.id} className="p-4 bg-muted font-medium text-sm border-r last:border-r-0">
+                    {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Grid Data Rows */}
               {specificationKeys.map(key => {
                 const displayName = key
                   .split('_')
@@ -194,36 +207,31 @@ const VehicleComparison: React.FC<VehicleComparisonProps> = ({
                   .join(' ')
                 
                 return (
-                  <div key={key} className="border rounded-lg p-4">
-                    <h4 className="font-medium text-sm text-muted-foreground mb-3">
+                  <div key={key} className={`grid gap-0 ${comparisonCount === 1 ? 'grid-cols-2' : comparisonCount === 2 ? 'grid-cols-3' : comparisonCount === 3 ? 'grid-cols-4' : 'grid-cols-5'}`}>
+                    <div className="p-4 font-medium text-sm border-r border-t bg-card">
                       {displayName}
-                    </h4>
-                                         <div className="grid grid-cols-1 gap-3">
-                       {comparisonVehicles.map((vehicle) => {
-                        const spec = vehicle.specifications
-                        const value = spec && typeof spec === 'object' ? spec[key as keyof VehicleSpecification] : undefined
-                        const formattedValue = formatSpecValue(value, key)
-                        const isBest = isBestValue(value, key)
-                        
-                        return (
-                          <div key={`${vehicle.id}-${key}`} className="flex items-center justify-between">
-                            <span className="text-sm font-medium">
-                              {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <span className={`text-sm ${isBest ? 'font-semibold text-primary' : ''}`}>
-                                {formattedValue}
-                              </span>
-                              {isBest && (
-                                <Badge variant="secondary" className="text-xs">
-                                  Best
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
                     </div>
+                    {comparisonVehicles.map((vehicle) => {
+                      const spec = vehicle.specifications
+                      const value = spec && typeof spec === 'object' ? spec[key as keyof VehicleSpecification] : undefined
+                      const formattedValue = formatSpecValue(value, key)
+                      const isBest = isBestValue(value, key)
+                      
+                      return (
+                        <div key={`${vehicle.id}-${key}`} className="p-4 border-r border-t last:border-r-0 bg-card">
+                          <div className="flex items-center justify-center gap-2">
+                            <span className={`text-sm ${isBest ? 'font-semibold text-primary' : ''}`}>
+                              {formattedValue}
+                            </span>
+                            {isBest && (
+                              <Badge variant="secondary" className="text-xs">
+                                Best
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 )
               })}
