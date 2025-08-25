@@ -4,8 +4,6 @@ import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { z } from 'zod';
 
-
-
 // Import types from separate file
 import type {
   DatabaseInsertResult,
@@ -54,34 +52,51 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Prompt for Tesla news generation
+
+// Get the current date and the date 48 hours ago
+const now = new Date();
+const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+
+// Format them nicely for the prompt
+const todayString = now.toLocaleDateString('en-US', { dateStyle: 'long' });
+const startDateString = fortyEightHoursAgo.toLocaleDateString('en-US', { dateStyle: 'long' });
+
+
 const TESLA_NEWS_PROMPT =
-  `Generate 5-10 recent news stories about Tesla (the electric vehicle company) for today. 
-Each story should include:
+  `Today is ${todayString}. 
+Generate 5-10 of the most significant news stories about Tesla (the electric vehicle company) published between ${startDateString} and today.
+Each story must include:
 - A compelling headline
 - A brief summary (2-3 sentences)
-- The category (e.g., "Industry News", "Technology", "Regulatory", "Rumors")
+- The category (e.g., "Industry News", "Technology", "Regulatory", "Financial")
 - Relevant tags (e.g., ["tesla", "ev", "battery", "autonomous-driving"])
+- The direct source URL
+- The source name
 
-Format the response as a JSON array with this structure:
+Format the response as a valid JSON array of objects with this structure:
 [
   {
     "title": "Headline here",
     "summary": "Brief summary here",
     "category": "Category here",
-    "tags": ["tag1", "tag2", "tag3"]
+    "tags": ["tag1", "tag2", "tag3"],
+    "source_url": "URL of the news article",
+    "source_name": "Name of the news source"
   }
 ]
 
-Make sure the news is current and relevant to Tesla's business, technology, or industry position. 
-Focus on recent developments, announcements, or significant events.
-
-IMPORTANT: Respond with ONLY the JSON array, no additional text or explanations.`;
+IMPORTANT: The news must be from the specified date range. Verify the publication dates. Respond with ONLY the JSON array.`;
 
 async function fetchTeslaNewsFromGemini(): Promise<NewsArticle[]> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      tools: [{ googleSearch: {} }]
+    });
 
-    const result = await model.generateContent(TESLA_NEWS_PROMPT);
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: TESLA_NEWS_PROMPT }] }]
+    });
     const response = await result.response;
     const text = response.text();
 
@@ -99,6 +114,8 @@ async function fetchTeslaNewsFromGemini(): Promise<NewsArticle[]> {
       summary: z.string(),
       category: z.string(),
       tags: z.array(z.string()),
+      source_url: z.string(),
+      source_name: z.string(),
     })).parse(parsedData) as GeminiArticleResponse[];
 
     // Transform to match our NewsArticle interface
@@ -107,7 +124,8 @@ async function fetchTeslaNewsFromGemini(): Promise<NewsArticle[]> {
       summary: article.summary,
       category: article.category,
       tags: article.tags,
-      source_name: 'Google Gemini AI',
+      source_url: article.source_url,
+      source_name: article.source_name,
       published_date: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

@@ -34,6 +34,8 @@ export interface GeminiArticleResponse {
   summary: string;
   category: string;
   tags: string[];
+  source_url: string;
+  source_name: string;
 }
 
 // Environment variables interface
