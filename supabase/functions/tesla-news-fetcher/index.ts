@@ -73,11 +73,13 @@ Format the response as a JSON array with this structure:
 ]
 
 Make sure the news is current and relevant to Tesla's business, technology, or industry position. 
-Focus on recent developments, announcements, or significant events.`;
+Focus on recent developments, announcements, or significant events.
+
+IMPORTANT: Respond with ONLY the JSON array, no additional text or explanations.`;
 
 async function fetchTeslaNewsFromGemini(): Promise<NewsArticle[]> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const result = await model.generateContent(TESLA_NEWS_PROMPT);
     const response = await result.response;
