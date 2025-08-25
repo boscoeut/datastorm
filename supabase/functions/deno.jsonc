@@ -1,0 +1,61 @@
+{
+  // Deno configuration for Supabase Edge Functions
+  "compilerOptions": {
+    "lib": ["deno.window", "deno.ns"],
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  
+  // Import map for dependencies
+  "imports": {
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2",
+    "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.2.1",
+    "zod": "https://deno.land/x/zod@v3.22.4/mod.ts",
+    "std/http/": "https://deno.land/std@0.168.0/http/"
+  },
+  
+  // Task definitions for common operations
+  "tasks": {
+    "dev": "deno run --allow-net --allow-env --allow-read --watch tesla-news-fetcher/index.ts",
+    "dev:mock": "deno run --allow-net --allow-env --allow-read --watch tesla-news-fetcher/index.dev.ts",
+    "start": "deno run --allow-net --allow-env --allow-read tesla-news-fetcher/index.ts",
+    "start:mock": "deno run --allow-net --allow-env --allow-read tesla-news-fetcher/index.dev.ts",
+    "test": "deno test --allow-net --allow-env --allow-read",
+    "lint": "deno lint",
+    "fmt": "deno fmt",
+    "check": "deno check tesla-news-fetcher/index.ts",
+    "check:mock": "deno check tesla-news-fetcher/index.dev.ts",
+    "compile": "deno compile --allow-net --allow-env --allow-read tesla-news-fetcher/index.ts"
+  },
+  
+  // Linting configuration
+  "lint": {
+    "rules": {
+      "tags": ["recommended"]
+    },
+    "include": ["**/*.ts"],
+    "exclude": ["**/node_modules/**", "**/.deno_dir/**"]
+  },
+  
+  // Formatting configuration
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 80,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": true,
+    "proseWrap": "preserve",
+    "include": ["**/*.ts"],
+    "exclude": ["**/node_modules/**", "**/.deno_dir/**"]
+  },
+  
+  // Test configuration
+  "test": {
+    "include": ["**/*.test.ts", "**/*.spec.ts"],
+    "exclude": ["**/node_modules/**", "**/.deno_dir/**"]
+  }
+}
