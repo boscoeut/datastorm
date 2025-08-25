@@ -1,8 +1,8 @@
 // @ts-ignore -- Deno environment
-import { serve } from 'std/http/server.ts';
-import { createClient } from '@supabase/supabase-js';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { z } from 'zod';
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai@0.2.1';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 // Import types from separate file
 import type {

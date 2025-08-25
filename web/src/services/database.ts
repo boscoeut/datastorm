@@ -380,6 +380,7 @@ export class NewsArticleService {
       let query = supabase
         .from('news_articles')
         .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
 
       // Apply filters
       if (filters.query) {
