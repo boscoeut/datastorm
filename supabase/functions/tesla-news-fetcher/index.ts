@@ -1,7 +1,7 @@
 // @ts-ignore -- Deno environment
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai@0.2.1';
+import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai@0.24.1';
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 // Import types from separate file
@@ -64,13 +64,13 @@ const startDateString = fortyEightHoursAgo.toLocaleDateString('en-US', { dateSty
 
 const TESLA_NEWS_PROMPT =
   `Today is ${todayString}. 
-Generate 5-10 of the most significant news stories about Tesla (the electric vehicle company) published between ${startDateString} and today.
+Generate 5 to 10 of the most significant news stories about Tesla (the electric vehicle company) published between ${startDateString} and today.
 Each story must include:
 - A compelling headline
 - A brief summary (2-3 sentences)
 - The category (e.g., "Industry News", "Technology", "Regulatory", "Financial")
 - Relevant tags (e.g., ["tesla", "ev", "battery", "autonomous-driving"])
-- The direct source URL
+- The URL of the citation
 - The source name
 
 Format the response as a valid JSON array of objects with this structure:
@@ -80,7 +80,7 @@ Format the response as a valid JSON array of objects with this structure:
     "summary": "Brief summary here",
     "category": "Category here",
     "tags": ["tag1", "tag2", "tag3"],
-    "source_url": "URL of the news article",
+    "source_url": "The URL of the citation",
     "source_name": "Name of the news source"
   }
 ]
@@ -91,7 +91,10 @@ async function fetchTeslaNewsFromGemini(): Promise<NewsArticle[]> {
   try {
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
-      tools: [{ googleSearch: {} }]
+      tools: [{ googleSearch: {} }],
+      thinkingConfig: {
+        thinkingBudget: 0,
+      }
     });
 
     const result = await model.generateContent({
