@@ -80,19 +80,24 @@
 ### Project Structure
 ```
 datastorm/
-├── src/                       # Frontend application source
-│   ├── components/
-│   │   ├── ui/               # Shadcn/ui base components
-│   │   ├── data-display/     # Data visualization components
-│   │   ├── vehicle/          # Vehicle-related components
-│   │   ├── news/             # News and content components
-│   │   └── layout/           # Layout and navigation components
-│   ├── stores/               # Zustand state stores
-│   ├── lib/                  # Utility functions and helpers
-│   ├── types/                # TypeScript type definitions
-│   ├── hooks/                # Custom React hooks
-│   ├── services/             # API and external service integrations
-│   └── pages/                # Page-level components
+├── web/                       # Frontend web application
+│   ├── src/                   # Frontend application source
+│   │   ├── components/
+│   │   │   ├── ui/           # Shadcn/ui base components
+│   │   │   ├── data-display/ # Data visualization components
+│   │   │   ├── vehicle/      # Vehicle-related components
+│   │   │   ├── news/         # News and content components
+│   │   │   └── layout/       # Layout and navigation components
+│   │   ├── stores/           # Zustand state stores
+│   │   ├── lib/              # Utility functions and helpers
+│   │   ├── types/            # TypeScript type definitions
+│   │   ├── hooks/            # Custom React hooks
+│   │   ├── services/         # API and external service integrations
+│   │   └── pages/            # Page-level components
+│   ├── package.json          # Frontend dependencies and scripts
+│   ├── tailwind.config.js    # Tailwind CSS configuration
+│   ├── vite.config.ts        # Vite build configuration
+│   └── tsconfig.json         # TypeScript configuration
 ├── supabase/                  # Supabase configuration and functions
 │   ├── functions/            # Edge Functions
 │   │   ├── vehicle-api/      # Vehicle-related API endpoints
