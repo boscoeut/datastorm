@@ -63,6 +63,28 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
   // Define table columns with TanStack table
   const columns = useMemo<ColumnDef<Vehicle>[]>(() => [
     {
+      id: 'image',
+      header: 'Image',
+      cell: ({ row }) => {
+        const vehicle = row.original
+        return (
+          <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+            {vehicle.profile_image_url ? (
+              <img
+                src={vehicle.profile_image_url}
+                alt={`${vehicle.manufacturer?.name || 'Unknown'} ${vehicle.model}`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="text-2xl">🚗</span>
+              </div>
+            )}
+          </div>
+        )
+      },
+    },
+    {
       accessorKey: 'model',
       header: 'Model',
       cell: ({ row }) => {

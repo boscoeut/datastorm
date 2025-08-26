@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -7,15 +8,10 @@ import VehiclesPage from '@/pages/VehiclesPage';
 import NewsPage from '@/pages/NewsPage';
 import VehicleDetail from '@/components/vehicles/VehicleDetail';
 import LandingPage from '@/components/LandingPage';
+import { initializeStorage } from '@/lib/storage-init';
 
 // Placeholder page components - these will be replaced with actual implementations
 const HomePage = () => <LandingPage />;
-
-
-
-
-
-
 
 const DatabaseTestPage = () => (
   <div className="space-y-6">
@@ -25,6 +21,11 @@ const DatabaseTestPage = () => (
 );
 
 function App() {
+  useEffect(() => {
+    // Initialize Supabase storage on app startup
+    initializeStorage();
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>

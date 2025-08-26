@@ -19,11 +19,31 @@ export interface Vehicle {
   trim?: string
   body_style?: string
   is_electric: boolean
+  profile_image_url?: string
+  profile_image_path?: string
   created_at: string
   updated_at: string
   // Relations
   manufacturer?: Manufacturer
   specifications?: VehicleSpecification
+  images?: VehicleImage[]
+}
+
+export interface VehicleImage {
+  id: string
+  vehicle_id: string
+  image_url: string
+  image_path: string
+  image_name: string
+  image_type?: string
+  file_size?: number
+  width?: number
+  height?: number
+  alt_text?: string
+  display_order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface VehicleSpecification {

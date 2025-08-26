@@ -85,14 +85,14 @@ datastorm/
 │   │   ├── components/
 │   │   │   ├── ui/           # Shadcn/ui base components
 │   │   │   ├── data-display/ # Data visualization components
-│   │   │   ├── vehicle/      # Vehicle-related components
+│   │   │   ├── vehicle/      # Vehicle-related components (including image management)
 │   │   │   ├── news/         # News and content components
 │   │   │   └── layout/       # Layout and navigation components
 │   │   ├── stores/           # Zustand state stores
 │   │   ├── lib/              # Utility functions and helpers
 │   │   ├── types/            # TypeScript type definitions
 │   │   ├── hooks/            # Custom React hooks
-│   │   ├── services/         # API and external service integrations
+│   │   ├── services/         # API and external service integrations (including image storage)
 │   │   └── pages/            # Page-level components
 │   ├── package.json          # Frontend dependencies and scripts
 │   ├── tailwind.config.js    # Tailwind CSS configuration
@@ -162,11 +162,12 @@ export const useVehicleStore = create<VehicleStoreState & VehicleStoreActions>((
 
 ### Database Architecture
 - **Supabase Integration:** PostgreSQL database with built-in authentication and authorization
-- **Database Schema:** Normalized schema for vehicles, specifications, and user preferences
+- **Database Schema:** Normalized schema for vehicles, specifications, user preferences, and vehicle images
 - **Row Level Security:** Implement RLS policies for data access control
 - **Real-time Subscriptions:** Live updates for collaborative features and data changes
 - **Database Migrations:** Version-controlled schema changes using Supabase migrations
 - **Backup Strategy:** Automated daily backups with point-in-time recovery
+- **Image Storage:** Integrated Supabase Storage with database references for vehicle images
 
 ### Data Sources and APIs
 - **Vehicle Specifications:** NHTSA API, manufacturer APIs, EV database APIs
@@ -174,6 +175,7 @@ export const useVehicleStore = create<VehicleStoreState & VehicleStoreActions>((
 - **Real-time Updates:** Supabase real-time subscriptions for live data feeds
 - **Database:** Supabase PostgreSQL with Row Level Security (RLS)
 - **Backend APIs:** Supabase Edge Functions for custom business logic and external API integrations
+- **Image Storage:** Supabase Storage for vehicle profile and gallery images with automatic bucket management
 
 ### Data Models
 ```typescript
@@ -182,12 +184,33 @@ interface Vehicle {
   manufacturer: Manufacturer;
   model: string;
   year: number;
+  profile_image_url?: string;
+  profile_image_path?: string;
   specifications: VehicleSpecifications;
   performance: PerformanceMetrics;
   battery: BatterySpecifications;
   pricing: PricingInformation;
   availability: AvailabilityStatus;
+  images?: VehicleImage[];
 }
+
+interface VehicleImage {
+  id: string;
+  vehicle_id: string;
+  image_url: string;
+  image_path: string;
+  image_name: string;
+  image_type?: string;
+  file_size?: number;
+  width?: number;
+  height?: number;
+  alt_text?: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+```
 
 interface VehicleSpecifications {
   dimensions: Dimensions;
@@ -205,6 +228,7 @@ interface VehicleSpecifications {
 - **Error Handling:** Graceful degradation for missing or invalid data
 - **Database Operations:** Supabase client with optimistic updates and offline support
 - **API Validation:** Edge Function input validation with Zod schemas and proper error responses
+- **File Validation:** Image file validation with type, size, and format checking for vehicle images
 
 ---
 
@@ -251,6 +275,7 @@ supabase/functions/
 - **Response Format:** Consistent JSON response structure across all endpoints
 - **Logging:** Structured logging for debugging and monitoring
 - **Security:** Proper authentication, authorization, and input sanitization
+- **File Processing:** Image processing and validation for vehicle image uploads
 
 
 ---
@@ -263,6 +288,8 @@ supabase/functions/
 - **ChartComponents:** Interactive charts using Shadcn charts (https://ui.shadcn.com/charts/)
 - **SpecificationCards:** Detailed vehicle specification displays
 - **FilterPanel:** Advanced filtering with multiple criteria
+- **ImageGallery:** Vehicle image management with profile and gallery images
+- **ImageUpload:** Drag and drop image upload component with preview and validation
 
 ### Navigation Components
 - **MainNavigation:** Primary navigation with breadcrumbs
@@ -296,12 +323,14 @@ supabase/functions/
 - **Pagination:** Server-side or client-side pagination based on data source
 - **Row Selection:** Single and multi-row selection with keyboard navigation
 - **Responsive Design:** Mobile-optimized with column hiding and touch interactions
+- **Image Display:** Profile image thumbnails in vehicle data grids with fallback placeholders
 
 ### Data Grid Components
-- **VehicleListTable:** Main vehicle listing with TanStack Table implementation
+- **VehicleListTable:** Main vehicle listing with TanStack Table implementation and profile image thumbnails
 - **ComparisonTable:** Side-by-side vehicle comparison using TanStack Table
 - **SpecificationTable:** Vehicle specifications display with sortable columns
 - **FilterableDataGrid:** Advanced filtering and search capabilities
+- **VehicleImageGallery:** Comprehensive image management for vehicle profile and gallery images
 
 ### TanStack Table Implementation Example
 ```typescript
@@ -391,6 +420,7 @@ const VehicleTable: React.FC<VehicleTableProps> = ({ data, onRowSelect }) => {
 - **useMemo:** Expensive calculations and derived state
 - **Code Splitting:** Lazy loading for route-based code splitting
 - **Bundle Optimization:** Tree shaking and dynamic imports
+- **Image Optimization:** Lazy loading and progressive loading for vehicle images
 
 ### Data Performance
 - **Virtualization:** Virtual scrolling for large datasets
@@ -398,12 +428,14 @@ const VehicleTable: React.FC<VehicleTableProps> = ({ data, onRowSelect }) => {
 - **Debouncing:** Search input debouncing for API calls
 - **Caching:** Intelligent caching strategies for frequently accessed data
 - **Lazy Loading:** Progressive loading of data and images
+- **Image Caching:** Storage URL caching with appropriate cache control headers
 
 ### Build Optimization
 - **Vite Configuration:** Optimized build settings for production
 - **Bundle Analysis:** Regular bundle size monitoring
 - **Tree Shaking:** Remove unused code from production builds
 - **Asset Optimization:** Image and font optimization
+- **Image Assets:** Vehicle image assets stored in Supabase Storage with optimized delivery
 
 ---
 
@@ -429,6 +461,35 @@ describe('VehicleCard', () => {
 ```
 
 
+## Vehicle Image Storage System Integration
+
+The Electric Vehicle Data Hub includes a comprehensive image storage system for vehicles, implemented using Supabase Storage. For detailed implementation information, see [Vehicle Image Storage System Documentation](../VEHICLE_IMAGE_STORAGE.md).
+
+### Key Features
+- **Profile Images:** Single main image per vehicle with automatic display in lists and detail views
+- **Gallery Images:** Multiple additional images per vehicle (up to 20) with drag & drop reordering
+- **Storage Management:** Automatic bucket creation and organization in Supabase Storage
+- **Image Validation:** File type, size, and format validation with metadata extraction
+- **UI Components:** Drag & drop upload, image preview, gallery management, and modal viewing
+
+### Technical Implementation
+- **Storage Service:** `VehicleImageService` class for all image operations
+- **Database Integration:** `vehicle_images` table with proper foreign key relationships
+- **UI Components:** `ImageUpload` and `VehicleImageGallery` components
+- **Performance:** Lazy loading, caching, and optimized image delivery
+- **Security:** Row Level Security policies and authenticated upload restrictions
+
+### Storage Structure
+```
+vehicle-images/
+├── vehicles/
+│   ├── {vehicle_id}/
+│   │   ├── profile/
+│   │   └── gallery/
+```
+
+---
+
 ## Security and Data Protection
 
 ### Input Validation
@@ -437,6 +498,7 @@ describe('VehicleCard', () => {
 - **Edge Function Validation:** Zod schemas for API input validation with proper error responses
 - **XSS Prevention:** Sanitize all user inputs before rendering
 - **CSRF Protection:** Supabase built-in CSRF protection for API requests
+- **File Validation:** Image file validation with type, size, and format restrictions for vehicle images
 
 ### Data Privacy
 - **User Data:** Minimal collection and secure storage in Supabase
@@ -445,5 +507,6 @@ describe('VehicleCard', () => {
 - **Data Encryption:** Supabase provides encryption at rest and in transit
 - **Authentication:** Supabase Auth with JWT tokens and refresh token rotation
 - **Edge Function Security:** Proper CORS configuration, rate limiting, and input sanitization
+- **Image Security:** Public read access for vehicle images with authenticated upload restrictions
 
 
