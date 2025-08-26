@@ -13,7 +13,7 @@ show_usage() {
     echo "  $0 vehicle-database-populator        # Test vehicle-database-populator on port 8000"
     echo "  $0 tesla-news-fetcher 9000          # Test tesla-news-fetcher on port 9000"
     echo "  $0 vehicle-database-populator 9000  # Test vehicle-database-populator on port 9000"
-    echo "  $0 vehicle-database-populator 8000 '{\"action\":\"populate\"}'  # Test with specific data"
+    echo "  $0 vehicle-database-populator 8000 '{"action":"populate", "limit":50}'  # Test with specific data"
     echo ""
     echo "Available functions:"
     echo "  - tesla-news-fetcher"
