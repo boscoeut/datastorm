@@ -375,6 +375,24 @@ export class NewsArticleService {
     return DatabaseService.delete('news_articles', id)
   }
 
+  static async getLatest(limit: number = 10) {
+    try {
+      const { data, error } = await supabase
+        .from('news_articles')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (error) {
+        return { data: [], error: DatabaseService.handleError(error) }
+      }
+
+      return { data: data || [], error: null }
+    } catch (error) {
+      return { data: [], error: DatabaseService.handleError(error) }
+    }
+  }
+
   static async search(filters: SearchFilters, options?: PaginationOptions) {
     try {
       let query = supabase
