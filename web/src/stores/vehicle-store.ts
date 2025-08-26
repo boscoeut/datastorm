@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { VehicleService } from '@/services/database'
+import { VehicleService, ManufacturerService } from '@/services/database'
 import type { Vehicle, VehicleFilters, PaginationOptions, SortOption } from '@/types/database'
 
 interface VehicleState {
@@ -83,18 +83,13 @@ export const useVehicleStore = create<VehicleStore>()(
 
       // Data fetching
             fetchVehicles: async () => {
-        const { pagination, filters, sortBy } = get()
+        const { pagination, filters, sortBy, searchQuery } = get()
         
         set({ loading: true, error: null })
         
         try {
-          // For now, we'll use the basic list method since search doesn't support text search yet
-          // This will be enhanced in future tasks with proper search functionality
-          const result = await VehicleService.list({
-            filters,
-            pagination,
-            sortBy: sortBy || undefined
-          })
+          // Use the search method to get vehicles with manufacturer details
+          const result = await VehicleService.search(filters, pagination, sortBy || undefined, searchQuery)
           
           if (result.error) {
             set({ error: result.error.message, vehicles: [], totalCount: 0 })
@@ -120,24 +115,14 @@ export const useVehicleStore = create<VehicleStore>()(
         set({ loading: true, error: null })
         
         try {
-          const result = await VehicleService.list({
-            filters: { is_electric: true }, // Only get manufacturers with electric vehicles
+          const result = await ManufacturerService.list({
             pagination: { page: 1, pageSize: 100 } // Get all manufacturers
           })
           
           if (result.error) {
             set({ error: result.error.message })
           } else {
-            // Extract unique manufacturers from vehicles
-            const manufacturers = Array.from(
-              new Set(
-                (result.data || [])
-                  .map(v => v.manufacturer_id)
-                  .filter(Boolean)
-              )
-            ).map(id => ({ id, name: id })) // We'll enhance this later
-            
-            set({ manufacturers, error: null })
+            set({ manufacturers: result.data || [], error: null })
           }
         } catch (error) {
           set({ 
@@ -151,8 +136,8 @@ export const useVehicleStore = create<VehicleStore>()(
       // Search and filtering
       setSearchQuery: (query: string) => {
         set({ searchQuery: query, pagination: { ...get().pagination, page: 1 } })
-        // For now, search is just stored in state - will be implemented in future tasks
-        // This provides the foundation for search functionality
+        // Trigger a new search when search query changes
+        get().fetchVehicles()
       },
 
       updateFilters: (newFilters: Partial<VehicleFilters>) => {

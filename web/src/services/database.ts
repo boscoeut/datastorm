@@ -270,7 +270,7 @@ export class VehicleService {
     }
   }
 
-  static async search(filters: VehicleFilters, options?: PaginationOptions) {
+  static async search(filters: VehicleFilters, options?: PaginationOptions, sortBy?: SortOption, searchQuery?: string) {
     try {
       let query = supabase
         .from('vehicles')
@@ -279,6 +279,11 @@ export class VehicleService {
           manufacturer:manufacturers(*),
           specifications:vehicle_specifications(*)
         `, { count: 'exact' })
+
+      // Apply text search
+      if (searchQuery && searchQuery.trim()) {
+        query = query.ilike('model', `%${searchQuery.trim()}%`)
+      }
 
       // Apply filters
       if (filters.manufacturer_id) {
@@ -295,6 +300,13 @@ export class VehicleService {
       }
       if (filters.is_electric !== undefined) {
         query = query.eq('is_electric', filters.is_electric)
+      }
+
+      // Apply sorting
+      if (sortBy) {
+        query = query.order(sortBy.field, {
+          ascending: sortBy.direction === 'asc'
+        })
       }
 
       // Apply pagination
