@@ -1,169 +1,199 @@
-# Supabase Edge Functions - Deno Configuration
+# Supabase Edge Functions
 
-This directory contains Supabase Edge Functions configured to run on Deno runtime.
+This directory contains Edge Functions for the Electric Vehicle Data Hub project.
 
-## Prerequisites
+## Available Functions
 
-- [Deno](https://deno.land/) installed on your system
-- [Supabase CLI](https://supabase.com/docs/reference/cli) installed
-- VS Code with [Deno extension](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno) (recommended)
+### 1. Tesla News Fetcher (`tesla-news-fetcher/`)
+- **Purpose**: Fetches Tesla news using Google Gemini AI
+- **Endpoint**: `POST /functions/v1/tesla-news-fetcher`
+- **Test Data**: `{}`
 
-## Project Structure
+### 2. Vehicle Database Populator (`vehicle-database-populator/`)
+- **Purpose**: Populates vehicles database with EV data using Google Gemini AI
+- **Endpoint**: `POST /functions/v1/vehicle-database-populator`
+- **Test Data**: `{"action": "populate"}`
 
+## Development and Testing
+
+### Running Functions Locally
+
+#### Option 1: Using the Flexible Script (Recommended)
+```bash
+# Run tesla-news-fetcher on default port 8000
+./run-with-env-explicit.sh
+
+# Run vehicle-database-populator on default port 8000
+./run-with-env-explicit.sh vehicle-database-populator
+
+# Run on custom port
+./run-with-env-explicit.sh vehicle-database-populator 9000
+
+# Show usage help
+./run-with-env-explicit.sh --help
 ```
-supabase/functions/
-├── .vscode/
-│   └── settings.json          # VS Code Deno configuration
-├── tesla-news-fetcher/        # Tesla news fetching function
-│   ├── index.ts               # Main function code
-│   ├── types.ts               # TypeScript type definitions
-│   ├── test.ts                # Test file
-│   └── README.md              # Function-specific documentation
-├── deno.jsonc                 # Deno configuration
-└── .gitignore                 # Git ignore rules
+
+**How it works:** The script dynamically constructs the `deno run` command with the correct function path, making it flexible for any Edge Function.
+
+#### Option 2: Manual Directory Navigation
+```bash
+cd tesla-news-fetcher
+PORT=8000 deno task dev
+
+# Or for vehicle database populator
+cd vehicle-database-populator
+PORT=9000 deno task dev
 ```
 
-## Deno Configuration
+#### Option 3: Using Deno Tasks (Alternative)
+```bash
+# Run tesla-news-fetcher using predefined task
+PORT=8000 deno task dev:tesla
 
-The `deno.jsonc` file provides:
+# Run vehicle-database-populator using predefined task
+PORT=9000 deno task dev:vehicle
+```
 
-- **Import Map**: Maps package names to URLs for clean imports
-- **Compiler Options**: TypeScript compilation settings
-- **Tasks**: Predefined commands for development
-- **Linting**: Code quality rules
-- **Formatting**: Code style configuration
-- **Testing**: Test file patterns
+### Testing Functions
 
-## Available Tasks
+#### Option 1: Using the Flexible Test Script
+```bash
+# Test tesla-news-fetcher on port 8000
+./test-function.sh
 
-Run these commands from the functions directory:
+# Test vehicle-database-populator on port 8000
+./test-function.sh vehicle-database-populator
+
+# Test on custom port
+./test-function.sh vehicle-database-populator 9000
+
+# Test with custom data
+./test-function.sh vehicle-database-populator 8000 '{"action":"populate","limit":5}'
+```
+
+#### Option 2: Using Specialized Test Scripts
+```bash
+# Test vehicle database populator with comprehensive tests
+./test-vehicle-populator.sh 8000
+
+# Test on custom port
+./test-vehicle-populator.sh 9000
+```
+
+#### Option 3: Manual Testing with curl
+```bash
+# Test tesla-news-fetcher
+curl -X POST http://localhost:8000/ \
+  -H "Content-Type: application/json" \
+  -d '{}'
+
+# Test vehicle-database-populator
+curl -X POST http://localhost:8000/ \
+  -H "Content-Type: application/json" \
+  -d '{"action": "populate"}'
+```
+
+## Environment Setup
+
+### Required Environment Variables
+Create a `.env.local` file in the `supabase/functions/` directory:
 
 ```bash
-# Development with hot reload
-deno task dev
-
-# Run function once
-deno task start
-
-# Run tests
-deno task test
-
-# Lint code
-deno task lint
-
-# Format code
-deno task fmt
-
-# Type check
-deno task check
-
-# Compile to executable
-deno task compile
-```
-
-## Development Workflow
-
-1. **Start Development Server**:
-   ```bash
-   cd supabase/functions
-   deno task dev
-   ```
-
-2. **Make Changes**: Edit your TypeScript files
-3. **Auto-reload**: Deno will automatically restart on file changes
-4. **Test**: Use `deno task test` to run tests
-5. **Deploy**: Use Supabase CLI to deploy functions
-
-## Import Usage
-
-With the import map configured, you can use clean imports:
-
-```typescript
-// Instead of long URLs, use package names
-import { createClient } from '@supabase/supabase-js'
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { z } from 'zod'
-import { serve } from 'std/http/server.ts'
-```
-
-## Environment Variables
-
-Edge Functions require these environment variables:
-
-```bash
-GOOGLE_GEMINI_API_KEY=your_api_key_here
-SUPABASE_URL=your_supabase_url
+GOOGLE_GEMINI_API_KEY=your_gemini_api_key_here
+SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
-## Testing
+### Environment Variable Loading
+The scripts automatically load environment variables from `.env.local` and validate that all required variables are present.
 
-Run tests with:
+## Script Features
 
+### `run-with-env-explicit.sh`
+- ✅ **Flexible Function Selection**: Run any Edge Function by name
+- ✅ **Port Customization**: Specify custom ports for development
+- ✅ **Environment Validation**: Ensures all required variables are set
+- ✅ **Directory Validation**: Checks if function directory exists
+- ✅ **Usage Help**: Built-in help and examples
+
+### `test-function.sh`
+- ✅ **Flexible Testing**: Test any Edge Function
+- ✅ **Port Flexibility**: Works with any port
+- ✅ **Custom Test Data**: Send specific JSON payloads
+- ✅ **Usage Help**: Built-in help and examples
+
+### `test-vehicle-populator.sh`
+- ✅ **Comprehensive Testing**: Multiple test scenarios
+- ✅ **Error Handling**: Tests various edge cases
+- ✅ **Validation**: Checks if function is accessible
+- ✅ **Detailed Output**: Clear test results and tips
+
+## Development Workflow
+
+### 1. Start Development
 ```bash
-deno task test
+# Terminal 1: Start the function
+./run-with-env-explicit.sh vehicle-database-populator 8000
 ```
 
-Or run specific test files:
-
+### 2. Test the Function
 ```bash
-deno test --allow-net --allow-env --allow-read test.ts
+# Terminal 2: Run comprehensive tests
+./test-vehicle-populator.sh 8000
+
+# Or run specific tests
+./test-function.sh vehicle-database-populator 8000 '{"action":"populate"}'
 ```
 
-## Linting and Formatting
-
-- **Lint**: `deno task lint`
-- **Format**: `deno task fmt`
-
-## VS Code Integration
-
-The `.vscode/settings.json` file configures VS Code for optimal Deno development:
-
-- Enables Deno language server
-- Configures formatting and linting
-- Sets up import suggestions
-- Enables auto-formatting on save
-
-## Deployment
-
-Deploy functions using Supabase CLI:
-
-```bash
-# Deploy all functions
-supabase functions deploy
-
-# Deploy specific function
-supabase functions deploy tesla-news-fetcher
-
-# Deploy with environment variables
-supabase functions deploy --env-file .env.local
-```
+### 3. Monitor and Debug
+- Check function logs in the first terminal
+- Use the test scripts to verify functionality
+- Check database for created records
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Import Errors**: Ensure `deno.jsonc` is in the functions directory
-2. **Type Errors**: Run `deno task check` to verify types
-3. **Permission Errors**: Ensure proper flags are set in tasks
-4. **VS Code Issues**: Install Deno extension and reload window
+1. **Function Not Accessible**
+   - Ensure the function is running with `./run-with-env-explicit.sh`
+   - Check the port number matches between run and test scripts
 
-### Deno Permissions
+2. **Environment Variables Missing**
+   - Verify `.env.local` file exists and contains all required variables
+   - Check the script output for environment variable validation
 
-Edge Functions require these permissions:
-- `--allow-net`: Network access
-- `--allow-env`: Environment variable access
-- `--allow-read`: File system read access
+3. **Function Directory Not Found**
+   - Ensure you're in the `supabase/functions/` directory
+   - Check function directory names match exactly
 
-### Version Compatibility
+4. **Port Already in Use**
+   - Use a different port: `./run-with-env-explicit.sh vehicle-database-populator 9000`
+   - Kill existing processes using the port
 
-- Deno: 1.28+ recommended
-- Supabase CLI: Latest version
-- Edge Functions: Compatible with Supabase project
+### Debug Mode
+```bash
+# Check function logs
+cd vehicle-database-populator
+deno task dev
 
-## Resources
+# Or check Supabase logs
+supabase functions logs vehicle-database-populator
+```
 
-- [Deno Documentation](https://deno.land/manual)
-- [Supabase Edge Functions](https://supabase.com/docs/guides/functions)
-- [Deno VS Code Extension](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno)
-- [Supabase CLI Reference](https://supabase.com/docs/reference/cli)
+## Best Practices
+
+1. **Use Different Ports**: Run different functions on different ports during development
+2. **Test Before Deploy**: Always test locally before deploying to production
+3. **Check Logs**: Monitor function logs for errors and debugging information
+4. **Validate Data**: Use the test scripts to verify function behavior
+5. **Environment Isolation**: Keep development and production environment variables separate
+
+## Deployment
+
+```bash
+# Deploy to Supabase
+supabase functions deploy vehicle-database-populator
+
+# Deploy with specific project
+supabase functions deploy vehicle-database-populator --project-ref your-project-ref
+```

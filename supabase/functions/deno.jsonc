@@ -21,13 +21,19 @@
   // Task definitions for common operations
   "tasks": {
     "dev": "deno run --allow-net --allow-env --allow-read --watch tesla-news-fetcher/index.ts",
+    "dev:tesla": "deno run --allow-net --allow-env --allow-read --watch tesla-news-fetcher/index.ts",
+    "dev:vehicle": "deno run --allow-net --allow-env --allow-read --watch vehicle-database-populator/index.ts",
     "dev:mock": "deno run --allow-net --allow-env --allow-read --watch tesla-news-fetcher/index.dev.ts",
     "start": "deno run --allow-net --allow-env --allow-read tesla-news-fetcher/index.ts",
+    "start:tesla": "deno run --allow-net --allow-env --allow-read tesla-news-fetcher/index.ts",
+    "start:vehicle": "deno run --allow-net --allow-env --allow-read vehicle-database-populator/index.ts",
     "start:mock": "deno run --allow-net --allow-env --allow-read tesla-news-fetcher/index.dev.ts",
     "test": "deno test --allow-net --allow-env --allow-read",
     "lint": "deno lint",
     "fmt": "deno fmt",
     "check": "deno check tesla-news-fetcher/index.ts",
+    "check:tesla": "deno check tesla-news-fetcher/index.ts",
+    "check:vehicle": "deno check vehicle-database-populator/index.ts",
     "check:mock": "deno check tesla-news-fetcher/index.dev.ts",
     "compile": "deno compile --allow-net --allow-env --allow-read tesla-news-fetcher/index.ts"
   },
