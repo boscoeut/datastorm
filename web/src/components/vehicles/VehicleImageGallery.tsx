@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { X, Upload, Trash2, Move, Image as ImageIcon } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
-import { VehicleImage } from '../../types/database'
+import type { VehicleImage } from '../../types/database'
 import { VehicleImageService } from '../../services/storage'
 import ImageUpload from '../ui/image-upload'
 

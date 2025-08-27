@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import { VehicleImage } from '../types/database'
+import type { VehicleImage } from '../types/database'
 
 export interface ImageUploadResult {
   success: boolean
