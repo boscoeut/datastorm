@@ -47,6 +47,7 @@ The Boss Agent can:
 ### Feature Management
 - **`@addFeature`** - Add new feature and update specifications
 - **`@removeFeature`** - Remove feature and update specifications
+- **Battle System Management** - Coordinate vehicle battle page implementation and integration
 
 ### Integration Commands
 - **`@projectManager analyze`** - Get project status and priorities
@@ -91,6 +92,7 @@ The Boss Agent can:
 - **Database Integration** - Follow Supabase patterns with RLS policies
 - **Error Handling** - Implement proper error states and user feedback
 - **Responsive Design** - Mobile-first approach with specified breakpoints
+- **Battle System** - Implement vehicle comparison and battle functionality with winner determination
 
 ## Task Management
 

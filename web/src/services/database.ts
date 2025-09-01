@@ -323,7 +323,16 @@ export class VehicleService {
         return { data: [], error: DatabaseService.handleError(error), count: 0 }
       }
 
-      return { data: data || [], error: null, count }
+      // Transform the data to match the expected interface
+      const transformedData = data?.map(vehicle => {
+        if (vehicle.specifications && Array.isArray(vehicle.specifications)) {
+          // Take the first specification if it's an array
+          vehicle.specifications = vehicle.specifications[0] || null
+        }
+        return vehicle
+      }) || []
+
+      return { data: transformedData, error: null, count }
     } catch (error) {
       return { data: [], error: DatabaseService.handleError(error), count: 0 }
     }

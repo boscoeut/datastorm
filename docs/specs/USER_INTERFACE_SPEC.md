@@ -89,6 +89,14 @@ The application uses shadcn/ui's typography system, which provides:
 
 ## Component Library
 
+### Battle System Components
+
+#### Vehicle Battle Interface
+- **Battle Selection**: Vehicle selection interface with search and filtering
+- **Battle Display**: Side-by-side comparison with winner highlighting
+- **Battle Controls**: Start battle, reset, and share results functionality
+- **Battle Results**: Winner announcement and detailed comparison metrics
+
 ### Core Components
 
 #### Buttons
@@ -96,6 +104,7 @@ The application uses shadcn/ui's typography system, which provides:
 - **Secondary**: Outline button with border, transparent background
 - **Ghost**: Transparent background, visible on hover
 - **Destructive**: Red variant for dangerous actions
+- **Battle**: Special variant for battle actions with competitive styling
 - **Sizes**: Small (32px), Medium (40px), Large (48px)
 
 #### Cards

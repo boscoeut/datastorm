@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import DatabaseTest from '@/components/DatabaseTest';
 import VehiclesPage from '@/pages/VehiclesPage';
 import NewsPage from '@/pages/NewsPage';
+import BattlePage from '@/pages/BattlePage';
 import VehicleDetail from '@/components/vehicles/VehicleDetail';
 import LandingPage from '@/components/LandingPage';
 import { initializeStorage } from '@/lib/storage-init';
@@ -35,6 +36,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/vehicles" element={<VehiclesPage />} />
               <Route path="/vehicles/:id" element={<VehicleDetail />} />
+              <Route path="/battle" element={<BattlePage />} />
               <Route path="/news" element={<NewsPage />} />
               <Route path="/database-test" element={<DatabaseTestPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -331,6 +331,7 @@ supabase/functions/
 - **SpecificationTable:** Vehicle specifications display with sortable columns
 - **FilterableDataGrid:** Advanced filtering and search capabilities
 - **VehicleImageGallery:** Comprehensive image management for vehicle profile and gallery images
+- **VehicleBattleTable:** Battle-specific comparison table with winner highlighting and performance metrics
 
 ### TanStack Table Implementation Example
 ```typescript

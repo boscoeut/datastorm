@@ -94,6 +94,7 @@ The agent should provide:
 - Interactive data visualizations and comparison tools
 - Real-time vehicle specifications and performance data
 - Industry news aggregation and updates
+- Vehicle battle system for head-to-head comparisons
 - Mobile-first responsive design
 - Theme customization (light/dark mode)
 
