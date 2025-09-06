@@ -239,7 +239,13 @@ export class VehicleService {
     pagination?: PaginationOptions
     sortBy?: SortOption
   }) {
-    return DatabaseService.list<Vehicle>('vehicles', options)
+    // For now, don't filter by is_currently_available since the column doesn't exist yet
+    const filters = {
+      ...options?.filters
+    }
+    // Remove is_currently_available from filters if it exists
+    delete filters.is_currently_available
+    return DatabaseService.list<Vehicle>('vehicles', { ...options, filters })
   }
 
   static async getWithDetails(id: string) {
@@ -289,18 +295,13 @@ export class VehicleService {
       if (filters.manufacturer_id) {
         query = query.eq('manufacturer_id', filters.manufacturer_id)
       }
-      if (filters.year_min) {
-        query = query.gte('year', filters.year_min)
-      }
-      if (filters.year_max) {
-        query = query.lte('year', filters.year_max)
-      }
       if (filters.body_style) {
         query = query.eq('body_style', filters.body_style)
       }
       if (filters.is_electric !== undefined) {
         query = query.eq('is_electric', filters.is_electric)
       }
+      // Skip is_currently_available filter since the column doesn't exist yet
 
       // Apply sorting
       if (sortBy) {
@@ -336,6 +337,15 @@ export class VehicleService {
     } catch (error) {
       return { data: [], error: DatabaseService.handleError(error), count: 0 }
     }
+  }
+
+  static async getCurrentVehicles(options?: {
+    filters?: Omit<VehicleFilters, 'is_currently_available'>
+    pagination?: PaginationOptions
+    sortBy?: SortOption
+  }) {
+    // For now, just return all vehicles since we can't filter by is_currently_available
+    return this.list({ ...options, filters: options?.filters })
   }
 }
 

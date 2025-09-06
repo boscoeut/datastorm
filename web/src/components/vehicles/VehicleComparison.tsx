@@ -211,7 +211,7 @@ const VehicleComparison: React.FC<VehicleComparisonProps> = ({
                         {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {vehicle.year} {vehicle.trim && `• ${vehicle.trim}`}
+                        {vehicle.trim && `${vehicle.trim}`} • Current Model
                       </p>
                     </div>
                     <Button

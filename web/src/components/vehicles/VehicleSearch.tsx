@@ -175,41 +175,6 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
               </select>
             </div>
             
-            {/* Year Range Filters */}
-            <div className="space-y-2">
-              <Label htmlFor="year-min" className="text-sm font-medium">
-                Year Min
-              </Label>
-              <Input
-                id="year-min"
-                type="number"
-                placeholder="2020"
-                value={localFilters.year_min || ''}
-                onChange={(e) => handleFilterChange('year_min', e.target.value ? parseInt(e.target.value) : undefined)}
-                min="1900"
-                max="2030"
-                className="text-sm"
-                aria-describedby="year-min-help"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="year-max" className="text-sm font-medium">
-                Year Max
-              </Label>
-              <Input
-                id="year-max"
-                type="number"
-                placeholder="2024"
-                value={localFilters.year_max || ''}
-                onChange={(e) => handleFilterChange('year_max', e.target.value ? parseInt(e.target.value) : undefined)}
-                min="1900"
-                max="2030"
-                className="text-sm"
-                aria-describedby="year-max-help"
-              />
-            </div>
-            
             {/* Body Style Filter */}
             <div className="space-y-2">
               <Label htmlFor="body-style" className="text-sm font-medium">
@@ -221,14 +186,14 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
                 onChange={(e) => handleFilterChange('body_style', e.target.value || undefined)}
                 className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-sm"
               >
-                <option value="">All Styles</option>
-                <option value="sedan">Sedan</option>
-                <option value="suv">SUV</option>
-                <option value="hatchback">Hatchback</option>
-                <option value="wagon">Wagon</option>
-                <option value="coupe">Coupe</option>
-                <option value="convertible">Convertible</option>
-                <option value="pickup">Pickup</option>
+                <option value="">All Body Styles</option>
+                <option value="Sedan">Sedan</option>
+                <option value="SUV">SUV</option>
+                <option value="Hatchback">Hatchback</option>
+                <option value="Pickup Truck">Pickup Truck</option>
+                <option value="Crossover">Crossover</option>
+                <option value="Coupe">Coupe</option>
+                <option value="Convertible">Convertible</option>
               </select>
             </div>
           </div>

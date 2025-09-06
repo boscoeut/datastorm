@@ -183,7 +183,9 @@ interface Vehicle {
   id: string;
   manufacturer: Manufacturer;
   model: string;
-  year: number;
+  year: number; // Kept for reference but not used for uniqueness
+  model_year?: number; // Alternative year field for reference
+  is_currently_available: boolean; // Flag to track current model availability
   profile_image_url?: string;
   profile_image_path?: string;
   specifications: VehicleSpecifications;

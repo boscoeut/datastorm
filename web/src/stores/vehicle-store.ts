@@ -88,7 +88,7 @@ export const useVehicleStore = create<VehicleStore>()(
         set({ loading: true, error: null })
         
         try {
-          // Use the search method to get vehicles with manufacturer details
+          // Use the search method to get current vehicles with search functionality
           const result = await VehicleService.search(filters, pagination, sortBy || undefined, searchQuery)
           
           if (result.error) {

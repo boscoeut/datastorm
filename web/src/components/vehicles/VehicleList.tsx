@@ -120,14 +120,6 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
       },
     },
     {
-      accessorKey: 'year',
-      header: 'Year',
-      cell: ({ row }) => (
-        <span className="text-foreground">{row.original.year}</span>
-      ),
-      sortingFn: (rowA, rowB) => rowA.original.year - rowB.original.year,
-    },
-    {
       accessorKey: 'body_style',
       header: 'Body Style',
       cell: ({ row }) => (

@@ -15,10 +15,12 @@ export interface Vehicle {
   id: string
   manufacturer_id: string
   model: string
-  year: number
+  year: number // Keep for reference but not used for uniqueness
+  model_year?: number // Alternative year field for reference
   trim?: string
   body_style?: string
   is_electric: boolean
+  is_currently_available?: boolean // New field to track current availability (optional since column doesn't exist yet)
   profile_image_url?: string
   profile_image_path?: string
   created_at: string
@@ -100,6 +102,12 @@ export interface VehicleWithDetails extends Vehicle {
   specifications: VehicleSpecification
 }
 
+export interface CurrentVehicle extends Vehicle {
+  is_currently_available: true
+  manufacturer: Manufacturer
+  specifications?: VehicleSpecification
+}
+
 export interface ManufacturerWithVehicles extends Manufacturer {
   vehicles: Vehicle[]
 }
@@ -107,10 +115,9 @@ export interface ManufacturerWithVehicles extends Manufacturer {
 // Filter and search types
 export interface VehicleFilters {
   manufacturer_id?: string
-  year_min?: number
-  year_max?: number
   body_style?: string
   is_electric?: boolean
+  is_currently_available?: boolean // Filter for current models only
   range_min?: number
   range_max?: number
   price_min?: number

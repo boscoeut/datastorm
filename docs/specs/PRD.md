@@ -19,9 +19,10 @@
 ### Core Features
 
 #### Vehicle Database
-- **Comprehensive EV Catalog**
-  - All major EV manufacturers and models
-  - Detailed technical specifications for each vehicle
+- **Current EV Catalog**
+  - All major EV manufacturers and their current model lineup
+  - Focus on currently available models only (no historical year tracking)
+  - Detailed technical specifications for each current vehicle
   - Performance metrics (range, acceleration, top speed)
   - Battery specifications and charging capabilities
   - Dimensions, weight, and cargo capacity
@@ -88,10 +89,10 @@ Refer to the TECHNICAL_SPEC.md and USER_INTERFACE_SPEC.md
 
 #### Vehicle Specifications Data
 - **Manufacturer Information:** Company details, headquarters, history
-- **Model Data:** Complete model lineup with year ranges
-- **Technical Specs:** Detailed performance and capability metrics
+- **Current Model Data:** Currently available model lineup (no year-based tracking)
+- **Technical Specs:** Detailed performance and capability metrics for current models
 - **Pricing Information:** MSRP, current pricing, lease options
-- **Availability Data:** Production status, delivery timelines
+- **Availability Data:** Production status, delivery timelines for current models
 
 #### News and Content Data
 - **Industry News:** Real-time updates from multiple sources

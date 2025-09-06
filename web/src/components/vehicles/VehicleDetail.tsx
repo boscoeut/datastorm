@@ -162,9 +162,6 @@ const VehicleDetail: React.FC = () => {
               </div>
               
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-sm text-muted-foreground">
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                  {vehicle.year}
-                </span>
                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
                   {vehicle.body_style || 'N/A'}
                 </span>
@@ -176,6 +173,9 @@ const VehicleDetail: React.FC = () => {
                   }`}
                 >
                   {vehicle.is_electric ? '⚡ Electric' : '🔋 Hybrid/Other'}
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  Current Model
                 </span>
               </div>
 
