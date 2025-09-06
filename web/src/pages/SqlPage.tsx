@@ -122,7 +122,7 @@ const SqlPage: React.FC = () => {
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="SELECT * FROM vehicles LIMIT 10;"
-                  className="w-full h-64 p-3 border rounded-md font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-64 p-3 border rounded-md font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background text-foreground border-input placeholder:text-muted-foreground"
                   disabled={isLoading}
                 />
                 <div className="flex justify-between items-center">

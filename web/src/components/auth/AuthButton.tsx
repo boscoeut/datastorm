@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoginForm } from './LoginForm'
-import { LogOut, User, Shield } from 'lucide-react'
+import { LogOut, User, Shield, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export const AuthButton: React.FC = () => {
@@ -66,15 +66,16 @@ export const AuthButton: React.FC = () => {
       </Button>
 
       {showLoginForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
           <div className="relative">
             <Button
               variant="ghost"
               size="sm"
-              className="absolute -top-2 -right-2 z-10 bg-white dark:bg-gray-800 rounded-full p-1"
+              className="absolute -top-2 -right-2 z-10 bg-white dark:bg-gray-800 rounded-full p-1 h-8 w-8 hover:bg-gray-100 dark:hover:bg-gray-700 shadow-md border border-gray-200 dark:border-gray-600"
               onClick={() => setShowLoginForm(false)}
+              aria-label="Close sign in dialog"
             >
-              ×
+              <X className="h-4 w-4" />
             </Button>
             <LoginForm 
               onSuccess={handleLoginSuccess}
