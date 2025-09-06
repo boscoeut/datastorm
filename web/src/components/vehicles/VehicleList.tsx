@@ -203,6 +203,7 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
         onFilterChange={updateFilters}
         filters={filters}
         searchQuery={searchQuery}
+        disableSearchSync={true}
       />
 
       {/* Results */}

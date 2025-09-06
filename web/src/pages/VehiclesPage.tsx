@@ -1,31 +1,52 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Search } from 'lucide-react'
 import VehicleList from '@/components/vehicles/VehicleList'
 import VehicleComparisonModal from '@/components/vehicles/VehicleComparisonModal'
+import { useDebounce } from '@/hooks/useDebounce'
 import {
   useVehicleStore,
   useVehicleLoading,
   useVehicleError,
   useVehicleTotalCount,
-  useComparisonCount
+  useComparisonCount,
+  useVehicleSearchQuery
 } from '@/stores/vehicle-store'
 
 const VehiclesPage: React.FC = () => {
   const navigate = useNavigate()
 
-  const { fetchVehicles, fetchManufacturers, clearError } = useVehicleStore()
+  const { fetchVehicles, fetchManufacturers, clearError, setSearchQuery } = useVehicleStore()
   const loading = useVehicleLoading()
   const error = useVehicleError()
   const totalCount = useVehicleTotalCount()
   const comparisonCount = useComparisonCount()
+  const searchQuery = useVehicleSearchQuery()
+
+  // Local state for quick search with debouncing
+  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
+  const debouncedSearchQuery = useDebounce(localSearchQuery, 300)
 
   // Initialize data when component mounts
   useEffect(() => {
     fetchVehicles()
     fetchManufacturers()
   }, [fetchVehicles, fetchManufacturers])
+
+  // Update local search query when store search query changes (from advanced search)
+  useEffect(() => {
+    setLocalSearchQuery(searchQuery)
+  }, [searchQuery])
+
+  // Update store search query when debounced local query changes
+  useEffect(() => {
+    if (debouncedSearchQuery !== searchQuery) {
+      setSearchQuery(debouncedSearchQuery)
+    }
+  }, [debouncedSearchQuery, searchQuery, setSearchQuery])
 
   // Handle errors gracefully
   if (error) {
@@ -39,6 +60,25 @@ const VehiclesPage: React.FC = () => {
               Browse and search electric vehicles in our comprehensive database
             </p>
           </div>
+        </div>
+
+        {/* Quick Search */}
+        <div className="mb-6">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Quick search vehicles..."
+              value={localSearchQuery}
+              onChange={(e) => setLocalSearchQuery(e.target.value)}
+              className="pl-10"
+              aria-label="Search vehicles by model or manufacturer"
+            />
+          </div>
+          {searchQuery && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Searching for: "{searchQuery}"
+            </p>
+          )}
         </div>
 
         {/* Error Display */}
@@ -80,6 +120,25 @@ const VehiclesPage: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Quick Search */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Quick search vehicles..."
+            value={localSearchQuery}
+            onChange={(e) => setLocalSearchQuery(e.target.value)}
+            className="pl-10"
+            aria-label="Search vehicles by model or manufacturer"
+          />
+        </div>
+        {searchQuery && (
+          <p className="text-sm text-muted-foreground mt-2">
+            Searching for: "{searchQuery}"
+          </p>
+        )}
       </div>
 
       {/* Vehicle List with integrated search and filters */}

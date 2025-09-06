@@ -14,13 +14,15 @@ interface VehicleSearchProps {
   onFilterChange?: (filters: VehicleFilters) => void
   filters?: VehicleFilters
   searchQuery?: string
+  disableSearchSync?: boolean // New prop to disable search synchronization
 }
 
 const VehicleSearch: React.FC<VehicleSearchProps> = ({
   onSearchChange,
   onFilterChange,
   filters = {},
-  searchQuery = ''
+  searchQuery = '',
+  disableSearchSync = false
 }) => {
   const manufacturers = useManufacturers()
   const { fetchManufacturers } = useVehicleStore()
@@ -28,6 +30,7 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
   // Local state for search and filters
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
   const [localFilters, setLocalFilters] = useState<VehicleFilters>(filters)
+  
   
   // Debounced search query for performance
   const debouncedSearchQuery = useDebounce(localSearchQuery, 300)
@@ -50,12 +53,12 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
     setLocalFilters(filters)
   }, [filters])
   
-  // Handle search query changes with debouncing
+  // Handle search query changes with debouncing - only call onSearchChange if not disabled and conditions are met
   useEffect(() => {
-    if (onSearchChange && debouncedSearchQuery !== searchQuery) {
+    if (!disableSearchSync && onSearchChange && debouncedSearchQuery !== searchQuery) {
       onSearchChange(debouncedSearchQuery)
     }
-  }, [debouncedSearchQuery, onSearchChange, searchQuery])
+  }, [debouncedSearchQuery, onSearchChange, searchQuery, disableSearchSync])
   
   // Handle filter changes
   const handleFilterChange = useCallback((key: keyof VehicleFilters, value: any) => {
