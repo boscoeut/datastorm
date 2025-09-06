@@ -17,6 +17,16 @@ const defaultNavigationItems: NavigationItem[] = [
     label: 'Industry News',
     href: '/news',
   },
+  {
+    id: 'chat',
+    label: 'Chat',
+    href: '/chat',
+  },
+  {
+    id: 'sql',
+    label: 'SQL',
+    href: '/sql',
+  },
 ];
 
 export const useLayoutStore = create<LayoutState & LayoutActions>((set) => ({

@@ -1,74 +1,28 @@
 // @ts-ignore -- Deno environment
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai@0.24.1';
-import { z } from 'https://esm.sh/zod@3.22.4';
-
-// Import types
-import type {
-  GeminiProxyRequest,
-  GeminiProxyResponse,
-  GeminiApiResponse,
-  DatabaseLogEntry,
-  ValidationResult,
-  SecurityConfig,
-  RateLimitConfig,
-} from './types.ts';
 
 // Configuration
-const SECURITY_CONFIG: SecurityConfig = {
-  allowedTasks: [
-    'analyze_vehicle_data',
-    'generate_content',
-    'summarize_text',
-    'answer_question',
-    'custom_task'
-  ],
+const SECURITY_CONFIG = {
+  allowedTasks: [], // Empty array to allow all tasks
   maxPromptLength: 10000,
   maxDataSize: 1000000, // 1MB
 };
 
-const RATE_LIMIT_CONFIG: RateLimitConfig = {
+const RATE_LIMIT_CONFIG = {
   maxRequestsPerMinute: 60,
   maxRequestsPerHour: 1000,
 };
-
-// Zod schema for request validation
-const GeminiProxyRequestSchema = z.object({
-  task: z.string().min(1, 'Task is required'),
-  prompt: z.string().min(1, 'Prompt is required').max(SECURITY_CONFIG.maxPromptLength, 'Prompt too long'),
-  data: z.record(z.any()).optional(),
-  expectedOutput: z.string().optional().max(2000, 'Expected output description too long'),
-  model: z.string().optional().default('gemini-2.0-flash-exp'),
-  temperature: z.number().min(0).max(2).optional().default(0.7),
-  maxTokens: z.number().min(1).max(8192).optional().default(2048),
-  tools: z.array(z.record(z.any())).optional(),
-});
-
-// Initialize Google Gemini AI
-const genAI = new GoogleGenerativeAI(
-  Deno.env.get('GOOGLE_GEMINI_API_KEY') || '',
-);
-
-// Initialize Supabase client
-const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase environment variables');
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Rate limiting storage (in-memory for demo, should use Redis in production)
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
 
 // Validation functions
-function validateRequest(request: GeminiProxyRequest): ValidationResult {
+function validateRequest(request: any): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  // Check if task is allowed
-  if (!SECURITY_CONFIG.allowedTasks.includes(request.task)) {
+  // Check if task is allowed (only if allowedTasks is not empty)
+  if (SECURITY_CONFIG.allowedTasks.length > 0 && !SECURITY_CONFIG.allowedTasks.includes(request.task)) {
     errors.push(`Task '${request.task}' is not allowed`);
   }
 
@@ -94,7 +48,6 @@ function validateRequest(request: GeminiProxyRequest): ValidationResult {
 function checkRateLimit(clientId: string): boolean {
   const now = Date.now();
   const minuteAgo = now - 60 * 1000;
-  const hourAgo = now - 60 * 60 * 1000;
 
   // Get current counts
   const current = requestCounts.get(clientId) || { count: 0, resetTime: now };
@@ -124,11 +77,19 @@ function getClientId(req: Request): string {
   return forwarded?.split(',')[0] || realIp || 'unknown';
 }
 
-async function callGeminiAPI(request: GeminiProxyRequest): Promise<GeminiApiResponse> {
+async function callGeminiAPI(request: any): Promise<{ text: string; usage?: any }> {
   try {
+    const apiKey = Deno.env.get('GOOGLE_GEMINI_API_KEY');
+    if (!apiKey) {
+      throw new Error('Google Gemini API key not configured');
+    }
+
+    // Initialize Google Gemini AI
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // Get the model
     const model = genAI.getGenerativeModel({
       model: request.model || 'gemini-2.0-flash-exp',
-      tools: request.tools || [],
       generationConfig: {
         temperature: request.temperature || 0.7,
         maxOutputTokens: request.maxTokens || 2048,
@@ -148,6 +109,7 @@ async function callGeminiAPI(request: GeminiProxyRequest): Promise<GeminiApiResp
       content += `\n\nContext Data: ${JSON.stringify(request.data, null, 2)}`;
     }
 
+    // Generate content
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: content }] }]
     });
@@ -172,35 +134,10 @@ async function callGeminiAPI(request: GeminiProxyRequest): Promise<GeminiApiResp
   }
 }
 
-async function logRequest(
-  request: GeminiProxyRequest,
-  response: GeminiProxyResponse,
-  clientId: string
-): Promise<void> {
-  try {
-    const logEntry: DatabaseLogEntry = {
-      task: request.task,
-      prompt: request.prompt.substring(0, 1000), // Truncate for storage
-      response: response.data?.text?.substring(0, 1000) || '', // Truncate for storage
-      success: response.success,
-      error: response.error,
-      created_at: new Date().toISOString(),
-      user_id: clientId,
-    };
-
-    // Note: In production, you might want to store this in a dedicated table
-    // For now, we'll just log to console
-    console.log('Request logged:', JSON.stringify(logEntry, null, 2));
-  } catch (error) {
-    console.error('Error logging request:', error);
-    // Don't fail the request if logging fails
-  }
-}
-
 async function handleGeminiProxyRequest(
-  request: GeminiProxyRequest,
+  request: any,
   clientId: string
-): Promise<GeminiProxyResponse> {
+): Promise<any> {
   try {
     // Validate request
     const validation = validateRequest(request);
@@ -226,7 +163,7 @@ async function handleGeminiProxyRequest(
     // Call Gemini API
     const geminiResponse = await callGeminiAPI(request);
 
-    const response: GeminiProxyResponse = {
+    const response = {
       success: true,
       data: {
         text: geminiResponse.text,
@@ -236,9 +173,6 @@ async function handleGeminiProxyRequest(
       source: 'google-gemini-proxy',
     };
 
-    // Log the request (async, don't wait)
-    logRequest(request, response, clientId).catch(console.error);
-
     return response;
   } catch (error) {
     console.error('Error in Gemini proxy request handler:', error);
@@ -246,15 +180,12 @@ async function handleGeminiProxyRequest(
       ? error.message
       : 'Unknown error occurred';
 
-    const errorResponse: GeminiProxyResponse = {
+    const errorResponse = {
       success: false,
       error: errorMessage,
       timestamp: new Date().toISOString(),
       source: 'google-gemini-proxy',
     };
-
-    // Log the error (async, don't wait)
-    logRequest(request, errorResponse, clientId).catch(console.error);
 
     return errorResponse;
   }
@@ -269,7 +200,7 @@ serve(async (req) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
       },
     });
   }
@@ -288,6 +219,7 @@ serve(async (req) => {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
         },
       },
     );
@@ -300,31 +232,12 @@ serve(async (req) => {
     // Parse and validate request body
     const body = await req.json();
     
-    // Validate with Zod
-    const validatedRequest = GeminiProxyRequestSchema.parse(body);
-
-    // Process the request
-    const response = await handleGeminiProxyRequest(validatedRequest, clientId);
-
-    return new Response(
-      JSON.stringify(response),
-      {
-        status: response.success ? 200 : 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      },
-    );
-  } catch (error) {
-    console.error('Unexpected error:', error);
-
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
+    // Basic validation
+    if (!body.task || !body.prompt) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: `Validation error: ${error.errors.map(e => e.message).join(', ')}`,
+          error: 'Missing required fields: task and prompt',
           timestamp: new Date().toISOString(),
           source: 'google-gemini-proxy',
         }),
@@ -338,10 +251,27 @@ serve(async (req) => {
       );
     }
 
+    // Process the request
+    const response = await handleGeminiProxyRequest(body, clientId);
+
+    return new Response(
+      JSON.stringify(response),
+      {
+        status: response.success ? 200 : 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
+        },
+      },
+    );
+  } catch (error) {
+    console.error('Unexpected error:', error);
+
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Internal server error',
+        error: `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         timestamp: new Date().toISOString(),
         source: 'google-gemini-proxy',
       }),
@@ -350,6 +280,7 @@ serve(async (req) => {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
         },
       },
     );
