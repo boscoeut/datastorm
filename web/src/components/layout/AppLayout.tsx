@@ -4,9 +4,19 @@ import { Sidebar } from './Sidebar';
 import { MainContent } from './MainContent';
 import { Footer } from './Footer';
 import { useLayoutStore } from '@/stores/layout-store';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const { sidebarOpen, toggleSidebar, setSidebarOpen } = useLayoutStore();
+  const { sidebarOpen, toggleSidebar, setSidebarOpen, updateNavigationForAuth } = useLayoutStore();
+  const { user, isAdmin, loading } = useAuth();
+
+  // Update navigation when authentication state changes
+  useEffect(() => {
+    if (!loading) {
+      updateNavigationForAuth(!!user, isAdmin);
+    }
+  }, [user, isAdmin, loading, updateNavigationForAuth]);
 
   const handleMenuToggle = () => {
     toggleSidebar();

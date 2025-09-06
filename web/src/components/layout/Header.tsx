@@ -3,6 +3,7 @@ import { Navigation } from './Navigation';
 import { useLayoutStore } from '@/stores/layout-store';
 import { Button } from '@/components/ui/button';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
+import { AuthButton } from '@/components/auth/AuthButton';
 import { Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -44,9 +45,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
             />
           </div>
 
-          {/* Theme Switcher and Mobile Menu */}
+          {/* Theme Switcher, Auth Button, and Mobile Menu */}
           <div className="flex items-center space-x-2">
             <ThemeSwitcher />
+            <AuthButton />
             
             {/* Mobile Menu Button */}
             <div className="md:hidden">

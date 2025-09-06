@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import DatabaseTest from '@/components/DatabaseTest';
 import VehiclesPage from '@/pages/VehiclesPage';
 import NewsPage from '@/pages/NewsPage';
@@ -40,8 +41,22 @@ function App() {
               <Route path="/vehicles/:id" element={<VehicleDetail />} />
               <Route path="/battle" element={<BattlePage />} />
               <Route path="/news" element={<NewsPage />} />
-              <Route path="/chat" element={<ChatPage />} />
-              <Route path="/sql" element={<SqlPage />} />
+              <Route 
+                path="/chat" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <ChatPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sql" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <SqlPage />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="/database-test" element={<DatabaseTestPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

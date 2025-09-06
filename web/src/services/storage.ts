@@ -33,20 +33,33 @@ export class VehicleImageService {
   static async initializeStorage(): Promise<void> {
     try {
       const { data: buckets, error } = await supabase.storage.listBuckets()
-      if (error) throw error
+      if (error) {
+        console.warn('Could not list storage buckets:', error.message)
+        // If we can't list buckets, assume the bucket exists and continue
+        return
+      }
 
       const bucketExists = buckets.some(bucket => bucket.name === this.BUCKET_NAME)
       if (!bucketExists) {
+        console.log(`Creating storage bucket: ${this.BUCKET_NAME}`)
         const { error: createError } = await supabase.storage.createBucket(this.BUCKET_NAME, {
           public: true,
           fileSizeLimit: this.MAX_FILE_SIZE,
           allowedMimeTypes: this.ALLOWED_TYPES
         })
-        if (createError) throw createError
+        if (createError) {
+          // If bucket creation fails, it might already exist or there might be permission issues
+          console.warn(`Could not create bucket ${this.BUCKET_NAME}:`, createError.message)
+          // Don't throw - the bucket might already exist
+        } else {
+          console.log(`Successfully created bucket: ${this.BUCKET_NAME}`)
+        }
+      } else {
+        console.log(`Storage bucket ${this.BUCKET_NAME} already exists`)
       }
     } catch (error) {
-      console.error('Failed to initialize storage:', error)
-      throw error
+      console.warn('Storage initialization warning:', error instanceof Error ? error.message : 'Unknown error')
+      // Don't throw - storage might not be critical for app startup
     }
   }
 

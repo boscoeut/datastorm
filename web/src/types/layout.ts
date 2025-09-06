@@ -4,6 +4,8 @@ export interface NavigationItem {
   href: string;
   icon?: React.ComponentType<{ className?: string }>;
   children?: NavigationItem[];
+  public?: boolean;
+  adminOnly?: boolean;
 }
 
 export interface LayoutState {
@@ -17,6 +19,7 @@ export interface LayoutActions {
   setSidebarOpen: (open: boolean) => void;
   setCurrentRoute: (route: string) => void;
   setNavigationItems: (items: NavigationItem[]) => void;
+  updateNavigationForAuth: (isAuthenticated: boolean, isAdmin: boolean) => void;
 }
 
 export interface AppLayoutProps {

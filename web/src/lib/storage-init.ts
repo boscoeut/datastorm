@@ -10,7 +10,7 @@ export async function initializeStorage() {
     await VehicleImageService.initializeStorage()
     console.log('Storage initialization complete')
   } catch (error) {
-    console.error('Failed to initialize storage:', error)
+    console.warn('Storage initialization completed with warnings:', error instanceof Error ? error.message : 'Unknown error')
     // Don't throw - storage might not be critical for app startup
   }
 }

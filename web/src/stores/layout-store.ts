@@ -1,31 +1,38 @@
 import { create } from 'zustand';
 import type { LayoutState, LayoutActions, NavigationItem } from '@/types/layout';
 
-const defaultNavigationItems: NavigationItem[] = [
+const allNavigationItems: NavigationItem[] = [
   {
     id: 'vehicles',
     label: 'Vehicle Database',
     href: '/vehicles',
+    public: true,
   },
   {
     id: 'battle',
     label: 'Vehicle Battle',
     href: '/battle',
+    public: true,
   },
   {
     id: 'news',
     label: 'Industry News',
     href: '/news',
+    public: true,
   },
   {
     id: 'chat',
     label: 'Chat',
     href: '/chat',
+    public: false,
+    adminOnly: true,
   },
   {
     id: 'sql',
     label: 'SQL',
     href: '/sql',
+    public: false,
+    adminOnly: true,
   },
 ];
 
@@ -33,7 +40,7 @@ export const useLayoutStore = create<LayoutState & LayoutActions>((set) => ({
   // State
   sidebarOpen: false,
   currentRoute: '/',
-  navigationItems: defaultNavigationItems,
+  navigationItems: allNavigationItems.filter(item => item.public),
 
   // Actions
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
@@ -43,4 +50,15 @@ export const useLayoutStore = create<LayoutState & LayoutActions>((set) => ({
   setCurrentRoute: (route: string) => set({ currentRoute: route }),
   
   setNavigationItems: (items: NavigationItem[]) => set({ navigationItems: items }),
+
+  // Filter navigation items based on authentication status
+  updateNavigationForAuth: (isAuthenticated: boolean, isAdmin: boolean) => {
+    const filteredItems = allNavigationItems.filter(item => {
+      if (item.public) return true;
+      if (!isAuthenticated) return false;
+      if (item.adminOnly && !isAdmin) return false;
+      return true;
+    });
+    set({ navigationItems: filteredItems });
+  },
 }));
