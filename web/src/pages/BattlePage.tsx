@@ -260,7 +260,7 @@ const BattlePage: React.FC = () => {
                           onClick={() => handleVehicleSelect(vehicle, 1)}
                           className="p-2 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
                         >
-                          <div className="font-medium">{vehicle.manufacturer?.name} {vehicle.model}</div>
+                          <div className="font-medium">{vehicle.manufacturer?.name} {vehicle.model}{vehicle.trim ? ` ${vehicle.trim}` : ''}</div>
                         </div>
                       ))}
                     </div>
@@ -312,7 +312,7 @@ const BattlePage: React.FC = () => {
                           onClick={() => handleVehicleSelect(vehicle, 2)}
                           className="p-2 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
                         >
-                          <div className="font-medium">{vehicle.manufacturer?.name} {vehicle.model}</div>
+                          <div className="font-medium">{vehicle.manufacturer?.name} {vehicle.model}{vehicle.trim ? ` ${vehicle.trim}` : ''}</div>
                         </div>
                       ))}
                     </div>

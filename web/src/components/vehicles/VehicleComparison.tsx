@@ -159,7 +159,7 @@ const VehicleComparison: React.FC<VehicleComparisonProps> = ({
                 <div className="flex flex-wrap gap-1">
                   {comparisonVehicles.slice(0, 3).map((vehicle) => (
                     <Badge key={vehicle.id} variant="outline" className="text-xs">
-                      {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}
+                      {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}{vehicle.trim ? ` ${vehicle.trim}` : ''}
                     </Badge>
                   ))}
                   {comparisonVehicles.length > 3 && (
@@ -208,7 +208,7 @@ const VehicleComparison: React.FC<VehicleComparisonProps> = ({
                   <div key={vehicle.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg">
-                        {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}
+                        {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}{vehicle.trim ? ` ${vehicle.trim}` : ''}
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         {vehicle.trim && `${vehicle.trim}`} • Current Model
@@ -235,7 +235,7 @@ const VehicleComparison: React.FC<VehicleComparisonProps> = ({
                   </div>
                   {comparisonVehicles.map((vehicle) => (
                     <div key={vehicle.id} className="p-4 bg-muted font-medium text-sm border-r last:border-r-0">
-                      {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}
+                      {vehicle.manufacturer?.name || vehicle.manufacturer_id} {vehicle.model}{vehicle.trim ? ` ${vehicle.trim}` : ''}
                     </div>
                   ))}
                 </div>

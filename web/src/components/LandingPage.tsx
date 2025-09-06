@@ -155,7 +155,7 @@ const LandingPage = () => {
                 })
                 .map((vehicle) => (
                   <option key={vehicle.id} value={vehicle.id}>
-                    {vehicle.manufacturer?.name} {vehicle.model} ({vehicle.year})
+                    {vehicle.manufacturer?.name} {vehicle.model}{vehicle.trim ? ` ${vehicle.trim}` : ''}
                   </option>
                 ))}
             </select>
@@ -191,7 +191,7 @@ const LandingPage = () => {
               {selectedVehicle.manufacturer?.name} {selectedVehicle.model}
             </h2>
             <p className="text-lg text-muted-foreground">
-              {selectedVehicle.year} • {selectedVehicle.body_style || 'Vehicle'}
+              {selectedVehicle.body_style || 'Vehicle'}
             </p>
           </div>
           

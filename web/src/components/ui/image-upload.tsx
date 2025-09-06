@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { Upload, X, Image as ImageIcon, Trash2 } from 'lucide-react'
 import { Button } from './button'
 import { cn } from '../../lib/utils'
@@ -64,6 +64,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [isDragOver, setIsDragOver] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const uploadAreaRef = useRef<HTMLDivElement>(null)
 
   const validateFiles = useCallback((files: File[]): File[] => {
     return files.filter(file => {
@@ -135,10 +136,57 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     onUpload([])
   }, [onUpload])
 
+  // Handle clipboard paste
+  const handlePaste = useCallback((e: ClipboardEvent) => {
+    if (disabled) return
+    
+    const items = e.clipboardData?.items
+    if (!items) return
+
+    const imageFiles: File[] = []
+    
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile()
+        if (file) {
+          // Generate a filename for pasted images
+          const timestamp = Date.now()
+          const extension = file.type.split('/')[1] || 'png'
+          const newFile = new File([file], `pasted-image-${timestamp}.${extension}`, {
+            type: file.type
+          })
+          imageFiles.push(newFile)
+        }
+      }
+    }
+
+    if (imageFiles.length > 0) {
+      e.preventDefault()
+      const validFiles = validateFiles(imageFiles)
+      if (validFiles.length > 0) {
+        handleFiles(validFiles)
+      }
+    }
+  }, [disabled, validateFiles, handleFiles])
+
+  // Add paste event listener
+  useEffect(() => {
+    const uploadArea = uploadAreaRef.current
+    if (!uploadArea) return
+
+    uploadArea.addEventListener('paste', handlePaste)
+    
+    return () => {
+      uploadArea.removeEventListener('paste', handlePaste)
+    }
+  }, [handlePaste])
+
   return (
     <div className={cn('space-y-4', className)}>
       {/* Upload Area */}
       <div
+        ref={uploadAreaRef}
         className={cn(
           'border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
           isDragOver
@@ -150,6 +198,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={!disabled ? handleClick : undefined}
+        tabIndex={0}
       >
         <input
           ref={fileInputRef}
@@ -171,6 +220,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             {placeholder}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            You can also paste images from clipboard (Ctrl+V)
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Max file size: {(maxSize / (1024 * 1024)).toFixed(1)}MB

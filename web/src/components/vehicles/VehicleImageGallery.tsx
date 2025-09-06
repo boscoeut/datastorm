@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, Trash2, Move, Image as ImageIcon } from 'lucide-react'
+import { X, Trash2, Move, Image as ImageIcon, Star } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
 import type { VehicleImage } from '../../types/database'
@@ -30,6 +30,7 @@ export const VehicleImageGallery: React.FC<VehicleImageGalleryProps> = ({
   useEffect(() => {
     loadGalleryImages()
   }, [vehicleId])
+
 
   const loadGalleryImages = async () => {
     try {
@@ -113,6 +114,63 @@ export const VehicleImageGallery: React.FC<VehicleImageGalleryProps> = ({
     setShowImageModal(false)
     setSelectedImage(null)
   }
+
+  const handleSetAsProfile = async (image: VehicleImage) => {
+    try {
+      const success = await VehicleImageService.setGalleryImageAsProfile(
+        vehicleId,
+        image.image_url,
+        image.image_path
+      )
+      
+      if (success) {
+        // Update the profile image in the parent component
+        onProfileImageUpdate?.(image.image_url)
+      }
+    } catch (error) {
+      console.error('Failed to set image as profile:', error)
+    }
+  }
+
+  // Global paste listener for images
+  useEffect(() => {
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      if (!isAdmin) return
+      
+      const items = e.clipboardData?.items
+      if (!items) return
+
+      const imageFiles: File[] = []
+      
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile()
+          if (file) {
+            // Generate a filename for pasted images
+            const timestamp = Date.now()
+            const extension = file.type.split('/')[1] || 'png'
+            const newFile = new File([file], `pasted-image-${timestamp}.${extension}`, {
+              type: file.type
+            })
+            imageFiles.push(newFile)
+          }
+        }
+      }
+
+      if (imageFiles.length > 0) {
+        e.preventDefault()
+        // Auto-upload pasted images to gallery
+        handleGalleryImageUpload(imageFiles)
+      }
+    }
+
+    document.addEventListener('paste', handleGlobalPaste)
+    
+    return () => {
+      document.removeEventListener('paste', handleGlobalPaste)
+    }
+  }, [isAdmin, handleGalleryImageUpload])
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -294,6 +352,17 @@ export const VehicleImageGallery: React.FC<VehicleImageGalleryProps> = ({
                         >
                           <ImageIcon className="w-4 h-4" />
                         </Button>
+                        {isAdmin && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-white text-blue-600 hover:bg-blue-50"
+                            onClick={() => handleSetAsProfile(image)}
+                            title="Set as profile image"
+                          >
+                            <Star className="w-4 h-4" />
+                          </Button>
+                        )}
                         {isAdmin && (
                           <Button
                             variant="outline"

@@ -197,7 +197,7 @@ const DatabaseTest: React.FC = () => {
             {testResults.vehicles.slice(0, 6).map((vehicle) => (
               <div key={vehicle.id} className="bg-white p-3 rounded border">
                 <p className="font-medium">{vehicle.model}</p>
-                <p className="text-sm text-gray-600">{vehicle.year} • {vehicle.body_style}</p>
+                <p className="text-sm text-gray-600">{vehicle.body_style}</p>
                 <p className="text-xs text-gray-500">
                   Electric: {vehicle.is_electric ? 'Yes' : 'No'}
                 </p>

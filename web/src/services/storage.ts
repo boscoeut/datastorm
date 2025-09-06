@@ -358,4 +358,33 @@ export class VehicleImageService {
 
     if (error) throw error
   }
+
+  /**
+   * Set a gallery image as the profile image
+   */
+  static async setGalleryImageAsProfile(vehicleId: string, imageUrl: string, imagePath: string): Promise<boolean> {
+    try {
+      // Check admin permission
+      const isAdmin = await this.checkAdminPermission()
+      if (!isAdmin) {
+        console.error('Only administrators can set profile images')
+        return false
+      }
+
+      // Update the vehicle's profile image
+      const { error } = await supabase
+        .from('vehicles')
+        .update({
+          profile_image_url: imageUrl,
+          profile_image_path: imagePath
+        })
+        .eq('id', vehicleId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Failed to set profile image:', error)
+      return false
+    }
+  }
 }
