@@ -10,14 +10,23 @@ ADD COLUMN IF NOT EXISTS model_year INTEGER; -- Keep year for reference but not 
 -- Update existing vehicles to be marked as current
 UPDATE vehicles SET is_currently_available = true WHERE is_currently_available IS NULL;
 
--- Create a new unique constraint that doesn't include year
--- First, drop the old unique constraint
+
+
+
+
+
+-- Drop the old unique constraint (if it existed)
 ALTER TABLE vehicles DROP CONSTRAINT IF EXISTS vehicles_manufacturer_id_model_year_trim_key;
 
--- Add new unique constraint for current models only
-ALTER TABLE vehicles ADD CONSTRAINT vehicles_current_model_unique 
-UNIQUE(manufacturer_id, model, trim) 
+-- ------------------------------------------------------------------
+-- 1️⃣  Add a *partial* unique index instead of a partial constraint
+-- ------------------------------------------------------------------
+-- This enforces uniqueness of (manufacturer_id, model, trim) **only**
+-- for rows where `is_currently_available = true`.
+CREATE UNIQUE INDEX IF NOT EXISTS vehicles_current_model_unique_idx
+ON vehicles (manufacturer_id, model, trim)
 WHERE is_currently_available = true;
+
 
 -- Create index for current vehicles
 CREATE INDEX IF NOT EXISTS idx_vehicles_current ON vehicles(is_currently_available) 

@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { BarChart3, X } from 'lucide-react'
+import { BarChart3 } from 'lucide-react'
 import { useComparisonCount, useMaxComparisonVehicles } from '@/stores/vehicle-store'
 
 interface FloatingComparisonButtonProps {
@@ -10,8 +10,7 @@ interface FloatingComparisonButtonProps {
 }
 
 const FloatingComparisonButton: React.FC<FloatingComparisonButtonProps> = ({
-  onToggleComparison,
-  isComparisonVisible
+  onToggleComparison
 }) => {
   const comparisonCount = useComparisonCount()
   const maxComparisonVehicles = useMaxComparisonVehicles()

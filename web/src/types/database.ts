@@ -20,7 +20,7 @@ export interface Vehicle {
   trim?: string
   body_style?: string
   is_electric: boolean
-  is_currently_available?: boolean // New field to track current availability (optional since column doesn't exist yet)
+  is_currently_available: boolean // New field to track current availability
   profile_image_url?: string
   profile_image_path?: string
   created_at: string

@@ -1,35 +1,31 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import VehicleList from '@/components/vehicles/VehicleList'
-import VehicleComparison from '@/components/vehicles/VehicleComparison'
-import FloatingComparisonButton from '@/components/vehicles/FloatingComparisonButton'
+import VehicleComparisonModal from '@/components/vehicles/VehicleComparisonModal'
 import {
   useVehicleStore,
   useVehicleLoading,
   useVehicleError,
-  useVehicleTotalCount
+  useVehicleTotalCount,
+  useComparisonCount
 } from '@/stores/vehicle-store'
 
 const VehiclesPage: React.FC = () => {
   const navigate = useNavigate()
-  const [isComparisonVisible, setIsComparisonVisible] = useState(true)
 
   const { fetchVehicles, fetchManufacturers, clearError } = useVehicleStore()
   const loading = useVehicleLoading()
   const error = useVehicleError()
   const totalCount = useVehicleTotalCount()
+  const comparisonCount = useComparisonCount()
 
   // Initialize data when component mounts
   useEffect(() => {
     fetchVehicles()
     fetchManufacturers()
   }, [fetchVehicles, fetchManufacturers])
-
-  const toggleComparison = () => {
-    setIsComparisonVisible(!isComparisonVisible)
-  }
 
   // Handle errors gracefully
   if (error) {
@@ -89,8 +85,12 @@ const VehiclesPage: React.FC = () => {
       {/* Vehicle List with integrated search and filters */}
       <VehicleList showHeader={false} />
 
-      {/* Vehicle Comparison - Conditionally visible */}
-      {isComparisonVisible && <VehicleComparison />}
+      {/* Fixed Floating Compare Button - Always visible when vehicles are selected */}
+      {comparisonCount > 0 && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <VehicleComparisonModal />
+        </div>
+      )}
 
       {/* Quick Actions */}
       <Card>
@@ -115,12 +115,6 @@ const VehiclesPage: React.FC = () => {
           </Button>
         </CardContent>
       </Card>
-
-      {/* Floating Comparison Button */}
-      <FloatingComparisonButton
-        onToggleComparison={toggleComparison}
-        isComparisonVisible={isComparisonVisible}
-      />
     </div>
   )
 }

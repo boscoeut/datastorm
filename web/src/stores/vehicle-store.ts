@@ -65,7 +65,9 @@ const initialState: VehicleState = {
   loading: false,
   error: null,
   searchQuery: '',
-  filters: {},
+  filters: {
+    is_currently_available: true
+  },
   pagination: {
     page: 1,
     pageSize: 20
@@ -152,7 +154,7 @@ export const useVehicleStore = create<VehicleStore>()(
 
       clearFilters: () => {
         set({ 
-          filters: {}, 
+          filters: { is_currently_available: true }, 
           searchQuery: '',
           pagination: { ...get().pagination, page: 1 }
         })

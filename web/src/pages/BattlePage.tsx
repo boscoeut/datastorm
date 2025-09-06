@@ -231,7 +231,6 @@ const BattlePage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-medium">{selectedVehicle1.manufacturer?.name} {selectedVehicle1.model}</div>
-                      <div className="text-sm text-muted-foreground">{selectedVehicle1.year}</div>
                     </div>
                     <Button
                       variant="ghost"
@@ -262,7 +261,6 @@ const BattlePage: React.FC = () => {
                           className="p-2 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
                         >
                           <div className="font-medium">{vehicle.manufacturer?.name} {vehicle.model}</div>
-                          <div className="text-sm text-muted-foreground">{vehicle.year}</div>
                         </div>
                       ))}
                     </div>
@@ -285,7 +283,6 @@ const BattlePage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-medium">{selectedVehicle2.manufacturer?.name} {selectedVehicle2.model}</div>
-                      <div className="text-sm text-muted-foreground">{selectedVehicle2.year}</div>
                     </div>
                     <Button
                       variant="ghost"
@@ -316,7 +313,6 @@ const BattlePage: React.FC = () => {
                           className="p-2 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
                         >
                           <div className="font-medium">{vehicle.manufacturer?.name} {vehicle.model}</div>
-                          <div className="text-sm text-muted-foreground">{vehicle.year}</div>
                         </div>
                       ))}
                     </div>

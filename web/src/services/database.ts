@@ -239,12 +239,11 @@ export class VehicleService {
     pagination?: PaginationOptions
     sortBy?: SortOption
   }) {
-    // For now, don't filter by is_currently_available since the column doesn't exist yet
+    // Default to current vehicles only
     const filters = {
+      is_currently_available: true,
       ...options?.filters
     }
-    // Remove is_currently_available from filters if it exists
-    delete filters.is_currently_available
     return DatabaseService.list<Vehicle>('vehicles', { ...options, filters })
   }
 
@@ -258,6 +257,7 @@ export class VehicleService {
           specifications:vehicle_specifications(*)
         `)
         .eq('id', id)
+        .eq('is_currently_available', true)
         .single()
 
       if (error) {
@@ -301,7 +301,9 @@ export class VehicleService {
       if (filters.is_electric !== undefined) {
         query = query.eq('is_electric', filters.is_electric)
       }
-      // Skip is_currently_available filter since the column doesn't exist yet
+      if (filters.is_currently_available !== undefined) {
+        query = query.eq('is_currently_available', filters.is_currently_available)
+      }
 
       // Apply sorting
       if (sortBy) {
@@ -344,8 +346,11 @@ export class VehicleService {
     pagination?: PaginationOptions
     sortBy?: SortOption
   }) {
-    // For now, just return all vehicles since we can't filter by is_currently_available
-    return this.list({ ...options, filters: options?.filters })
+    const filters = {
+      is_currently_available: true,
+      ...options?.filters
+    }
+    return this.list({ ...options, filters })
   }
 }
 
