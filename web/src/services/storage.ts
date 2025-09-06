@@ -28,6 +28,26 @@ export class VehicleImageService {
   private static readonly ALLOWED_TYPES = ['image/jpeg', 'image/jpeg', 'image/png', 'image/webp']
 
   /**
+   * Check if current user is admin
+   */
+  private static async checkAdminPermission(): Promise<boolean> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return false
+
+      const { data, error } = await supabase.rpc('is_admin', { user_uuid: user.id })
+      if (error) {
+        console.error('Error checking admin permission:', error)
+        return false
+      }
+      return data === true
+    } catch (error) {
+      console.error('Error checking admin permission:', error)
+      return false
+    }
+  }
+
+  /**
    * Initialize storage bucket if it doesn't exist
    */
   static async initializeStorage(): Promise<void> {
@@ -68,6 +88,15 @@ export class VehicleImageService {
    */
   static async uploadImage(options: ImageUploadOptions): Promise<ImageUploadResult> {
     try {
+      // Check admin permission
+      const isAdmin = await this.checkAdminPermission()
+      if (!isAdmin) {
+        return {
+          success: false,
+          error: 'Only administrators can upload vehicle images'
+        }
+      }
+
       // Validate file
       if (!this.validateFile(options.file)) {
         return {
@@ -80,7 +109,7 @@ export class VehicleImageService {
       const filePath = this.generateFilePath(options.vehicleId, options.imageType, options.file.name)
       
       // Upload file to storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from(this.BUCKET_NAME)
         .upload(filePath, options.file, {
           cacheControl: '3600',
@@ -183,6 +212,13 @@ export class VehicleImageService {
    */
   static async deleteGalleryImage(imageId: string, imagePath: string): Promise<boolean> {
     try {
+      // Check admin permission
+      const isAdmin = await this.checkAdminPermission()
+      if (!isAdmin) {
+        console.error('Only administrators can delete vehicle images')
+        return false
+      }
+
       // Delete from storage
       const { error: storageError } = await supabase.storage
         .from(this.BUCKET_NAME)
@@ -210,6 +246,13 @@ export class VehicleImageService {
    */
   static async reorderImages(vehicleId: string, imageOrders: Array<{ id: string; order: number }>): Promise<boolean> {
     try {
+      // Check admin permission
+      const isAdmin = await this.checkAdminPermission()
+      if (!isAdmin) {
+        console.error('Only administrators can reorder vehicle images')
+        return false
+      }
+
       const { error } = await supabase
         .rpc('reorder_vehicle_images', {
           p_vehicle_id: vehicleId,
@@ -242,7 +285,6 @@ export class VehicleImageService {
    */
   private static generateFilePath(vehicleId: string, imageType: 'profile' | 'gallery', fileName: string): string {
     const timestamp = Date.now()
-    const extension = fileName.split('.').pop()
     const sanitizedFileName = `${timestamp}_${fileName.replace(/[^a-zA-Z0-9.-]/g, '_')}`
     
     if (imageType === 'profile') {
@@ -301,7 +343,18 @@ export class VehicleImageService {
   }): Promise<void> {
     const { error } = await supabase
       .from('vehicle_images')
-      .insert([imageData])
+      .insert([{
+        vehicle_id: imageData.vehicleId,
+        image_url: imageData.imageUrl,
+        image_path: imageData.imagePath,
+        image_name: imageData.imageName,
+        image_type: imageData.imageType,
+        file_size: imageData.fileSize,
+        width: imageData.width,
+        height: imageData.height,
+        alt_text: imageData.altText,
+        display_order: imageData.displayOrder
+      }])
 
     if (error) throw error
   }

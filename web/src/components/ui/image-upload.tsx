@@ -31,11 +31,13 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ file, onRemove, className }
 
   return (
     <div className={cn('relative group', className)}>
-      <img
-        src={preview}
-        alt={file.name}
-        className="w-full h-32 object-cover rounded-lg"
-      />
+      {preview && (
+        <img
+          src={preview}
+          alt={file.name}
+          className="w-full h-32 object-cover rounded-lg"
+        />
+      )}
       <button
         onClick={onRemove}
         className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"

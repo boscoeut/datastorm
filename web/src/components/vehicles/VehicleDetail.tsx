@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { X, Image as ImageIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import SpecificationTable from './SpecificationTable'
 import VehicleImageGallery from './VehicleImageGallery'
 import { VehicleService } from '@/services/database'
-import type { VehicleWithDetails } from '@/types/database'
+import type { VehicleWithDetails, VehicleImage } from '@/types/database'
 
 const VehicleDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -14,6 +15,8 @@ const VehicleDetail: React.FC = () => {
   const [vehicle, setVehicle] = useState<VehicleWithDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedImage, setSelectedImage] = useState<VehicleImage | null>(null)
+  const [showImageModal, setShowImageModal] = useState(false)
 
   useEffect(() => {
     const fetchVehicleDetails = async () => {
@@ -58,6 +61,16 @@ const VehicleDetail: React.FC = () => {
         profile_image_url: imageUrl
       })
     }
+  }
+
+  const openImageModal = (imageData: VehicleImage) => {
+    setSelectedImage(imageData)
+    setShowImageModal(true)
+  }
+
+  const closeImageModal = () => {
+    setShowImageModal(false)
+    setSelectedImage(null)
   }
 
   if (loading) {
@@ -126,13 +139,53 @@ const VehicleDetail: React.FC = () => {
                   <img
                     src={vehicle.profile_image_url}
                     alt={`${manufacturer?.name || 'Unknown'} ${vehicle.model}`}
-                    className="w-full h-64 object-cover rounded-lg shadow-lg"
+                    className="w-full h-64 object-cover rounded-lg shadow-lg cursor-pointer"
+                    onClick={() => {
+                      // Create a mock VehicleImage object for the profile image
+                      const profileImageData: VehicleImage = {
+                        id: 'profile-image',
+                        vehicle_id: vehicle.id,
+                        image_url: vehicle.profile_image_url,
+                        image_path: '',
+                        image_name: 'Profile Image',
+                        image_type: 'image/jpeg',
+                        file_size: 0,
+                        width: 0,
+                        height: 0,
+                        alt_text: 'Profile Image',
+                        display_order: 0,
+                        is_active: true,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                      }
+                      openImageModal(profileImageData)
+                    }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
                     <Button
                       variant="outline"
                       size="sm"
                       className="opacity-0 group-hover:opacity-100 bg-white text-gray-900 hover:bg-gray-100"
+                      onClick={() => {
+                        // Create a mock VehicleImage object for the profile image
+                        const profileImageData: VehicleImage = {
+                          id: 'profile-image',
+                          vehicle_id: vehicle.id,
+                          image_url: vehicle.profile_image_url,
+                          image_path: '',
+                          image_name: 'Profile Image',
+                          image_type: 'image/jpeg',
+                          file_size: 0,
+                          width: 0,
+                          height: 0,
+                          alt_text: 'Profile Image',
+                          display_order: 0,
+                          is_active: true,
+                          created_at: new Date().toISOString(),
+                          updated_at: new Date().toISOString()
+                        }
+                        openImageModal(profileImageData)
+                      }}
                     >
                       View Full Size
                     </Button>
@@ -228,6 +281,37 @@ const VehicleDetail: React.FC = () => {
         loading={false}
         error={null}
       />
+
+      {/* Image Modal */}
+      {showImageModal && selectedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="relative max-w-4xl max-h-full">
+            <Button
+              variant="outline"
+              size="sm"
+              className="absolute top-4 right-4 z-10 bg-white text-gray-900 hover:bg-gray-100"
+              onClick={closeImageModal}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+            <img
+              src={selectedImage.image_url}
+              alt={selectedImage.alt_text || selectedImage.image_name}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+            <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 text-white p-3 rounded-lg">
+              <p className="font-medium">{selectedImage.image_name}</p>
+              {selectedImage.alt_text && (
+                <p className="text-sm text-gray-300">{selectedImage.alt_text}</p>
+              )}
+              <p className="text-xs text-gray-400">
+                {selectedImage.width} × {selectedImage.height} • 
+                {selectedImage.file_size ? (selectedImage.file_size / (1024 * 1024)).toFixed(2) : 'Unknown'} MB
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
