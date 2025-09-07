@@ -265,9 +265,10 @@ export class VehicleService {
       }
 
       // Transform the data to match the expected interface
-      if (data && data.specifications && Array.isArray(data.specifications)) {
+      if (data && data.vehicle_specifications && Array.isArray(data.vehicle_specifications)) {
         // Take the first specification if it's an array
-        data.specifications = data.specifications[0] || null
+        data.specifications = data.vehicle_specifications[0] || null
+        delete data.vehicle_specifications
       }
       
       // Transform manufacturers to manufacturer for consistency
@@ -387,8 +388,9 @@ export class VehicleService {
 
         // Transform the data to match the expected interface
         const transformedData = filteredVehicles.map(vehicle => {
-          if (vehicle.specifications && Array.isArray(vehicle.specifications)) {
-            vehicle.specifications = vehicle.specifications[0] || null
+          if (vehicle.vehicle_specifications && Array.isArray(vehicle.vehicle_specifications)) {
+            vehicle.specifications = vehicle.vehicle_specifications[0] || null
+            delete vehicle.vehicle_specifications
           }
           // Transform manufacturers to manufacturer for consistency
           if (vehicle.manufacturers) {
@@ -448,9 +450,10 @@ export class VehicleService {
 
       // Transform the data to match the expected interface
       const transformedData = data?.map(vehicle => {
-        if (vehicle.specifications && Array.isArray(vehicle.specifications)) {
+        if (vehicle.vehicle_specifications && Array.isArray(vehicle.vehicle_specifications)) {
           // Take the first specification if it's an array
-          vehicle.specifications = vehicle.specifications[0] || null
+          vehicle.specifications = vehicle.vehicle_specifications[0] || null
+          delete vehicle.vehicle_specifications
         }
         // Transform manufacturers to manufacturer for consistency
         if (vehicle.manufacturers) {
