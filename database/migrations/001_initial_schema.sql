@@ -50,20 +50,6 @@ CREATE TABLE IF NOT EXISTS vehicle_specifications (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create market_data table
-CREATE TABLE IF NOT EXISTS market_data (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  vehicle_id UUID REFERENCES vehicles(id) ON DELETE CASCADE,
-  msrp DECIMAL(10,2),
-  current_price DECIMAL(10,2),
-  inventory_count INTEGER,
-  days_on_market INTEGER,
-  market_trend VARCHAR(50),
-  region VARCHAR(100),
-  data_date DATE NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
 
 -- Create news_articles table
 CREATE TABLE IF NOT EXISTS news_articles (
@@ -105,11 +91,6 @@ CREATE INDEX IF NOT EXISTS idx_specs_range ON vehicle_specifications(range_miles
 CREATE INDEX IF NOT EXISTS idx_specs_power ON vehicle_specifications(power_hp);
 CREATE INDEX IF NOT EXISTS idx_specs_vehicle_id ON vehicle_specifications(vehicle_id);
 
--- Market data indexes
-CREATE INDEX IF NOT EXISTS idx_market_vehicle_date ON market_data(vehicle_id, data_date);
-CREATE INDEX IF NOT EXISTS idx_market_price ON market_data(current_price);
-CREATE INDEX IF NOT EXISTS idx_market_region ON market_data(region);
-CREATE INDEX IF NOT EXISTS idx_market_trend ON market_data(market_trend);
 
 -- News indexes
 CREATE INDEX IF NOT EXISTS idx_news_published_date ON news_articles(published_date);
@@ -125,7 +106,6 @@ CREATE INDEX IF NOT EXISTS idx_user_prefs_favorites ON user_preferences USING GI
 ALTER TABLE manufacturers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vehicles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vehicle_specifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE market_data ENABLE ROW LEVEL SECURITY;
 ALTER TABLE news_articles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
 
@@ -170,18 +150,6 @@ CREATE POLICY "Users can update specifications" ON vehicle_specifications
 CREATE POLICY "Users can delete specifications" ON vehicle_specifications
   FOR DELETE USING (auth.role() = 'authenticated');
 
--- Market data: Read access for all, write for authenticated users
-CREATE POLICY "Market data is viewable by everyone" ON market_data
-  FOR SELECT USING (true);
-
-CREATE POLICY "Users can insert market data" ON market_data
-  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
-CREATE POLICY "Users can update market data" ON market_data
-  FOR UPDATE USING (auth.role() = 'authenticated');
-
-CREATE POLICY "Users can delete market data" ON market_data
-  FOR DELETE USING (auth.role() = 'authenticated');
 
 -- News articles: Read access for all, write for authenticated users
 CREATE POLICY "News articles are viewable by everyone" ON news_articles
@@ -228,8 +196,6 @@ CREATE TRIGGER update_vehicles_updated_at BEFORE UPDATE ON vehicles
 CREATE TRIGGER update_vehicle_specifications_updated_at BEFORE UPDATE ON vehicle_specifications
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_market_data_updated_at BEFORE UPDATE ON market_data
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_news_articles_updated_at BEFORE UPDATE ON news_articles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -282,19 +248,6 @@ JOIN manufacturers m ON v.manufacturer_id = m.id
 WHERE m.name = 'Tesla' AND v.model = 'Model 3'
 ON CONFLICT DO NOTHING;
 
--- Insert sample market data
-INSERT INTO market_data (vehicle_id, msrp, current_price, inventory_count, region, data_date)
-SELECT 
-  v.id,
-  45990.00,
-  45990.00,
-  15,
-  'California',
-  CURRENT_DATE
-FROM vehicles v 
-JOIN manufacturers m ON v.manufacturer_id = m.id 
-WHERE m.name = 'Tesla' AND v.model = 'Model 3'
-ON CONFLICT DO NOTHING;
 
 -- Insert sample news articles
 INSERT INTO news_articles (title, summary, source_name, category, tags) VALUES
