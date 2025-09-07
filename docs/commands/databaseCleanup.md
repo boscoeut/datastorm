@@ -51,7 +51,6 @@ The Database Cleanup Agent is a specialized AI agent designed to automatically a
 - **vehicles**: Vehicle models with manufacturer reference, model, year, trim, availability
 - **vehicle_specifications**: Technical specs linked to vehicles
 - **vehicle_images**: Image gallery with ordering and metadata
-- **market_data**: Pricing and market information
 - **news_articles**: News content with categorization
 - **user_preferences**: User-specific data and favorites
 - **user_roles**: Admin/user role management
