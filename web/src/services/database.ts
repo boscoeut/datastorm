@@ -309,14 +309,41 @@ export class VehicleService {
           `, { count: 'exact' })
           .ilike('manufacturers.name', searchTerm)
 
-        // Execute both queries
-        const [modelResult, manufacturerResult] = await Promise.all([
+        // Get vehicles that match body style
+        const bodyStyleQuery = supabase
+          .from('vehicles')
+          .select(`
+            *,
+            manufacturers!inner(*),
+            vehicle_specifications(*)
+          `, { count: 'exact' })
+          .ilike('body_style', searchTerm)
+
+        // Get vehicles that match trim
+        const trimQuery = supabase
+          .from('vehicles')
+          .select(`
+            *,
+            manufacturers!inner(*),
+            vehicle_specifications(*)
+          `, { count: 'exact' })
+          .ilike('trim', searchTerm)
+
+        // Execute all four queries
+        const [modelResult, manufacturerResult, bodyStyleResult, trimResult] = await Promise.all([
           modelQuery,
-          manufacturerQuery
+          manufacturerQuery,
+          bodyStyleQuery,
+          trimQuery
         ])
 
         // Combine results and remove duplicates
-        const allVehicles = [...(modelResult.data || []), ...(manufacturerResult.data || [])]
+        const allVehicles = [
+          ...(modelResult.data || []), 
+          ...(manufacturerResult.data || []), 
+          ...(bodyStyleResult.data || []),
+          ...(trimResult.data || [])
+        ]
         const uniqueVehicles = allVehicles.filter((vehicle, index, self) => 
           index === self.findIndex(v => v.id === vehicle.id)
         )
