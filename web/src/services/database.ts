@@ -253,8 +253,8 @@ export class VehicleService {
         .from('vehicles')
         .select(`
           *,
-          manufacturer:manufacturers(*),
-          specifications:vehicle_specifications(*)
+          manufacturers!inner(*),
+          vehicle_specifications(*)
         `)
         .eq('id', id)
         .eq('is_currently_available', true)
@@ -269,6 +269,12 @@ export class VehicleService {
         // Take the first specification if it's an array
         data.specifications = data.specifications[0] || null
       }
+      
+      // Transform manufacturers to manufacturer for consistency
+      if (data && data.manufacturers) {
+        data.manufacturer = data.manufacturers
+        delete data.manufacturers
+      }
 
       return { data, error: null }
     } catch (error) {
@@ -278,18 +284,104 @@ export class VehicleService {
 
   static async search(filters: VehicleFilters, options?: PaginationOptions, sortBy?: SortOption, searchQuery?: string) {
     try {
+      // Handle multi-field search with a different approach
+      // Check if searchQuery exists, is not empty, and has content after trimming
+      if (searchQuery !== undefined && searchQuery !== null && searchQuery !== '' && searchQuery.trim() !== '') {
+        const searchTerm = `%${searchQuery.trim()}%`
+        
+        // Get vehicles that match model name
+        const modelQuery = supabase
+          .from('vehicles')
+          .select(`
+            *,
+            manufacturers!inner(*),
+            vehicle_specifications(*)
+          `, { count: 'exact' })
+          .ilike('model', searchTerm)
+
+        // Get vehicles that match manufacturer name
+        const manufacturerQuery = supabase
+          .from('vehicles')
+          .select(`
+            *,
+            manufacturers!inner(*),
+            vehicle_specifications(*)
+          `, { count: 'exact' })
+          .ilike('manufacturers.name', searchTerm)
+
+        // Execute both queries
+        const [modelResult, manufacturerResult] = await Promise.all([
+          modelQuery,
+          manufacturerQuery
+        ])
+
+        // Combine results and remove duplicates
+        const allVehicles = [...(modelResult.data || []), ...(manufacturerResult.data || [])]
+        const uniqueVehicles = allVehicles.filter((vehicle, index, self) => 
+          index === self.findIndex(v => v.id === vehicle.id)
+        )
+
+        // Apply filters to combined results
+        let filteredVehicles = uniqueVehicles
+        if (filters.manufacturer_id) {
+          filteredVehicles = filteredVehicles.filter(v => v.manufacturer_id === filters.manufacturer_id)
+        }
+        if (filters.body_style) {
+          filteredVehicles = filteredVehicles.filter(v => v.body_style === filters.body_style)
+        }
+        if (filters.is_electric !== undefined) {
+          filteredVehicles = filteredVehicles.filter(v => v.is_electric === filters.is_electric)
+        }
+        if (filters.is_currently_available !== undefined) {
+          filteredVehicles = filteredVehicles.filter(v => v.is_currently_available === filters.is_currently_available)
+        }
+
+        // Apply sorting
+        if (sortBy) {
+          filteredVehicles.sort((a, b) => {
+            const aValue = a[sortBy.field as keyof typeof a]
+            const bValue = b[sortBy.field as keyof typeof b]
+            if (sortBy.direction === 'asc') {
+              return aValue > bValue ? 1 : -1
+            } else {
+              return aValue < bValue ? 1 : -1
+            }
+          })
+        }
+
+        // Apply pagination
+        if (options) {
+          const { page, pageSize } = options
+          const from = (page - 1) * pageSize
+          const to = from + pageSize
+          filteredVehicles = filteredVehicles.slice(from, to)
+        }
+
+
+        // Transform the data to match the expected interface
+        const transformedData = filteredVehicles.map(vehicle => {
+          if (vehicle.specifications && Array.isArray(vehicle.specifications)) {
+            vehicle.specifications = vehicle.specifications[0] || null
+          }
+          // Transform manufacturers to manufacturer for consistency
+          if (vehicle.manufacturers) {
+            vehicle.manufacturer = vehicle.manufacturers
+            delete vehicle.manufacturers
+          }
+          return vehicle
+        })
+
+        return { data: transformedData, error: null, count: uniqueVehicles.length }
+      }
+
+      // Original query for when there's no search
       let query = supabase
         .from('vehicles')
         .select(`
           *,
-          manufacturer:manufacturers(*),
-          specifications:vehicle_specifications(*)
+          manufacturers!inner(*),
+          vehicle_specifications(*)
         `, { count: 'exact' })
-
-      // Apply text search
-      if (searchQuery && searchQuery.trim()) {
-        query = query.ilike('model', `%${searchQuery.trim()}%`)
-      }
 
       // Apply filters
       if (filters.manufacturer_id) {
@@ -326,11 +418,17 @@ export class VehicleService {
         return { data: [], error: DatabaseService.handleError(error), count: 0 }
       }
 
+
       // Transform the data to match the expected interface
       const transformedData = data?.map(vehicle => {
         if (vehicle.specifications && Array.isArray(vehicle.specifications)) {
           // Take the first specification if it's an array
           vehicle.specifications = vehicle.specifications[0] || null
+        }
+        // Transform manufacturers to manufacturer for consistency
+        if (vehicle.manufacturers) {
+          vehicle.manufacturer = vehicle.manufacturers
+          delete vehicle.manufacturers
         }
         return vehicle
       }) || []

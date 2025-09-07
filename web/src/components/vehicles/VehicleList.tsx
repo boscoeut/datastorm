@@ -56,6 +56,7 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
     fetchManufacturers()
   }, [fetchVehicles, fetchManufacturers])
 
+
   const handleVehicleClick = (vehicleId: string) => {
     navigate(`/vehicles/${vehicleId}`)
   }

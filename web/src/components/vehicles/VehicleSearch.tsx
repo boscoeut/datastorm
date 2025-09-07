@@ -10,10 +10,10 @@ import { useVehicleStore, useManufacturers } from '@/stores/vehicle-store'
 import type { VehicleFilters } from '@/types/database'
 
 interface VehicleSearchProps {
-  onSearchChange?: (query: string) => void
+  onSearchChange?: (query: string | undefined) => void
   onFilterChange?: (filters: VehicleFilters) => void
   filters?: VehicleFilters
-  searchQuery?: string
+  searchQuery?: string | undefined
   disableSearchSync?: boolean // New prop to disable search synchronization
 }
 
@@ -21,14 +21,14 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
   onSearchChange,
   onFilterChange,
   filters = {},
-  searchQuery = '',
+  searchQuery = undefined,
   disableSearchSync = false
 }) => {
   const manufacturers = useManufacturers()
   const { fetchManufacturers } = useVehicleStore()
   
   // Local state for search and filters
-  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
+  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery || '')
   const [localFilters, setLocalFilters] = useState<VehicleFilters>(filters)
   
   
@@ -46,7 +46,7 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
   
   // Update local state when props change
   useEffect(() => {
-    setLocalSearchQuery(searchQuery)
+    setLocalSearchQuery(searchQuery || '')
   }, [searchQuery])
   
   useEffect(() => {
@@ -55,8 +55,9 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
   
   // Handle search query changes with debouncing - only call onSearchChange if not disabled and conditions are met
   useEffect(() => {
-    if (!disableSearchSync && onSearchChange && debouncedSearchQuery !== searchQuery) {
-      onSearchChange(debouncedSearchQuery)
+    if (!disableSearchSync && onSearchChange && debouncedSearchQuery !== (searchQuery || '')) {
+      // If debounced query is empty, pass undefined to clear the search
+      onSearchChange(debouncedSearchQuery === '' ? undefined : debouncedSearchQuery)
     }
   }, [debouncedSearchQuery, onSearchChange, searchQuery, disableSearchSync])
   
@@ -75,7 +76,7 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
     setLocalSearchQuery('')
     setLocalFilters({})
     
-    if (onSearchChange) onSearchChange('')
+    if (onSearchChange) onSearchChange(undefined)
     if (onFilterChange) onFilterChange({})
   }, [onSearchChange, onFilterChange])
   
@@ -137,7 +138,7 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
               <Input
                 id="search"
                 type="text"
-                placeholder="Search by model, manufacturer, or specifications..."
+                placeholder="Search by model or manufacturer..."
                 value={localSearchQuery}
                 onChange={(e) => setLocalSearchQuery(e.target.value)}
                 className="flex-1"
@@ -152,7 +153,7 @@ const VehicleSearch: React.FC<VehicleSearchProps> = ({
               </Button>
             </div>
             <p id="search-help" className="text-xs text-muted-foreground">
-              Search across vehicle models, manufacturers, and technical specifications
+              Search across vehicle models and manufacturers
             </p>
           </div>
           

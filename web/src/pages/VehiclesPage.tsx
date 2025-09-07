@@ -67,7 +67,7 @@ const VehiclesPage: React.FC = () => {
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Quick search vehicles..."
+              placeholder="Search by model or manufacturer..."
               value={localSearchQuery}
               onChange={(e) => setLocalSearchQuery(e.target.value)}
               className="pl-10"
@@ -127,7 +127,7 @@ const VehiclesPage: React.FC = () => {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Quick search vehicles..."
+            placeholder="Search by model or manufacturer..."
             value={localSearchQuery}
             onChange={(e) => setLocalSearchQuery(e.target.value)}
             className="pl-10"

@@ -13,7 +13,7 @@ interface VehicleState {
   error: string | null
   
   // Search and Filtering
-  searchQuery: string
+  searchQuery: string | undefined
   filters: VehicleFilters
   
   // Pagination
@@ -64,7 +64,7 @@ const initialState: VehicleState = {
   manufacturers: [],
   loading: false,
   error: null,
-  searchQuery: '',
+  searchQuery: undefined,
   filters: {
     is_currently_available: true
   },
@@ -136,7 +136,7 @@ export const useVehicleStore = create<VehicleStore>()(
       },
 
       // Search and filtering
-      setSearchQuery: (query: string) => {
+      setSearchQuery: (query: string | undefined) => {
         set({ searchQuery: query, pagination: { ...get().pagination, page: 1 } })
         // Trigger a new search when search query changes
         get().fetchVehicles()
