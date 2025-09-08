@@ -5,7 +5,7 @@
 **Description:** Create an MCP (Model Context Protocol) server as a Supabase Edge Function that implements the populate-images functionality from the existing populate-images edge function
 **Phase:** Phase 2
 **Status:** Completed
-**Dependencies:** populate-images edge function, google-search-mcp edge function
+**Dependencies:** populate-images edge function
 
 ## Requirements
 

@@ -6,7 +6,7 @@ Add a new feature to the vehicle detail page that allows admin users to populate
 ## Requirements
 - Add an admin-only "Populate Images" button to the vehicle detail page
 - When clicked, the button should:
-  1. Call the google-search-mcp edge function to search for images related to the selected model and trim
+  1. Use the built-in Google Search functionality to search for images related to the selected model and trim
   2. Download the found images
   3. Upload them to the image gallery
 
@@ -22,9 +22,9 @@ Add a new feature to the vehicle detail page that allows admin users to populate
 - Create a "Populate Images" button component
 - Position it appropriately on the vehicle detail page
 
-### 3. Integrate Google Search MCP
-- Review the existing google-search-mcp edge function
-- Create a service function to call the edge function
+### 3. Integrate Google Search
+- Use the built-in Google Search functionality in the MCP server
+- Create a service function to call the MCP server
 - Handle the search results for images
 
 ### 4. Implement Image Download
@@ -65,6 +65,6 @@ Add a new feature to the vehicle detail page that allows admin users to populate
 - Edge function integration services
 
 ## Dependencies
-- Existing google-search-mcp edge function
+- Built-in Google Search functionality in MCP server
 - Current admin authentication system
 - Image gallery and upload functionality

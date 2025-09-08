@@ -11,7 +11,7 @@ This edge function provides an MCP-compliant server that exposes the populate-im
 - **MCP Protocol Compliance**: Full implementation of MCP JSON-RPC 2.0 protocol
 - **Tool Discovery**: Exposes available tools through MCP tool listing
 - **Admin-Only Access**: Requires admin privileges for populate-images tool
-- **Google Search Integration**: Uses the existing google-search-mcp edge function
+- **Google Search Integration**: Built-in Google Search API integration
 - **Server-Side Processing**: Handles image downloads and uploads on the server
 - **Comprehensive Error Handling**: MCP-compliant error responses
 - **Authentication**: JWT token validation and user verification
@@ -188,7 +188,7 @@ The MCP server uses standard JSON-RPC 2.0 error codes:
 
 ## Dependencies
 
-- **google-search-mcp**: Edge function for Google Search API integration
+- **Google Search API**: Direct integration with Google's Programmable Search Engine
 - **Supabase Storage**: For storing downloaded images
 - **Supabase Database**: For storing image metadata
 - **Deno Runtime**: For edge function execution
@@ -239,7 +239,7 @@ The MCP server can be tested using standard MCP client tools or by sending JSON-
 1. **Authentication Errors**: Ensure JWT token is valid and user has admin privileges
 2. **Method Not Found**: Verify request follows JSON-RPC 2.0 format
 3. **Invalid Params**: Check that all required parameters are provided
-4. **Google Search Errors**: Ensure google-search-mcp function is deployed and accessible
+4. **Google Search Errors**: Ensure GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_ENGINE_ID are configured
 
 ### Debug Information
 
