@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +25,212 @@ interface MCPTool {
     required: string[]
   }
 }
+
+// Google Search Types
+interface GoogleSearchParams {
+  query: string;
+  num_results?: number;
+  site_restriction?: string;
+  language?: string;
+  start_index?: number;
+}
+
+interface GoogleImageSearchParams {
+  query: string;
+  num_results?: number;
+  site_restriction?: string;
+  language?: string;
+  start_index?: number;
+  image_size?: 'huge' | 'icon' | 'large' | 'medium' | 'small' | 'xlarge' | 'xxlarge';
+  image_type?: 'clipart' | 'face' | 'lineart' | 'stock' | 'photo' | 'animated';
+  image_color_type?: 'color' | 'gray' | 'trans';
+  safe?: 'active' | 'off';
+}
+
+interface GoogleSearchResult {
+  title: string;
+  link: string;
+  snippet: string;
+  displayLink: string;
+  formattedUrl: string;
+  pagemap?: {
+    metatags?: Array<{
+      [key: string]: string;
+    }>;
+  };
+}
+
+interface GoogleImageSearchResult {
+  title: string;
+  link: string;
+  snippet: string;
+  displayLink: string;
+  formattedUrl: string;
+  image: {
+    contextLink: string;
+    height: number;
+    width: number;
+    byteSize: number;
+    thumbnailLink: string;
+    thumbnailHeight: number;
+    thumbnailWidth: number;
+  };
+  pagemap?: {
+    metatags?: Array<{
+      [key: string]: string;
+    }>;
+  };
+}
+
+interface GoogleSearchResponse {
+  kind: string;
+  url: {
+    type: string;
+    template: string;
+  };
+  queries: {
+    request: Array<{
+      title: string;
+      totalResults: string;
+      searchTerms: string;
+      count: number;
+      startIndex: number;
+      inputEncoding: string;
+      outputEncoding: string;
+      safe: string;
+      cx: string;
+    }>;
+  };
+  context: {
+    title: string;
+  };
+  searchInformation: {
+    searchTime: number;
+    formattedSearchTime: string;
+    totalResults: string;
+    formattedTotalResults: string;
+  };
+  items?: GoogleSearchResult[];
+}
+
+interface GoogleImageSearchResponse {
+  kind: string;
+  url: {
+    type: string;
+    template: string;
+  };
+  queries: {
+    request: Array<{
+      title: string;
+      totalResults: string;
+      searchTerms: string;
+      count: number;
+      startIndex: number;
+      inputEncoding: string;
+      outputEncoding: string;
+      safe: string;
+      cx: string;
+      searchType: string;
+    }>;
+  };
+  context: {
+    title: string;
+  };
+  searchInformation: {
+    searchTime: number;
+    formattedSearchTime: string;
+    totalResults: string;
+    formattedTotalResults: string;
+  };
+  items?: GoogleImageSearchResult[];
+}
+
+interface ProcessedSearchResult {
+  title: string;
+  link: string;
+  snippet: string;
+  displayLink: string;
+  formattedUrl: string;
+}
+
+interface ProcessedImageSearchResult {
+  title: string;
+  link: string;
+  snippet: string;
+  displayLink: string;
+  formattedUrl: string;
+  imageUrl: string;
+  thumbnailUrl: string;
+  imageWidth: number;
+  imageHeight: number;
+  thumbnailWidth: number;
+  thumbnailHeight: number;
+  imageSize: number;
+  contextUrl: string;
+}
+
+interface SearchResponse {
+  success: boolean;
+  results: ProcessedSearchResult[];
+  totalResults: string;
+  searchTime: number;
+  query: string;
+  timestamp: string;
+  source: 'datastorm-mcp-server';
+  error?: string;
+}
+
+interface ImageSearchResponse {
+  success: boolean;
+  results: ProcessedImageSearchResult[];
+  totalResults: string;
+  searchTime: number;
+  query: string;
+  timestamp: string;
+  source: 'datastorm-mcp-server';
+  error?: string;
+}
+
+// Rate limiting types
+interface RateLimitConfig {
+  maxRequestsPerMinute: number;
+  maxRequestsPerHour: number;
+}
+
+interface RequestCount {
+  count: number;
+  resetTime: number;
+}
+
+// Configuration
+const RATE_LIMIT_CONFIG: RateLimitConfig = {
+  maxRequestsPerMinute: 60,
+  maxRequestsPerHour: 1000,
+};
+
+// Rate limiting storage (in-memory for demo, should use Redis in production)
+const requestCounts = new Map<string, RequestCount>();
+
+// Validation schemas
+const GoogleSearchParamsSchema = z.object({
+  query: z.string().min(1, 'Query is required'),
+  num_results: z.number().min(1).max(100).optional(),
+  site_restriction: z.string().optional(),
+  language: z.string().optional(),
+  start_index: z.number().min(1).optional(),
+});
+
+const GoogleImageSearchParamsSchema = z.object({
+  query: z.string().min(1, 'Query is required'),
+  num_results: z.number().min(1).max(100).optional(),
+  site_restriction: z.string().optional(),
+  language: z.string().optional(),
+  start_index: z.number().min(1).optional(),
+  image_size: z.enum(['huge', 'icon', 'large', 'medium', 'small', 'xlarge', 'xxlarge']).optional(),
+  image_type: z.enum(['clipart', 'face', 'lineart', 'stock', 'photo', 'animated']).optional(),
+  image_color_type: z.enum(['color', 'gray', 'trans']).optional(),
+  safe: z.enum(['active', 'off']).optional(),
+});
 
 // Define available MCP tools
 const mcpTools: MCPTool[] = [
@@ -58,7 +265,93 @@ const mcpTools: MCPTool[] = [
       },
       required: ['vehicleId', 'model']
     }
-  }
+  },
+  {
+    name: 'web_search',
+    description: 'Perform web searches using Google\'s Programmable Search Engine',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'The search query string',
+        },
+        num_results: {
+          type: 'number',
+          description: 'Number of results to return (default: 10, max: 100)',
+          minimum: 1,
+          maximum: 100,
+        },
+        site_restriction: {
+          type: 'string',
+          description: 'Restrict search to a specific site (e.g., "example.com")',
+        },
+        language: {
+          type: 'string',
+          description: 'Search language preference (e.g., "en", "es", "fr")',
+        },
+        start_index: {
+          type: 'number',
+          description: 'Starting index for pagination (default: 1)',
+          minimum: 1,
+        },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'image_search',
+    description: 'Search for images using Google\'s Programmable Search Engine',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'The search query string',
+        },
+        num_results: {
+          type: 'number',
+          description: 'Number of results to return (default: 10, max: 100)',
+          minimum: 1,
+          maximum: 100,
+        },
+        site_restriction: {
+          type: 'string',
+          description: 'Restrict search to a specific site (e.g., "example.com")',
+        },
+        language: {
+          type: 'string',
+          description: 'Search language preference (e.g., "en", "es", "fr")',
+        },
+        start_index: {
+          type: 'number',
+          description: 'Starting index for pagination (default: 1)',
+          minimum: 1,
+        },
+        image_size: {
+          type: 'string',
+          enum: ['huge', 'icon', 'large', 'medium', 'small', 'xlarge', 'xxlarge'],
+          description: 'Filter by image size',
+        },
+        image_type: {
+          type: 'string',
+          enum: ['clipart', 'face', 'lineart', 'stock', 'photo', 'animated'],
+          description: 'Filter by image type',
+        },
+        image_color_type: {
+          type: 'string',
+          enum: ['color', 'gray', 'trans'],
+          description: 'Filter by color type',
+        },
+        safe: {
+          type: 'string',
+          enum: ['active', 'off'],
+          description: 'Safe search setting',
+        },
+      },
+      required: ['query'],
+    },
+  },
 ]
 
 // Check if user is admin
@@ -78,6 +371,189 @@ async function checkAdminPermission(userId: string): Promise<boolean> {
   }
 }
 
+// Rate limiting functions
+function checkRateLimit(clientId: string): boolean {
+  const now = Date.now();
+  const minuteAgo = now - 60 * 1000;
+
+  // Get current counts
+  const current = requestCounts.get(clientId) || { count: 0, resetTime: now };
+
+  // Reset if needed
+  if (current.resetTime < minuteAgo) {
+    current.count = 0;
+    current.resetTime = now;
+  }
+
+  // Check limits
+  if (current.count >= RATE_LIMIT_CONFIG.maxRequestsPerMinute) {
+    return false;
+  }
+
+  // Update count
+  current.count++;
+  requestCounts.set(clientId, current);
+
+  return true;
+}
+
+function getClientId(req: Request): string {
+  // Use IP address as client ID (in production, use user ID or session token)
+  const forwarded = req.headers.get('x-forwarded-for');
+  const realIp = req.headers.get('x-real-ip');
+  return forwarded?.split(',')[0] || realIp || 'unknown';
+}
+
+// Google Search API functions
+async function callGoogleSearchAPI(params: GoogleSearchParams): Promise<GoogleSearchResponse> {
+  try {
+    const apiKey = Deno.env.get('GOOGLE_SEARCH_API_KEY');
+    const searchEngineId = Deno.env.get('GOOGLE_SEARCH_ENGINE_ID');
+
+    if (!apiKey || !searchEngineId) {
+      throw new Error('Google Search API key or search engine ID not configured');
+    }
+
+    // Build search URL
+    const baseUrl = 'https://www.googleapis.com/customsearch/v1';
+    const searchParams = new URLSearchParams({
+      key: apiKey,
+      cx: searchEngineId,
+      q: params.query,
+      num: String(params.num_results || 10),
+      start: String(params.start_index || 1),
+    });
+
+    // Add optional parameters
+    if (params.site_restriction) {
+      searchParams.append('siteSearch', params.site_restriction);
+    }
+    if (params.language) {
+      searchParams.append('lr', `lang_${params.language}`);
+    }
+
+    const url = `${baseUrl}?${searchParams.toString()}`;
+
+    // Make the API request
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Google Search API error: ${response.status} ${errorText}`);
+    }
+
+    const data: GoogleSearchResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error calling Google Search API:', error);
+    throw new Error(`Google Search API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+async function callGoogleImageSearchAPI(params: GoogleImageSearchParams): Promise<GoogleImageSearchResponse> {
+  try {
+    const apiKey = Deno.env.get('GOOGLE_SEARCH_API_KEY');
+    const searchEngineId = Deno.env.get('GOOGLE_SEARCH_ENGINE_ID');
+
+    if (!apiKey || !searchEngineId) {
+      throw new Error('Google Search API key or search engine ID not configured');
+    }
+
+    // Build search URL for image search
+    const baseUrl = 'https://www.googleapis.com/customsearch/v1';
+    const searchParams = new URLSearchParams({
+      key: apiKey,
+      cx: searchEngineId,
+      q: params.query,
+      num: String(params.num_results || 10),
+      start: String(params.start_index || 1),
+      searchType: 'image', // This is the key difference for image search
+    });
+
+    // Add optional parameters
+    if (params.site_restriction) {
+      searchParams.append('siteSearch', params.site_restriction);
+    }
+    if (params.language) {
+      searchParams.append('lr', `lang_${params.language}`);
+    }
+    if (params.image_size) {
+      searchParams.append('imgSize', params.image_size);
+    }
+    if (params.image_type) {
+      searchParams.append('imgType', params.image_type);
+    }
+    if (params.image_color_type) {
+      searchParams.append('imgColorType', params.image_color_type);
+    }
+    if (params.safe) {
+      searchParams.append('safe', params.safe);
+    }
+
+    const url = `${baseUrl}?${searchParams.toString()}`;
+
+    // Make the API request
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Google Image Search API error: ${response.status} ${errorText}`);
+    }
+
+    const data: GoogleImageSearchResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error calling Google Image Search API:', error);
+    throw new Error(`Google Image Search API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+function processSearchResults(googleResponse: GoogleSearchResponse): ProcessedSearchResult[] {
+  if (!googleResponse.items) {
+    return [];
+  }
+
+  return googleResponse.items.map((item) => ({
+    title: item.title,
+    link: item.link,
+    snippet: item.snippet,
+    displayLink: item.displayLink,
+    formattedUrl: item.formattedUrl,
+  }));
+}
+
+function processImageSearchResults(googleResponse: GoogleImageSearchResponse): ProcessedImageSearchResult[] {
+  if (!googleResponse.items) {
+    return [];
+  }
+
+  return googleResponse.items.map((item) => ({
+    title: item.title,
+    link: item.link,
+    snippet: item.snippet,
+    displayLink: item.displayLink,
+    formattedUrl: item.formattedUrl,
+    imageUrl: item.link, // The main image URL
+    thumbnailUrl: item.image.thumbnailLink,
+    imageWidth: item.image.width,
+    imageHeight: item.image.height,
+    thumbnailWidth: item.image.thumbnailWidth,
+    thumbnailHeight: item.image.thumbnailHeight,
+    imageSize: item.image.byteSize,
+    contextUrl: item.image.contextLink,
+  }));
+}
+
 // MCP Server initialization
 function handleInitialize(request: any): any {
   console.log('MCP Server: Handling initialize request')
@@ -94,8 +570,8 @@ function handleInitialize(request: any): any {
       },
       serverInfo: {
         name: 'datastorm-mcp-server',
-        version: '1.0.0',
-        description: 'MCP Server for Electric Vehicle Data Hub with populate-images functionality'
+        version: '2.0.0',
+        description: 'MCP Server for Electric Vehicle Data Hub with populate-images, web_search, and image_search functionality'
       }
     }
   }
@@ -122,6 +598,10 @@ async function handleToolsCall(request: any, token: string, isServiceToken: bool
   
   if (name === 'populate-images') {
     return await executePopulateImages(args, token, request.id, isServiceToken)
+  } else if (name === 'web_search') {
+    return await executeWebSearch(args, request.id)
+  } else if (name === 'image_search') {
+    return await executeImageSearch(args, request.id)
   }
   
   // Tool not found
@@ -133,6 +613,114 @@ async function handleToolsCall(request: any, token: string, isServiceToken: bool
       message: 'Method not found',
       data: `Tool '${name}' is not available`
     }
+  }
+}
+
+// Execute web search functionality
+async function executeWebSearch(args: any, requestId: any): Promise<any> {
+  console.log('MCP Server: Executing web_search with args:', args)
+  
+  try {
+    // Validate parameters for web search
+    const validatedParams = GoogleSearchParamsSchema.parse(args);
+
+    // Call Google Search API
+    const googleResponse = await callGoogleSearchAPI(validatedParams);
+
+    // Process results
+    const processedResults = processSearchResults(googleResponse);
+
+    // Create response
+    const searchResponse: SearchResponse = {
+      success: true,
+      results: processedResults,
+      totalResults: googleResponse.searchInformation?.totalResults || '0',
+      searchTime: googleResponse.searchInformation?.searchTime || 0,
+      query: validatedParams.query,
+      timestamp: new Date().toISOString(),
+      source: 'datastorm-mcp-server',
+    };
+
+    return {
+      jsonrpc: '2.0',
+      id: requestId,
+      result: {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(searchResponse, null, 2),
+          },
+        ],
+        isError: false,
+      },
+    };
+  } catch (error) {
+    console.error('Error in web search execution:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+
+    return {
+      jsonrpc: '2.0',
+      id: requestId,
+      error: {
+        code: -32603,
+        message: 'Internal error',
+        data: `web_search execution failed: ${errorMessage}`,
+      },
+    };
+  }
+}
+
+// Execute image search functionality
+async function executeImageSearch(args: any, requestId: any): Promise<any> {
+  console.log('MCP Server: Executing image_search with args:', args)
+  
+  try {
+    // Validate parameters for image search
+    const validatedParams = GoogleImageSearchParamsSchema.parse(args);
+
+    // Call Google Image Search API
+    const googleResponse = await callGoogleImageSearchAPI(validatedParams);
+
+    // Process results
+    const processedResults = processImageSearchResults(googleResponse);
+
+    // Create response
+    const imageSearchResponse: ImageSearchResponse = {
+      success: true,
+      results: processedResults,
+      totalResults: googleResponse.searchInformation?.totalResults || '0',
+      searchTime: googleResponse.searchInformation?.searchTime || 0,
+      query: validatedParams.query,
+      timestamp: new Date().toISOString(),
+      source: 'datastorm-mcp-server',
+    };
+
+    return {
+      jsonrpc: '2.0',
+      id: requestId,
+      result: {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(imageSearchResponse, null, 2),
+          },
+        ],
+        isError: false,
+      },
+    };
+  } catch (error) {
+    console.error('Error in image search execution:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+
+    return {
+      jsonrpc: '2.0',
+      id: requestId,
+      error: {
+        code: -32603,
+        message: 'Internal error',
+        data: `image_search execution failed: ${errorMessage}`,
+      },
+    };
   }
 }
 
@@ -219,46 +807,26 @@ async function executePopulateImages(args: any, token: string, requestId: any, i
     const searchQuery = `${args.manufacturer || ''} ${args.model} ${args.trim || ''} car image`.trim()
     console.log('Search query:', searchQuery)
 
-    // Call google-search-mcp function
-    const searchResponse = await fetch(`${supabaseUrl}/functions/v1/google-search-mcp`, {
-      method: 'POST',
-      headers: {
-        'Authorization': isServiceToken ? `Bearer ${supabaseServiceKey}` : `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'tools/call',
-        params: {
-          name: 'image_search',
-          arguments: {
-            query: searchQuery,
-            num_results: args.maxImages || 8,
-            image_size: 'large',
-            image_type: 'photo'
-          }
-        }
-      })
-    })
-
-    if (!searchResponse.ok) {
-      throw new Error(`Google Search API returned ${searchResponse.status}: ${searchResponse.statusText}`)
+    // Use internal Google Image Search API
+    const searchParams: GoogleImageSearchParams = {
+      query: searchQuery,
+      num_results: args.maxImages || 8,
+      image_size: 'large',
+      image_type: 'photo'
     }
 
-    const searchResult = await searchResponse.json()
-    console.log('Google Search response:', JSON.stringify(searchResult, null, 2))
+    const googleResponse = await callGoogleImageSearchAPI(searchParams)
+    console.log('Google Search response:', JSON.stringify(googleResponse, null, 2))
 
-    if (!searchResult.result?.content?.[0]?.text) {
-      throw new Error('No search results returned from Google Search API')
-    }
-
-    const searchData = JSON.parse(searchResult.result.content[0].text)
-    console.log('Parsed search data:', JSON.stringify(searchData, null, 2))
-
-    if (!searchData.success || !searchData.results || searchData.results.length === 0) {
+    if (!googleResponse.items || googleResponse.items.length === 0) {
       throw new Error('No images found in search results')
     }
+
+    const searchData = {
+      success: true,
+      results: processImageSearchResults(googleResponse)
+    }
+    console.log('Processed search data:', JSON.stringify(searchData, null, 2))
 
     console.log(`Found ${searchData.results.length} images from Google Search`)
 
@@ -268,11 +836,11 @@ async function executePopulateImages(args: any, token: string, requestId: any, i
 
     for (let i = 0; i < Math.min(searchData.results.length, args.maxImages || 8); i++) {
       const imageResult = searchData.results[i]
-      console.log(`Processing image ${i + 1}/${searchData.results.length}:`, imageResult.link)
+      console.log(`Processing image ${i + 1}/${searchData.results.length}:`, imageResult.imageUrl)
 
       try {
         // Download image
-        const imageResponse = await fetch(imageResult.link)
+        const imageResponse = await fetch(imageResult.imageUrl)
         if (!imageResponse.ok) {
           throw new Error(`Failed to download image: ${imageResponse.status} ${imageResponse.statusText}`)
         }
@@ -281,7 +849,7 @@ async function executePopulateImages(args: any, token: string, requestId: any, i
         console.log(`Downloaded image ${i + 1}, size: ${imageData.length} bytes`)
 
         // Generate filename and path
-        const fileExtension = imageResult.link.split('.').pop()?.split('?')[0] || 'jpg'
+        const fileExtension = imageResult.imageUrl.split('.').pop()?.split('?')[0] || 'jpg'
         const fileName = `${args.vehicleId}_${Date.now()}_${i}.${fileExtension}`
         const filePath = `${args.vehicleId}/${fileName}`
 
@@ -308,8 +876,8 @@ async function executePopulateImages(args: any, token: string, requestId: any, i
           image_name: fileName,
           image_type: 'gallery',
           file_size: imageData.length,
-          width: imageResult.width || null,
-          height: imageResult.height || null,
+          width: imageResult.imageWidth || null,
+          height: imageResult.imageHeight || null,
           alt_text: imageResult.title || `Image of ${args.model} ${args.trim || ''}`.trim(),
           display_order: i,
           is_active: true
@@ -327,11 +895,14 @@ async function executePopulateImages(args: any, token: string, requestId: any, i
         }
 
         console.log(`Image ${i + 1} record inserted successfully!`)
-        uploadedImages.push(insertData?.[0])
+        if (insertData && insertData[0]) {
+          uploadedImages.push(insertData[0])
+        }
 
       } catch (imageError) {
         console.error(`Error processing image ${i + 1}:`, imageError)
-        errors.push(`Image ${i + 1}: ${imageError instanceof Error ? imageError.message : 'Unknown error'}`)
+        const errorMessage = `Image ${i + 1}: ${imageError instanceof Error ? imageError.message : 'Unknown error'}`
+        errors.push(errorMessage)
       }
     }
 

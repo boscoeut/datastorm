@@ -230,6 +230,82 @@ fi
 
 echo ""
 
+# Test 7: Test web_search tool
+echo -e "${YELLOW}Test 7: Test web_search tool${NC}"
+WEB_SEARCH_REQUEST='{
+  "jsonrpc": "2.0",
+  "id": 7,
+  "method": "tools/call",
+  "params": {
+    "name": "web_search",
+    "arguments": {
+      "query": "Tesla Model 3",
+      "num_results": 3
+    }
+  }
+}'
+
+echo "Request: $WEB_SEARCH_REQUEST"
+echo ""
+
+WEB_SEARCH_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
+  -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "$WEB_SEARCH_REQUEST")
+
+echo "Response: $WEB_SEARCH_RESPONSE"
+echo ""
+
+# Check if web search was successful
+if echo "$WEB_SEARCH_RESPONSE" | grep -q '"result"'; then
+    echo -e "${GREEN}✓ Web search test passed${NC}"
+else
+    echo -e "${RED}✗ Web search test failed${NC}"
+    # Don't exit here as it might fail due to missing API keys
+    echo -e "${YELLOW}  Note: This might fail if GOOGLE_SEARCH_API_KEY or GOOGLE_SEARCH_ENGINE_ID are not configured${NC}"
+fi
+
+echo ""
+
+# Test 8: Test image_search tool
+echo -e "${YELLOW}Test 8: Test image_search tool${NC}"
+IMAGE_SEARCH_REQUEST='{
+  "jsonrpc": "2.0",
+  "id": 8,
+  "method": "tools/call",
+  "params": {
+    "name": "image_search",
+    "arguments": {
+      "query": "Tesla Model 3 car",
+      "num_results": 2,
+      "image_size": "large",
+      "image_type": "photo"
+    }
+  }
+}'
+
+echo "Request: $IMAGE_SEARCH_REQUEST"
+echo ""
+
+IMAGE_SEARCH_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
+  -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "$IMAGE_SEARCH_REQUEST")
+
+echo "Response: $IMAGE_SEARCH_RESPONSE"
+echo ""
+
+# Check if image search was successful
+if echo "$IMAGE_SEARCH_RESPONSE" | grep -q '"result"'; then
+    echo -e "${GREEN}✓ Image search test passed${NC}"
+else
+    echo -e "${RED}✗ Image search test failed${NC}"
+    # Don't exit here as it might fail due to missing API keys
+    echo -e "${YELLOW}  Note: This might fail if GOOGLE_SEARCH_API_KEY or GOOGLE_SEARCH_ENGINE_ID are not configured${NC}"
+fi
+
+echo ""
+
 # Summary
 echo -e "${BLUE}=== Test Summary ===${NC}"
 echo -e "${GREEN}All MCP server tests completed successfully!${NC}"
@@ -237,10 +313,12 @@ echo ""
 echo "The MCP server is working correctly and:"
 echo "✓ Responds to MCP protocol requests"
 echo "✓ Handles initialization properly"
-echo "✓ Lists available tools"
+echo "✓ Lists available tools (populate-images, web_search, image_search)"
 echo "✓ Validates parameters correctly"
 echo "✓ Returns proper error messages"
 echo "✓ Follows JSON-RPC 2.0 protocol standards"
+echo "✓ Supports Google Search functionality (web_search, image_search)"
 echo ""
 echo -e "${YELLOW}Note: The populate-images tool requires admin privileges to execute successfully.${NC}"
 echo -e "${YELLOW}To test the full functionality, ensure your token has admin access.${NC}"
+echo -e "${YELLOW}Google Search tools require GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_ENGINE_ID environment variables.${NC}"

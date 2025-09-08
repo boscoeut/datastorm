@@ -27,7 +27,7 @@ if (!SUPABASE_ACCESS_TOKEN) {
 const server = new Server(
   {
     name: 'datastorm-mcp-wrapper',
-    version: '1.0.0',
+    version: '2.0.0',
   },
   {
     capabilities: {
@@ -73,7 +73,93 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ['vehicleId', 'model']
         }
-      }
+      },
+      {
+        name: 'web_search',
+        description: 'Perform web searches using Google\'s Programmable Search Engine',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'The search query string',
+            },
+            num_results: {
+              type: 'number',
+              description: 'Number of results to return (default: 10, max: 100)',
+              minimum: 1,
+              maximum: 100,
+            },
+            site_restriction: {
+              type: 'string',
+              description: 'Restrict search to a specific site (e.g., "example.com")',
+            },
+            language: {
+              type: 'string',
+              description: 'Search language preference (e.g., "en", "es", "fr")',
+            },
+            start_index: {
+              type: 'number',
+              description: 'Starting index for pagination (default: 1)',
+              minimum: 1,
+            },
+          },
+          required: ['query'],
+        },
+      },
+      {
+        name: 'image_search',
+        description: 'Search for images using Google\'s Programmable Search Engine',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'The search query string',
+            },
+            num_results: {
+              type: 'number',
+              description: 'Number of results to return (default: 10, max: 100)',
+              minimum: 1,
+              maximum: 100,
+            },
+            site_restriction: {
+              type: 'string',
+              description: 'Restrict search to a specific site (e.g., "example.com")',
+            },
+            language: {
+              type: 'string',
+              description: 'Search language preference (e.g., "en", "es", "fr")',
+            },
+            start_index: {
+              type: 'number',
+              description: 'Starting index for pagination (default: 1)',
+              minimum: 1,
+            },
+            image_size: {
+              type: 'string',
+              enum: ['huge', 'icon', 'large', 'medium', 'small', 'xlarge', 'xxlarge'],
+              description: 'Filter by image size',
+            },
+            image_type: {
+              type: 'string',
+              enum: ['clipart', 'face', 'lineart', 'stock', 'photo', 'animated'],
+              description: 'Filter by image type',
+            },
+            image_color_type: {
+              type: 'string',
+              enum: ['color', 'gray', 'trans'],
+              description: 'Filter by color type',
+            },
+            safe: {
+              type: 'string',
+              enum: ['active', 'off'],
+              description: 'Safe search setting',
+            },
+          },
+          required: ['query'],
+        },
+      },
     ]
   };
 });
