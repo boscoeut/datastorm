@@ -9,10 +9,6 @@ This directory contains Edge Functions for the Electric Vehicle Data Hub project
 - **Endpoint**: `POST /functions/v1/tesla-news-fetcher`
 - **Test Data**: `{}`
 
-### 2. Vehicle Database Populator (`vehicle-database-populator/`)
-- **Purpose**: Populates vehicles database with EV data using Google Gemini AI
-- **Endpoint**: `POST /functions/v1/vehicle-database-populator`
-- **Test Data**: `{"action": "populate"}`
 
 ## Development and Testing
 
@@ -23,11 +19,6 @@ This directory contains Edge Functions for the Electric Vehicle Data Hub project
 # Run tesla-news-fetcher on default port 8000
 ./run-with-env-explicit.sh
 
-# Run vehicle-database-populator on default port 8000
-./run-with-env-explicit.sh vehicle-database-populator
-
-# Run on custom port
-./run-with-env-explicit.sh vehicle-database-populator 9000
 
 # Show usage help
 ./run-with-env-explicit.sh --help
@@ -40,9 +31,6 @@ This directory contains Edge Functions for the Electric Vehicle Data Hub project
 cd tesla-news-fetcher
 PORT=8000 deno task dev
 
-# Or for vehicle database populator
-cd vehicle-database-populator
-PORT=9000 deno task dev
 ```
 
 #### Option 3: Using Deno Tasks (Alternative)
@@ -50,8 +38,6 @@ PORT=9000 deno task dev
 # Run tesla-news-fetcher using predefined task
 PORT=8000 deno task dev:tesla
 
-# Run vehicle-database-populator using predefined task
-PORT=9000 deno task dev:vehicle
 ```
 
 ### Testing Functions
@@ -61,23 +47,10 @@ PORT=9000 deno task dev:vehicle
 # Test tesla-news-fetcher on port 8000
 ./test-function.sh
 
-# Test vehicle-database-populator on port 8000
-./test-function.sh vehicle-database-populator
-
-# Test on custom port
-./test-function.sh vehicle-database-populator 9000
-
-# Test with custom data
-./test-function.sh vehicle-database-populator 8000 '{"action":"populate","limit":5}'
 ```
 
 #### Option 2: Using Specialized Test Scripts
 ```bash
-# Test vehicle database populator with comprehensive tests
-./test-vehicle-populator.sh 8000
-
-# Test on custom port
-./test-vehicle-populator.sh 9000
 ```
 
 #### Option 3: Manual Testing with curl
@@ -87,10 +60,6 @@ curl -X POST http://localhost:8000/ \
   -H "Content-Type: application/json" \
   -d '{}'
 
-# Test vehicle-database-populator
-curl -X POST http://localhost:8000/ \
-  -H "Content-Type: application/json" \
-  -d '{"action": "populate"}'
 ```
 
 ## Environment Setup
@@ -133,16 +102,13 @@ The scripts automatically load environment variables from `.env.local` and valid
 ### 1. Start Development
 ```bash
 # Terminal 1: Start the function
-./run-with-env-explicit.sh vehicle-database-populator 8000
+./run-with-env-explicit.sh tesla-news-fetcher 8000
 ```
 
 ### 2. Test the Function
 ```bash
-# Terminal 2: Run comprehensive tests
-./test-vehicle-populator.sh 8000
-
-# Or run specific tests
-./test-function.sh vehicle-database-populator 8000 '{"action":"populate"}'
+# Terminal 2: Run tests
+./test-function.sh tesla-news-fetcher 8000
 ```
 
 ### 3. Monitor and Debug
@@ -167,17 +133,17 @@ The scripts automatically load environment variables from `.env.local` and valid
    - Check function directory names match exactly
 
 4. **Port Already in Use**
-   - Use a different port: `./run-with-env-explicit.sh vehicle-database-populator 9000`
+   - Use a different port: `./run-with-env-explicit.sh tesla-news-fetcher 9000`
    - Kill existing processes using the port
 
 ### Debug Mode
 ```bash
 # Check function logs
-cd vehicle-database-populator
+cd tesla-news-fetcher
 deno task dev
 
 # Or check Supabase logs
-supabase functions logs vehicle-database-populator
+supabase functions logs tesla-news-fetcher
 ```
 
 ## Best Practices
@@ -192,8 +158,8 @@ supabase functions logs vehicle-database-populator
 
 ```bash
 # Deploy to Supabase
-supabase functions deploy vehicle-database-populator
+supabase functions deploy tesla-news-fetcher
 
 # Deploy with specific project
-supabase functions deploy vehicle-database-populator --project-ref your-project-ref
+supabase functions deploy tesla-news-fetcher --project-ref your-project-ref
 ```

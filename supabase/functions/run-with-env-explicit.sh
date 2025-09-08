@@ -9,13 +9,10 @@ show_usage() {
     echo ""
     echo "Examples:"
     echo "  $0                                    # Run tesla-news-fetcher on port 8000"
-    echo "  $0 vehicle-database-populator        # Run vehicle-database-populator on port 8000"
     echo "  $0 tesla-news-fetcher 9000          # Run tesla-news-fetcher on port 9000"
-    echo "  $0 vehicle-database-populator 9000  # Run vehicle-database-populator on port 9000"
     echo ""
     echo "Available functions:"
     echo "  - tesla-news-fetcher"
-    echo "  - vehicle-database-populator"
     echo ""
 }
 
@@ -79,9 +76,6 @@ PORT=$PORT deno run --allow-net --allow-env --allow-read --watch "$FUNCTION_NAME
 # case $FUNCTION_NAME in
 #   "tesla-news-fetcher")
 #     PORT=$PORT deno task dev:tesla
-#     ;;
-#   "vehicle-database-populator")
-#     PORT=$PORT deno task dev:vehicle
 #     ;;
 #   *)
 #     echo "Error: No deno task defined for $FUNCTION_NAME"

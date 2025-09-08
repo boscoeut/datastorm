@@ -5,7 +5,7 @@
 **Description:** Create a new Supabase Edge Function that acts as a proxy to Gemini API, allowing the frontend to execute tasks without exposing the API key to the client-side code.
 **Phase:** Phase 2
 **Status:** Completed
-**Dependencies:** Existing Edge Functions (tesla-news-fetcher, vehicle-database-populator)
+**Dependencies:** Existing Edge Functions (tesla-news-fetcher)
 
 ## Requirements
 ### Functional
