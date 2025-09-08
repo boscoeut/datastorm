@@ -104,7 +104,7 @@ supabase functions deploy function-name
 
 The MCP servers provide AI integration capabilities:
 
-- **populate-images** - Automatically populate vehicle image galleries
+- **mcp-server** - MCP server with populate-images functionality for vehicle image galleries
 - **web_search** - Perform web searches
 - **sql_executor** - Execute database queries
 

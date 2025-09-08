@@ -38,7 +38,7 @@ This project includes three MCP servers:
 
 1. **supabase** - Direct Supabase database access
 2. **google-search** - Google Search API integration
-3. **datastorm-mcp** - Custom Datastorm functionality (including populate-images)
+3. **datastorm-mcp** - Custom Datastorm functionality (including populate-images via mcp-server)
 
 All servers are configured to use environment variables for secure token management.
 

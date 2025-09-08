@@ -44,7 +44,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: 'populate-images',
-        description: 'Populate vehicle image galleries by searching for and downloading images from Google Search. Requires admin privileges.',
+        description: 'Populate vehicle image galleries by searching for and downloading images from Google Search via mcp-server edge function. Requires admin privileges.',
         inputSchema: {
           type: 'object',
           properties: {
