@@ -171,6 +171,54 @@ async function callGoogleSearchAPI(params: GoogleSearchParams): Promise<GoogleSe
   }
 }
 
+// Gemini Proxy API function
+async function callGeminiProxy(request: {
+  task: string;
+  prompt: string;
+  data?: Record<string, any>;
+  expectedOutput?: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+}): Promise<{ text: string; usage?: any }> {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    if (!supabaseUrl) {
+      throw new Error('SUPABASE_URL not configured');
+    }
+
+    const geminiProxyUrl = `${supabaseUrl}/functions/v1/gemini-proxy`;
+    
+    const response = await fetch(geminiProxyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gemini Proxy API error: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(`Gemini Proxy error: ${data.error}`);
+    }
+
+    return {
+      text: data.data.text,
+      usage: data.data.usage,
+    };
+  } catch (error) {
+    console.error('Error calling Gemini Proxy API:', error);
+    throw new Error(`Gemini Proxy API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
 // Main vehicle update function
 export async function updateVehicleDetails(
   params: VehicleUpdateParams,
@@ -304,248 +352,355 @@ async function researchVehicleInformation(params: VehicleUpdateParams): Promise<
   return vehicleData;
 }
 
-// Process search results to extract structured vehicle data
+// Process search results to extract structured vehicle data using Gemini
 async function processSearchResultsForVehicleData(
   vehicleSearchResults: GoogleSearchResponse[],
   newsSearchResults: GoogleSearchResponse[],
   params: VehicleUpdateParams,
   targetYear: number
 ): Promise<VehicleData> {
-  console.log('📊 Processing search results for vehicle data...');
+  console.log('📊 Processing search results for vehicle data using Gemini...');
 
-  // Extract manufacturer information
-  const manufacturer = {
-    name: params.manufacturer,
-    country: getCountryFromManufacturer(params.manufacturer),
-    website: getWebsiteFromManufacturer(params.manufacturer)
-  };
+  // Combine all search results into a single text for analysis
+  const allSearchResults = [
+    ...vehicleSearchResults.flatMap(response => response.items || []),
+    ...newsSearchResults.flatMap(response => response.items || [])
+  ];
 
-  // Extract vehicle information (simplified for demo - in production, you'd parse the actual content)
-  const vehicles = [{
-    model: params.model,
-    year: targetYear,
-    model_year: targetYear,
-    trim: params.trim || 'Base',
-    body_style: getBodyStyleFromModel(params.model),
-    is_electric: true, // Assuming electric vehicles for this system
-    is_currently_available: true
-  }];
+  const searchResultsText = allSearchResults
+    .map(item => `Title: ${item.title}\nSnippet: ${item.snippet}\nURL: ${item.link}\n---`)
+    .join('\n');
 
-  // Extract specifications (simplified - in production, parse actual content from search results)
-  const specifications = [{
-    battery_capacity_kwh: getBatteryCapacityFromModel(params.model, targetYear),
-    range_miles: getRangeFromModel(params.model, targetYear),
-    power_hp: getPowerFromModel(params.model, targetYear),
-    torque_lb_ft: getTorqueFromModel(params.model, targetYear),
-    acceleration_0_60: getAccelerationFromModel(params.model, targetYear),
-    top_speed_mph: getTopSpeedFromModel(params.model, targetYear),
-    weight_lbs: getWeightFromModel(params.model, targetYear),
-    length_inches: getLengthFromModel(params.model, targetYear),
-    width_inches: getWidthFromModel(params.model, targetYear),
-    height_inches: getHeightFromModel(params.model, targetYear),
-    cargo_capacity_cu_ft: getCargoCapacityFromModel(params.model, targetYear),
-    seating_capacity: getSeatingCapacityFromModel(params.model, targetYear)
-  }];
-
-  // Extract news articles
-  const newsArticles = newsSearchResults.flatMap(response => 
-    (response.items || []).map(item => ({
-      title: item.title,
-      summary: item.snippet,
-      source_url: item.link,
-      source_name: item.displayLink,
-      category: categorizeNewsArticle(item.title, item.snippet),
-      tags: extractTagsFromArticle(item.title, item.snippet, params),
-      published_date: new Date().toISOString().split('T')[0] // Simplified - in production, extract actual date
-    }))
-  ).slice(0, 10); // Limit to 10 articles
+  // Use Gemini to extract manufacturer information
+  const manufacturerData = await extractManufacturerData(params, searchResultsText);
+  
+  // Use Gemini to extract vehicle information
+  const vehicleData = await extractVehicleData(params, targetYear, searchResultsText);
+  
+  // Use Gemini to extract specifications
+  const specificationsData = await extractSpecificationsData(params, targetYear, searchResultsText);
+  
+  // Use Gemini to extract and categorize news articles
+  const newsArticlesData = await extractNewsArticlesData(params, newsSearchResults);
 
   return {
-    manufacturer,
-    vehicles,
-    specifications,
-    newsArticles
+    manufacturer: manufacturerData,
+    vehicles: vehicleData,
+    specifications: specificationsData,
+    newsArticles: newsArticlesData
   };
 }
 
-// Helper functions for data extraction (simplified for demo)
-function getCountryFromManufacturer(manufacturer: string): string {
-  const countryMap: Record<string, string> = {
-    'Tesla': 'USA',
-    'Ford': 'USA',
-    'GM': 'USA',
-    'BMW': 'Germany',
-    'Mercedes': 'Germany',
-    'Audi': 'Germany',
-    'Volkswagen': 'Germany',
-    'Toyota': 'Japan',
-    'Honda': 'Japan',
-    'Nissan': 'Japan',
-    'Hyundai': 'South Korea',
-    'Kia': 'South Korea'
-  };
-  return countryMap[manufacturer] || 'Unknown';
+// Extract manufacturer data using Gemini
+async function extractManufacturerData(params: VehicleUpdateParams, searchResultsText: string) {
+  const prompt = `Analyze the following search results and extract manufacturer information for ${params.manufacturer}.
+
+Search Results:
+${searchResultsText}
+
+Please extract and return ONLY a JSON object with the following structure:
+{
+  "name": "${params.manufacturer}",
+  "country": "Country where the manufacturer is headquartered",
+  "website": "Official website URL"
 }
 
-function getWebsiteFromManufacturer(manufacturer: string): string {
-  const websiteMap: Record<string, string> = {
-    'Tesla': 'https://tesla.com',
-    'Ford': 'https://ford.com',
-    'GM': 'https://gm.com',
-    'BMW': 'https://bmw.com',
-    'Mercedes': 'https://mercedes-benz.com',
-    'Audi': 'https://audi.com',
-    'Volkswagen': 'https://volkswagen.com',
-    'Toyota': 'https://toyota.com',
-    'Honda': 'https://honda.com',
-    'Nissan': 'https://nissan.com',
-    'Hyundai': 'https://hyundai.com',
-    'Kia': 'https://kia.com'
-  };
-  return websiteMap[manufacturer] || '';
+If information is not available in the search results, use your knowledge to provide reasonable defaults.`;
+
+  const response = await callGeminiProxy({
+    task: 'analyze_vehicle_data',
+    prompt,
+    expectedOutput: 'JSON object with manufacturer information',
+    temperature: 0.3
+  });
+
+  try {
+    const data = JSON.parse(response.text);
+    return {
+      name: data.name || params.manufacturer,
+      country: data.country || 'Unknown',
+      website: data.website || ''
+    };
+  } catch (error) {
+    console.warn('Failed to parse manufacturer data from Gemini, using fallback');
+    return await getFallbackManufacturerData(params);
+  }
 }
 
-function getBodyStyleFromModel(model: string): string {
-  const modelLower = model.toLowerCase();
-  if (modelLower.includes('suv') || modelLower.includes('x')) return 'SUV';
-  if (modelLower.includes('truck') || modelLower.includes('cybertruck')) return 'Truck';
-  if (modelLower.includes('roadster')) return 'Roadster';
-  return 'Sedan';
+// Extract vehicle data using Gemini
+async function extractVehicleData(params: VehicleUpdateParams, targetYear: number, searchResultsText: string) {
+  const prompt = `Analyze the following search results and extract vehicle information for ${params.manufacturer} ${params.model} ${targetYear}.
+
+Search Results:
+${searchResultsText}
+
+Please extract and return ONLY a JSON array with vehicle objects. Each vehicle should have the following structure:
+{
+  "model": "Model name",
+  "year": ${targetYear},
+  "model_year": ${targetYear},
+  "trim": "Trim level (e.g., Base, Performance, Long Range)",
+  "body_style": "Body style (Sedan, SUV, Truck, etc.)",
+  "is_electric": true/false,
+  "is_currently_available": true/false
 }
 
-// Simplified specification extraction functions (in production, these would parse actual content)
-function getBatteryCapacityFromModel(model: string, year: number): number {
-  // Simplified logic - in production, parse from search results
-  if (model.toLowerCase().includes('model s')) return 100;
-  if (model.toLowerCase().includes('model x')) return 100;
-  if (model.toLowerCase().includes('model 3')) return 75;
-  if (model.toLowerCase().includes('model y')) return 75;
-  if (model.toLowerCase().includes('cybertruck')) return 200;
-  return 75; // Default
+If multiple trims are mentioned, create separate objects for each. If information is not available, use reasonable defaults based on the model name.`;
+
+  const response = await callGeminiProxy({
+    task: 'analyze_vehicle_data',
+    prompt,
+    expectedOutput: 'JSON array of vehicle objects',
+    temperature: 0.3
+  });
+
+  try {
+    const data = JSON.parse(response.text);
+    return Array.isArray(data) ? data : [data];
+  } catch (error) {
+    console.warn('Failed to parse vehicle data from Gemini, using fallback');
+    const fallbackData = await getFallbackVehicleData(params, targetYear);
+    return [fallbackData];
+  }
 }
 
-function getRangeFromModel(model: string, year: number): number {
-  if (model.toLowerCase().includes('model s')) return 405;
-  if (model.toLowerCase().includes('model x')) return 348;
-  if (model.toLowerCase().includes('model 3')) return 272;
-  if (model.toLowerCase().includes('model y')) return 330;
-  if (model.toLowerCase().includes('cybertruck')) return 500;
-  return 300; // Default
+// Extract specifications data using Gemini
+async function extractSpecificationsData(params: VehicleUpdateParams, targetYear: number, searchResultsText: string) {
+  const prompt = `Analyze the following search results and extract detailed specifications for ${params.manufacturer} ${params.model} ${targetYear}.
+
+Search Results:
+${searchResultsText}
+
+Please extract and return ONLY a JSON object with the following structure:
+{
+  "battery_capacity_kwh": number,
+  "range_miles": number,
+  "power_hp": number,
+  "torque_lb_ft": number,
+  "acceleration_0_60": number,
+  "top_speed_mph": number,
+  "weight_lbs": number,
+  "length_inches": number,
+  "width_inches": number,
+  "height_inches": number,
+  "cargo_capacity_cu_ft": number,
+  "seating_capacity": number,
+  "towing_capacity_lbs": number,
+  "drag_coefficient": number,
+  "charging_speed_kw": number
 }
 
-function getPowerFromModel(model: string, year: number): number {
-  if (model.toLowerCase().includes('model s')) return 1020;
-  if (model.toLowerCase().includes('model x')) return 1020;
-  if (model.toLowerCase().includes('model 3')) return 450;
-  if (model.toLowerCase().includes('model y')) return 456;
-  if (model.toLowerCase().includes('cybertruck')) return 845;
-  return 400; // Default
+Extract actual values from the search results. If a specification is not mentioned, omit it from the JSON object (don't include null values). Use your knowledge to provide reasonable estimates if specific data is not available.`;
+
+  const response = await callGeminiProxy({
+    task: 'analyze_vehicle_data',
+    prompt,
+    expectedOutput: 'JSON object with vehicle specifications',
+    temperature: 0.3
+  });
+
+  try {
+    const data = JSON.parse(response.text);
+    // Filter out null/undefined values
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== null && value !== undefined)
+    );
+    return [filteredData];
+  } catch (error) {
+    console.warn('Failed to parse specifications data from Gemini, using fallback');
+    const fallbackData = await getFallbackSpecificationsData(params, targetYear);
+    return [fallbackData];
+  }
 }
 
-function getTorqueFromModel(model: string, year: number): number {
-  if (model.toLowerCase().includes('model s')) return 1050;
-  if (model.toLowerCase().includes('model x')) return 1050;
-  if (model.toLowerCase().includes('model 3')) return 471;
-  if (model.toLowerCase().includes('model y')) return 497;
-  if (model.toLowerCase().includes('cybertruck')) return 1050;
-  return 500; // Default
-}
-
-function getAccelerationFromModel(model: string, year: number): number {
-  if (model.toLowerCase().includes('model s')) return 1.99;
-  if (model.toLowerCase().includes('model x')) return 2.5;
-  if (model.toLowerCase().includes('model 3')) return 3.1;
-  if (model.toLowerCase().includes('model y')) return 3.5;
-  if (model.toLowerCase().includes('cybertruck')) return 2.6;
-  return 4.0; // Default
-}
-
-function getTopSpeedFromModel(model: string, year: number): number {
-  if (model.toLowerCase().includes('model s')) return 200;
-  if (model.toLowerCase().includes('model x')) return 163;
-  if (model.toLowerCase().includes('model 3')) return 162;
-  if (model.toLowerCase().includes('model y')) return 155;
-  if (model.toLowerCase().includes('cybertruck')) return 130;
-  return 150; // Default
-}
-
-function getWeightFromModel(model: string, year: number): number {
-  if (model.toLowerCase().includes('model s')) return 4561;
-  if (model.toLowerCase().includes('model x')) return 5185;
-  if (model.toLowerCase().includes('model 3')) return 3549;
-  if (model.toLowerCase().includes('model y')) return 4416;
-  if (model.toLowerCase().includes('cybertruck')) return 6600;
-  return 4000; // Default
-}
-
-function getLengthFromModel(model: string, year: number): number {
-  if (model.toLowerCase().includes('model s')) return 196;
-  if (model.toLowerCase().includes('model x')) return 198;
-  if (model.toLowerCase().includes('model 3')) return 185;
-  if (model.toLowerCase().includes('model y')) return 187;
-  if (model.toLowerCase().includes('cybertruck')) return 223;
-  return 190; // Default
-}
-
-function getWidthFromModel(model: string, year: number): number {
-  if (model.toLowerCase().includes('model s')) return 77;
-  if (model.toLowerCase().includes('model x')) return 79;
-  if (model.toLowerCase().includes('model 3')) return 73;
-  if (model.toLowerCase().includes('model y')) return 76;
-  if (model.toLowerCase().includes('cybertruck')) return 80;
-  return 75; // Default
-}
-
-function getHeightFromModel(model: string, year: number): number {
-  if (model.toLowerCase().includes('model s')) return 57;
-  if (model.toLowerCase().includes('model x')) return 66;
-  if (model.toLowerCase().includes('model 3')) return 57;
-  if (model.toLowerCase().includes('model y')) return 64;
-  if (model.toLowerCase().includes('cybertruck')) return 70;
-  return 60; // Default
-}
-
-function getCargoCapacityFromModel(model: string, year: number): number {
-  if (model.toLowerCase().includes('model s')) return 28;
-  if (model.toLowerCase().includes('model x')) return 88;
-  if (model.toLowerCase().includes('model 3')) return 15;
-  if (model.toLowerCase().includes('model y')) return 76;
-  if (model.toLowerCase().includes('cybertruck')) return 100;
-  return 20; // Default
-}
-
-function getSeatingCapacityFromModel(model: string, year: number): number {
-  if (model.toLowerCase().includes('model s')) return 5;
-  if (model.toLowerCase().includes('model x')) return 7;
-  if (model.toLowerCase().includes('model 3')) return 5;
-  if (model.toLowerCase().includes('model y')) return 7;
-  if (model.toLowerCase().includes('cybertruck')) return 6;
-  return 5; // Default
-}
-
-function categorizeNewsArticle(title: string, snippet: string): string {
-  const text = (title + ' ' + snippet).toLowerCase();
-  if (text.includes('review') || text.includes('test')) return 'Reviews';
-  if (text.includes('price') || text.includes('cost')) return 'Market Trends';
-  if (text.includes('technology') || text.includes('feature')) return 'Technology';
-  if (text.includes('performance') || text.includes('speed')) return 'Performance';
-  if (text.includes('safety') || text.includes('crash')) return 'Safety';
-  if (text.includes('recall') || text.includes('issue')) return 'Safety';
-  return 'General';
-}
-
-function extractTagsFromArticle(title: string, snippet: string, params: VehicleUpdateParams): string[] {
-  const tags = [params.manufacturer, params.model];
-  const text = (title + ' ' + snippet).toLowerCase();
+// Extract news articles data using Gemini
+async function extractNewsArticlesData(params: VehicleUpdateParams, newsSearchResults: GoogleSearchResponse[]) {
+  const newsItems = newsSearchResults.flatMap(response => response.items || []);
   
-  if (text.includes('electric') || text.includes('ev')) tags.push('electric');
-  if (text.includes('autonomous') || text.includes('self-driving')) tags.push('autonomous');
-  if (text.includes('battery')) tags.push('battery');
-  if (text.includes('charging')) tags.push('charging');
-  if (text.includes('performance')) tags.push('performance');
-  if (text.includes('safety')) tags.push('safety');
-  
-  return tags;
+  if (newsItems.length === 0) {
+    return [];
+  }
+
+  const newsText = newsItems
+    .map(item => `Title: ${item.title}\nSnippet: ${item.snippet}\nURL: ${item.link}\nSource: ${item.displayLink}\n---`)
+    .join('\n');
+
+  const prompt = `Analyze the following news articles about ${params.manufacturer} ${params.model} and extract structured information.
+
+News Articles:
+${newsText}
+
+Please extract and return ONLY a JSON array with article objects. Each article should have the following structure:
+{
+  "title": "Article title",
+  "summary": "Brief summary of the article",
+  "source_url": "Article URL",
+  "source_name": "Source website name",
+  "category": "Category (Reviews, Market Trends, Technology, Performance, Safety, General)",
+  "tags": ["array", "of", "relevant", "tags"],
+  "published_date": "YYYY-MM-DD format"
+}
+
+Categorize each article appropriately and extract relevant tags. If published date is not available, use today's date. Limit to the 10 most relevant articles.`;
+
+  const response = await callGeminiProxy({
+    task: 'analyze_vehicle_data',
+    prompt,
+    expectedOutput: 'JSON array of news article objects',
+    temperature: 0.3
+  });
+
+  try {
+    const data = JSON.parse(response.text);
+    return Array.isArray(data) ? data.slice(0, 10) : [data];
+  } catch (error) {
+    console.warn('Failed to parse news articles data from Gemini, using fallback');
+    const fallbackArticles: any[] = [];
+    for (const item of newsItems.slice(0, 10)) {
+      const fallbackData = await getFallbackNewsArticleData(item, params);
+      fallbackArticles.push(fallbackData);
+    }
+    return fallbackArticles;
+  }
+}
+
+// Fallback functions using Gemini for data extraction when primary extraction fails
+async function getFallbackManufacturerData(params: VehicleUpdateParams) {
+  const prompt = `Provide basic manufacturer information for ${params.manufacturer}. Return ONLY a JSON object:
+{
+  "name": "${params.manufacturer}",
+  "country": "Country where headquartered",
+  "website": "Official website URL"
+}`;
+
+  try {
+    const response = await callGeminiProxy({
+      task: 'analyze_vehicle_data',
+      prompt,
+      expectedOutput: 'JSON object with manufacturer information',
+      temperature: 0.1
+    });
+    
+    return JSON.parse(response.text);
+  } catch (error) {
+    console.warn('Fallback manufacturer data extraction failed, using minimal defaults');
+    return {
+      name: params.manufacturer,
+      country: 'Unknown',
+      website: ''
+    };
+  }
+}
+
+async function getFallbackVehicleData(params: VehicleUpdateParams, targetYear: number) {
+  const prompt = `Provide basic vehicle information for ${params.manufacturer} ${params.model} ${targetYear}. Return ONLY a JSON object:
+{
+  "model": "${params.model}",
+  "year": ${targetYear},
+  "model_year": ${targetYear},
+  "trim": "${params.trim || 'Base'}",
+  "body_style": "Body style (Sedan, SUV, Truck, etc.)",
+  "is_electric": true/false,
+  "is_currently_available": true
+}`;
+
+  try {
+    const response = await callGeminiProxy({
+      task: 'analyze_vehicle_data',
+      prompt,
+      expectedOutput: 'JSON object with vehicle information',
+      temperature: 0.1
+    });
+    
+    return JSON.parse(response.text);
+  } catch (error) {
+    console.warn('Fallback vehicle data extraction failed, using minimal defaults');
+    return {
+      model: params.model,
+      year: targetYear,
+      model_year: targetYear,
+      trim: params.trim || 'Base',
+      body_style: 'Sedan',
+      is_electric: true,
+      is_currently_available: true
+    };
+  }
+}
+
+async function getFallbackSpecificationsData(params: VehicleUpdateParams, targetYear: number) {
+  const prompt = `Provide basic specifications for ${params.manufacturer} ${params.model} ${targetYear}. Return ONLY a JSON object with any known specifications (omit fields you don't know):
+{
+  "battery_capacity_kwh": number,
+  "range_miles": number,
+  "power_hp": number,
+  "torque_lb_ft": number,
+  "acceleration_0_60": number,
+  "top_speed_mph": number,
+  "weight_lbs": number,
+  "length_inches": number,
+  "width_inches": number,
+  "height_inches": number,
+  "cargo_capacity_cu_ft": number,
+  "seating_capacity": number
+}`;
+
+  try {
+    const response = await callGeminiProxy({
+      task: 'analyze_vehicle_data',
+      prompt,
+      expectedOutput: 'JSON object with vehicle specifications',
+      temperature: 0.1
+    });
+    
+    const data = JSON.parse(response.text);
+    // Filter out null/undefined values
+    return Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== null && value !== undefined)
+    );
+  } catch (error) {
+    console.warn('Fallback specifications data extraction failed, returning empty object');
+    return {};
+  }
+}
+
+async function getFallbackNewsArticleData(article: any, params: VehicleUpdateParams) {
+  const prompt = `Categorize and tag this news article about ${params.manufacturer} ${params.model}:
+
+Title: ${article.title}
+Summary: ${article.snippet}
+
+Return ONLY a JSON object:
+{
+  "title": "${article.title}",
+  "summary": "${article.snippet}",
+  "source_url": "${article.link}",
+  "source_name": "${article.displayLink}",
+  "category": "Category (Reviews, Market Trends, Technology, Performance, Safety, General)",
+  "tags": ["array", "of", "relevant", "tags"],
+  "published_date": "${new Date().toISOString().split('T')[0]}"
+}`;
+
+  try {
+    const response = await callGeminiProxy({
+      task: 'analyze_vehicle_data',
+      prompt,
+      expectedOutput: 'JSON object with categorized article data',
+      temperature: 0.1
+    });
+    
+    return JSON.parse(response.text);
+  } catch (error) {
+    console.warn('Fallback news article categorization failed, using basic defaults');
+    return {
+      title: article.title,
+      summary: article.snippet,
+      source_url: article.link,
+      source_name: article.displayLink,
+      category: 'General',
+      tags: [params.manufacturer, params.model],
+      published_date: new Date().toISOString().split('T')[0]
+    };
+  }
 }
 
 // Database processing functions

@@ -21,6 +21,13 @@ const allNavigationItems: NavigationItem[] = [
     public: true,
   },
   {
+    id: 'admin',
+    label: 'Admin Dashboard',
+    href: '/admin',
+    public: false,
+    adminOnly: true,
+  },
+  {
     id: 'chat',
     label: 'Chat',
     href: '/chat',

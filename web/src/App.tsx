@@ -10,6 +10,7 @@ import NewsPage from '@/pages/NewsPage';
 import BattlePage from '@/pages/BattlePage';
 import ChatPage from '@/pages/ChatPage';
 import SqlPage from '@/pages/SqlPage';
+import { AdminPage } from '@/pages/AdminPage';
 import VehicleDetail from '@/components/vehicles/VehicleDetail';
 import LandingPage from '@/components/LandingPage';
 import { initializeStorage } from '@/lib/storage-init';
@@ -54,6 +55,14 @@ function App() {
                 element={
                   <ProtectedRoute requireAdmin={true}>
                     <SqlPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminPage />
                   </ProtectedRoute>
                 } 
               />
