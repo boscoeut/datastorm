@@ -230,7 +230,7 @@ const BattlePage: React.FC = () => {
                 <div className="p-3 border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-950/20">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">{selectedVehicle1.manufacturer?.name} {selectedVehicle1.model}</div>
+                      <div className="font-medium">{selectedVehicle1.manufacturer?.name} {selectedVehicle1.model}{selectedVehicle1.trim ? ` ${selectedVehicle1.trim}` : ''}</div>
                     </div>
                     <Button
                       variant="ghost"
@@ -282,7 +282,7 @@ const BattlePage: React.FC = () => {
                 <div className="p-3 border border-red-200 rounded-lg bg-red-50 dark:bg-red-950/20">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">{selectedVehicle2.manufacturer?.name} {selectedVehicle2.model}</div>
+                      <div className="font-medium">{selectedVehicle2.manufacturer?.name} {selectedVehicle2.model}{selectedVehicle2.trim ? ` ${selectedVehicle2.trim}` : ''}</div>
                     </div>
                     <Button
                       variant="ghost"
@@ -363,13 +363,13 @@ const BattlePage: React.FC = () => {
                       <th className="text-center p-3 font-semibold">
                         <div className="flex items-center justify-center gap-2">
                           <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-                          {selectedVehicle1.manufacturer?.name} {selectedVehicle1.model}
+                          {selectedVehicle1.manufacturer?.name} {selectedVehicle1.model}{selectedVehicle1.trim ? ` ${selectedVehicle1.trim}` : ''}
                         </div>
                       </th>
                       <th className="text-center p-3 font-semibold">
                         <div className="flex items-center justify-center gap-2">
                           <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-                          {selectedVehicle2.manufacturer?.name} {selectedVehicle2.model}
+                          {selectedVehicle2.manufacturer?.name} {selectedVehicle2.model}{selectedVehicle2.trim ? ` ${selectedVehicle2.trim}` : ''}
                         </div>
                       </th>
                       <th className="text-center p-3 font-semibold text-muted-foreground">
@@ -406,9 +406,9 @@ const BattlePage: React.FC = () => {
                           <td className="p-3 text-center text-sm text-muted-foreground">
                             {value1 && value2 ? (
                               compareValues(value1 as number, value2 as number, spec.higherIsBetter) === 'better' ? 
-                                `${selectedVehicle1.manufacturer?.name} ${selectedVehicle1.model}` :
+                                `${selectedVehicle1.manufacturer?.name} ${selectedVehicle1.model}${selectedVehicle1.trim ? ` ${selectedVehicle1.trim}` : ''}` :
                               compareValues(value1 as number, value2 as number, spec.higherIsBetter) === 'worse' ? 
-                                `${selectedVehicle2.manufacturer?.name} ${selectedVehicle2.model}` :
+                                `${selectedVehicle2.manufacturer?.name} ${selectedVehicle2.model}${selectedVehicle2.trim ? ` ${selectedVehicle2.trim}` : ''}` :
                                 'Equal'
                             ) : 'N/A'}
                           </td>
