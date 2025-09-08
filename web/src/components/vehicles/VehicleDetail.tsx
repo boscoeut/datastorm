@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import SpecificationTable from './SpecificationTable'
 import VehicleImageGallery from './VehicleImageGallery'
 import PopulateImagesButton from './PopulateImagesButton'
+import UpdateVehicleDetailsButton from './UpdateVehicleDetailsButton'
 import { VehicleService } from '@/services/database'
 import type { VehicleWithDetails, VehicleImage } from '@/types/database'
 
@@ -277,6 +278,20 @@ const VehicleDetail: React.FC = () => {
                   trim={vehicle.trim}
                   manufacturer={manufacturer?.name}
                   onImagesPopulated={handleImagesPopulated}
+                />
+              </div>
+
+              {/* Admin Update Vehicle Details Button */}
+              <div className="pt-2">
+                <UpdateVehicleDetailsButton
+                  manufacturer={manufacturer?.name || ''}
+                  model={vehicle.model}
+                  trim={vehicle.trim}
+                  year={vehicle.year}
+                  onDetailsUpdated={() => {
+                    // Refresh the vehicle details after update
+                    window.location.reload()
+                  }}
                 />
               </div>
             </div>

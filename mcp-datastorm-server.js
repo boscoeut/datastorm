@@ -27,7 +27,7 @@ if (!SUPABASE_ACCESS_TOKEN) {
 const server = new Server(
   {
     name: 'datastorm-mcp-wrapper',
-    version: '2.0.0',
+    version: '2.1.0',
   },
   {
     capabilities: {
@@ -72,6 +72,32 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             }
           },
           required: ['vehicleId', 'model']
+        }
+      },
+      {
+        name: 'update-vehicle-details',
+        description: 'Update vehicle details including specifications, news articles, and manufacturer information. Performs comprehensive research and database updates.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            manufacturer: {
+              type: 'string',
+              description: 'Vehicle manufacturer name (e.g., "Tesla", "Ford")'
+            },
+            model: {
+              type: 'string',
+              description: 'Vehicle model name (e.g., "Model 3", "F-150 Lightning")'
+            },
+            trim: {
+              type: 'string',
+              description: 'Vehicle trim level (optional, e.g., "Performance", "Long Range")'
+            },
+            year: {
+              type: 'number',
+              description: 'Model year (optional, defaults to current year)'
+            }
+          },
+          required: ['manufacturer', 'model']
         }
       },
       {

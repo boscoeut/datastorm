@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
+import { updateVehicleDetails, VehicleUpdateParams } from './vehicle-updater.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -232,6 +233,13 @@ const GoogleImageSearchParamsSchema = z.object({
   safe: z.enum(['active', 'off']).optional(),
 });
 
+const VehicleUpdateParamsSchema = z.object({
+  manufacturer: z.string().min(1, 'Manufacturer is required'),
+  model: z.string().min(1, 'Model is required'),
+  trim: z.string().optional(),
+  year: z.number().min(1900).max(2100).optional(),
+});
+
 // Define available MCP tools
 const mcpTools: MCPTool[] = [
   {
@@ -264,6 +272,32 @@ const mcpTools: MCPTool[] = [
         }
       },
       required: ['vehicleId', 'model']
+    }
+  },
+  {
+    name: 'update-vehicle-details',
+    description: 'Update vehicle details including specifications, news articles, and manufacturer information. Performs comprehensive research and database updates.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        manufacturer: {
+          type: 'string',
+          description: 'Vehicle manufacturer name (e.g., "Tesla", "Ford")'
+        },
+        model: {
+          type: 'string',
+          description: 'Vehicle model name (e.g., "Model 3", "F-150 Lightning")'
+        },
+        trim: {
+          type: 'string',
+          description: 'Vehicle trim level (optional, e.g., "Performance", "Long Range")'
+        },
+        year: {
+          type: 'number',
+          description: 'Model year (optional, defaults to current year)'
+        }
+      },
+      required: ['manufacturer', 'model']
     }
   },
   {
@@ -570,8 +604,8 @@ function handleInitialize(request: any): any {
       },
       serverInfo: {
         name: 'datastorm-mcp-server',
-        version: '2.0.0',
-        description: 'MCP Server for Electric Vehicle Data Hub with populate-images, web_search, and image_search functionality'
+        version: '2.1.0',
+        description: 'MCP Server for Electric Vehicle Data Hub with populate-images, update-vehicle-details, web_search, and image_search functionality'
       }
     }
   }
@@ -598,6 +632,8 @@ async function handleToolsCall(request: any, token: string, isServiceToken: bool
   
   if (name === 'populate-images') {
     return await executePopulateImages(args, token, request.id, isServiceToken)
+  } else if (name === 'update-vehicle-details') {
+    return await executeUpdateVehicleDetails(args, token, request.id, isServiceToken)
   } else if (name === 'web_search') {
     return await executeWebSearch(args, request.id)
   } else if (name === 'image_search') {
@@ -721,6 +757,94 @@ async function executeImageSearch(args: any, requestId: any): Promise<any> {
         data: `image_search execution failed: ${errorMessage}`,
       },
     };
+  }
+}
+
+// Execute update-vehicle-details functionality
+async function executeUpdateVehicleDetails(args: any, token: string, requestId: any, isServiceToken: boolean = false): Promise<any> {
+  console.log('MCP Server: Executing update-vehicle-details with args:', args)
+  
+  try {
+    let userId: string | null = null
+    let isAdmin = false
+
+    if (isServiceToken) {
+      // For service tokens, we'll allow admin operations
+      console.log('Service token detected, allowing admin operations')
+      userId = 'service-admin'
+      isAdmin = true
+    } else {
+      // Try to verify as user token
+      const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+      
+      if (authError || !user) {
+        return {
+          jsonrpc: '2.0',
+          id: requestId,
+          error: {
+            code: -32000,
+            message: 'Authentication failed',
+            data: 'Invalid or expired token'
+          }
+        }
+      }
+
+      console.log('User authenticated:', user.id)
+      userId = user.id
+      
+      // Check admin permission for user tokens
+      isAdmin = await checkAdminPermission(user.id)
+    }
+    
+    if (!isAdmin) {
+      return {
+        jsonrpc: '2.0',
+        id: requestId,
+        error: {
+          code: -32000,
+          message: 'Access denied',
+          data: 'Admin privileges required. Only administrators can update vehicle details.'
+        }
+      }
+    }
+
+    // Validate parameters
+    const validatedParams = VehicleUpdateParamsSchema.parse(args);
+
+    console.log('All validations passed, starting vehicle details update...')
+
+    // Execute vehicle update
+    const result = await updateVehicleDetails(
+      validatedParams as VehicleUpdateParams,
+      supabaseUrl,
+      supabaseServiceKey
+    )
+
+    return {
+      jsonrpc: '2.0',
+      id: requestId,
+      result: {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2)
+          }
+        ]
+      }
+    }
+
+  } catch (error) {
+    console.error('Error in update-vehicle-details execution:', error)
+    
+    return {
+      jsonrpc: '2.0',
+      id: requestId,
+      error: {
+        code: -32603,
+        message: 'Internal error',
+        data: `update-vehicle-details execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      }
+    }
   }
 }
 

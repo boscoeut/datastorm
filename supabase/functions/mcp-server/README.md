@@ -36,6 +36,23 @@ Populates vehicle image galleries by searching for and downloading images from G
 - `manufacturer` (string, optional) - Vehicle manufacturer
 - `maxImages` (number, optional) - Maximum number of images to download (default: 8, max: 20)
 
+#### update-vehicle-details
+Updates vehicle details including specifications, news articles, and manufacturer information. Performs comprehensive research using Google Search and updates the database accordingly.
+
+**Parameters:**
+- `manufacturer` (string, required) - Vehicle manufacturer name (e.g., "Tesla", "Ford")
+- `model` (string, required) - Vehicle model name (e.g., "Model 3", "F-150 Lightning")
+- `trim` (string, optional) - Vehicle trim level (e.g., "Performance", "Long Range")
+- `year` (number, optional) - Model year (defaults to current year)
+
+**Features:**
+- Comprehensive web research using Google Search API
+- Automatic manufacturer creation/update
+- Vehicle specification extraction and storage
+- News article collection and categorization
+- Database updates with proper error handling
+- Admin-only access control
+
 ## API
 
 ### Endpoint
@@ -162,6 +179,33 @@ const toolRequest = {
       trim: 'Performance',
       manufacturer: 'Tesla',
       maxImages: 8
+    }
+  }
+}
+
+const response = await fetch('/functions/v1/mcp-server', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(toolRequest)
+})
+```
+
+### Execute update-vehicle-details Tool
+```javascript
+const toolRequest = {
+  jsonrpc: '2.0',
+  id: 4,
+  method: 'tools/call',
+  params: {
+    name: 'update-vehicle-details',
+    arguments: {
+      manufacturer: 'Tesla',
+      model: 'Model 3',
+      trim: 'Performance',
+      year: 2025
     }
   }
 }
