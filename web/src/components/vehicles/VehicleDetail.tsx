@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { X, Image as ImageIcon } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import SpecificationTable from './SpecificationTable'
 import VehicleImageGallery from './VehicleImageGallery'
+import PopulateImagesButton from './PopulateImagesButton'
 import { VehicleService } from '@/services/database'
 import type { VehicleWithDetails, VehicleImage } from '@/types/database'
 
@@ -17,6 +18,7 @@ const VehicleDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<VehicleImage | null>(null)
   const [showImageModal, setShowImageModal] = useState(false)
+  const [galleryRefreshKey, setGalleryRefreshKey] = useState(0)
 
   useEffect(() => {
     const fetchVehicleDetails = async () => {
@@ -71,6 +73,11 @@ const VehicleDetail: React.FC = () => {
   const closeImageModal = () => {
     setShowImageModal(false)
     setSelectedImage(null)
+  }
+
+  const handleImagesPopulated = () => {
+    // Refresh the gallery by updating the key
+    setGalleryRefreshKey(prev => prev + 1)
   }
 
   if (loading) {
@@ -145,7 +152,7 @@ const VehicleDetail: React.FC = () => {
                       const profileImageData: VehicleImage = {
                         id: 'profile-image',
                         vehicle_id: vehicle.id,
-                        image_url: vehicle.profile_image_url,
+                        image_url: vehicle.profile_image_url || '',
                         image_path: '',
                         image_name: 'Profile Image',
                         image_type: 'image/jpeg',
@@ -171,7 +178,7 @@ const VehicleDetail: React.FC = () => {
                         const profileImageData: VehicleImage = {
                           id: 'profile-image',
                           vehicle_id: vehicle.id,
-                          image_url: vehicle.profile_image_url,
+                          image_url: vehicle.profile_image_url || '',
                           image_path: '',
                           image_name: 'Profile Image',
                           image_type: 'image/jpeg',
@@ -261,6 +268,17 @@ const VehicleDetail: React.FC = () => {
                   )}
                 </div>
               )}
+
+              {/* Admin Populate Images Button */}
+              <div className="pt-4">
+                <PopulateImagesButton
+                  vehicleId={vehicle.id}
+                  model={vehicle.model}
+                  trim={vehicle.trim}
+                  manufacturer={manufacturer?.name}
+                  onImagesPopulated={handleImagesPopulated}
+                />
+              </div>
             </div>
           </div>
         </CardContent>
@@ -268,6 +286,7 @@ const VehicleDetail: React.FC = () => {
 
       {/* Vehicle Images Gallery */}
       <VehicleImageGallery
+        key={galleryRefreshKey}
         vehicleId={vehicle.id}
         profileImageUrl={vehicle.profile_image_url}
         onProfileImageUpdate={handleProfileImageUpdate}
