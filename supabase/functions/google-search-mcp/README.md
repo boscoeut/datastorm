@@ -1,15 +1,17 @@
 # Google Search MCP Server Edge Function
 
-A Supabase Edge Function that implements an MCP (Model Context Protocol) server for Google search functionality using Google's Programmable Search Engine API.
+A Supabase Edge Function that implements an MCP (Model Context Protocol) server for Google search functionality using Google's Programmable Search Engine API. This function provides both **Web Search** and **Image Search** capabilities.
 
 ## Overview
 
-This edge function provides a standardized interface for performing web searches through Google's Custom Search API. It supports both MCP protocol requests and direct search requests, making it compatible with various AI systems and applications.
+This edge function provides a standardized interface for performing web searches and image searches through Google's Custom Search API. It supports both MCP protocol requests and direct search requests, making it compatible with various AI systems and applications.
 
 ## Features
 
+- **Dual Search Capabilities**: Both web search and image search functionality
 - **MCP Protocol Support**: Full implementation of the Model Context Protocol for AI tool integration
 - **Google Custom Search Integration**: Uses Google's Programmable Search Engine API
+- **Advanced Image Search**: Support for image size, type, color, and safe search filters
 - **Rate Limiting**: Built-in rate limiting to prevent API quota exhaustion
 - **Flexible Search Parameters**: Support for various search options including site restrictions and language preferences
 - **Error Handling**: Comprehensive error handling and validation
@@ -75,14 +77,14 @@ The function supports the Model Context Protocol for AI tool integration:
 }
 ```
 
-#### Call Search Tool
+#### Call Web Search Tool
 ```json
 {
   "jsonrpc": "2.0",
   "id": 1,
   "method": "tools/call",
   "params": {
-    "name": "google_search",
+    "name": "web_search",
     "arguments": {
       "query": "electric vehicles 2024",
       "num_results": 10,
@@ -93,10 +95,31 @@ The function supports the Model Context Protocol for AI tool integration:
 }
 ```
 
+#### Call Image Search Tool
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "image_search",
+    "arguments": {
+      "query": "Tesla Model 3",
+      "num_results": 10,
+      "image_size": "large",
+      "image_type": "photo",
+      "image_color_type": "color",
+      "safe": "active"
+    }
+  }
+}
+```
+
 ### Direct Search Requests
 
 For direct API calls without MCP protocol:
 
+#### Web Search
 ```json
 {
   "query": "electric vehicles 2024",
@@ -107,7 +130,22 @@ For direct API calls without MCP protocol:
 }
 ```
 
+#### Image Search
+```json
+{
+  "query": "Tesla Model 3",
+  "num_results": 10,
+  "searchType": "image",
+  "image_size": "large",
+  "image_type": "photo",
+  "image_color_type": "color",
+  "safe": "active"
+}
+```
+
 ## Parameters
+
+### Common Parameters (Both Web and Image Search)
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -117,9 +155,19 @@ For direct API calls without MCP protocol:
 | `language` | string | No | Search language preference (e.g., "en", "es", "fr") |
 | `start_index` | number | No | Starting index for pagination (default: 1) |
 
+### Image Search Specific Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `image_size` | string | No | Filter by image size: `huge`, `icon`, `large`, `medium`, `small`, `xlarge`, `xxlarge` |
+| `image_type` | string | No | Filter by image type: `clipart`, `face`, `lineart`, `stock`, `photo`, `animated` |
+| `image_color_type` | string | No | Filter by color type: `color`, `gray`, `trans` |
+| `safe` | string | No | Safe search setting: `active`, `off` |
+| `searchType` | string | No | Set to `"image"` for direct image search requests |
+
 ## Response Format
 
-### Successful Search Response
+### Successful Web Search Response
 ```json
 {
   "success": true,
@@ -135,6 +183,35 @@ For direct API calls without MCP protocol:
   "totalResults": "1,234,567",
   "searchTime": 0.123,
   "query": "electric vehicles 2024",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "source": "google-search-mcp"
+}
+```
+
+### Successful Image Search Response
+```json
+{
+  "success": true,
+  "results": [
+    {
+      "title": "Tesla Model 3 - Official Image",
+      "link": "https://example.com/tesla-model-3.jpg",
+      "snippet": "Official Tesla Model 3 image from Tesla website",
+      "displayLink": "tesla.com",
+      "formattedUrl": "https://tesla.com/model3",
+      "imageUrl": "https://example.com/tesla-model-3.jpg",
+      "thumbnailUrl": "https://example.com/tesla-model-3-thumb.jpg",
+      "imageWidth": 1920,
+      "imageHeight": 1080,
+      "thumbnailWidth": 150,
+      "thumbnailHeight": 150,
+      "imageSize": 245760,
+      "contextUrl": "https://tesla.com/model3"
+    }
+  ],
+  "totalResults": "12,345",
+  "searchTime": 0.156,
+  "query": "Tesla Model 3",
   "timestamp": "2024-01-15T10:30:00.000Z",
   "source": "google-search-mcp"
 }

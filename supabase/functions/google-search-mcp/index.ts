@@ -10,9 +10,13 @@ import type {
   MCPServerCapabilities,
   MCPTool,
   GoogleSearchParams,
+  GoogleImageSearchParams,
   GoogleSearchResponse,
+  GoogleImageSearchResponse,
   ProcessedSearchResult,
+  ProcessedImageSearchResult,
   SearchResponse,
+  ImageSearchResponse,
   RateLimitConfig,
   RequestCount,
 } from './types.ts';
@@ -36,7 +40,7 @@ const SERVER_CAPABILITIES: MCPServerCapabilities = {
 // Available tools
 const AVAILABLE_TOOLS: MCPTool[] = [
   {
-    name: 'google_search',
+    name: 'web_search',
     description: 'Perform web searches using Google\'s Programmable Search Engine',
     inputSchema: {
       type: 'object',
@@ -68,6 +72,59 @@ const AVAILABLE_TOOLS: MCPTool[] = [
       required: ['query'],
     },
   },
+  {
+    name: 'image_search',
+    description: 'Search for images using Google\'s Programmable Search Engine',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'The search query string',
+        },
+        num_results: {
+          type: 'number',
+          description: 'Number of results to return (default: 10, max: 100)',
+          minimum: 1,
+          maximum: 100,
+        },
+        site_restriction: {
+          type: 'string',
+          description: 'Restrict search to a specific site (e.g., "example.com")',
+        },
+        language: {
+          type: 'string',
+          description: 'Search language preference (e.g., "en", "es", "fr")',
+        },
+        start_index: {
+          type: 'number',
+          description: 'Starting index for pagination (default: 1)',
+          minimum: 1,
+        },
+        image_size: {
+          type: 'string',
+          enum: ['huge', 'icon', 'large', 'medium', 'small', 'xlarge', 'xxlarge'],
+          description: 'Filter by image size',
+        },
+        image_type: {
+          type: 'string',
+          enum: ['clipart', 'face', 'lineart', 'stock', 'photo', 'animated'],
+          description: 'Filter by image type',
+        },
+        image_color_type: {
+          type: 'string',
+          enum: ['color', 'gray', 'trans'],
+          description: 'Filter by color type',
+        },
+        safe: {
+          type: 'string',
+          enum: ['active', 'off'],
+          description: 'Safe search setting',
+        },
+      },
+      required: ['query'],
+    },
+  },
 ];
 
 // Validation schemas
@@ -77,6 +134,18 @@ const GoogleSearchParamsSchema = z.object({
   site_restriction: z.string().optional(),
   language: z.string().optional(),
   start_index: z.number().min(1).optional(),
+});
+
+const GoogleImageSearchParamsSchema = z.object({
+  query: z.string().min(1, 'Query is required'),
+  num_results: z.number().min(1).max(100).optional(),
+  site_restriction: z.string().optional(),
+  language: z.string().optional(),
+  start_index: z.number().min(1).optional(),
+  image_size: z.enum(['huge', 'icon', 'large', 'medium', 'small', 'xlarge', 'xxlarge']).optional(),
+  image_type: z.enum(['clipart', 'face', 'lineart', 'stock', 'photo', 'animated']).optional(),
+  image_color_type: z.enum(['color', 'gray', 'trans']).optional(),
+  safe: z.enum(['active', 'off']).optional(),
 });
 
 // Rate limiting functions
@@ -163,6 +232,69 @@ async function callGoogleSearchAPI(params: GoogleSearchParams): Promise<GoogleSe
   }
 }
 
+async function callGoogleImageSearchAPI(params: GoogleImageSearchParams): Promise<GoogleImageSearchResponse> {
+  try {
+    const apiKey = Deno.env.get('GOOGLE_SEARCH_API_KEY');
+    const searchEngineId = Deno.env.get('GOOGLE_SEARCH_ENGINE_ID');
+
+    if (!apiKey || !searchEngineId) {
+      throw new Error('Google Search API key or search engine ID not configured');
+    }
+
+    // Build search URL for image search
+    const baseUrl = 'https://www.googleapis.com/customsearch/v1';
+    const searchParams = new URLSearchParams({
+      key: apiKey,
+      cx: searchEngineId,
+      q: params.query,
+      num: String(params.num_results || 10),
+      start: String(params.start_index || 1),
+      searchType: 'image', // This is the key difference for image search
+    });
+
+    // Add optional parameters
+    if (params.site_restriction) {
+      searchParams.append('siteSearch', params.site_restriction);
+    }
+    if (params.language) {
+      searchParams.append('lr', `lang_${params.language}`);
+    }
+    if (params.image_size) {
+      searchParams.append('imgSize', params.image_size);
+    }
+    if (params.image_type) {
+      searchParams.append('imgType', params.image_type);
+    }
+    if (params.image_color_type) {
+      searchParams.append('imgColorType', params.image_color_type);
+    }
+    if (params.safe) {
+      searchParams.append('safe', params.safe);
+    }
+
+    const url = `${baseUrl}?${searchParams.toString()}`;
+
+    // Make the API request
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Google Image Search API error: ${response.status} ${errorText}`);
+    }
+
+    const data: GoogleImageSearchResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error calling Google Image Search API:', error);
+    throw new Error(`Google Image Search API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
 function processSearchResults(googleResponse: GoogleSearchResponse): ProcessedSearchResult[] {
   if (!googleResponse.items) {
     return [];
@@ -174,6 +306,28 @@ function processSearchResults(googleResponse: GoogleSearchResponse): ProcessedSe
     snippet: item.snippet,
     displayLink: item.displayLink,
     formattedUrl: item.formattedUrl,
+  }));
+}
+
+function processImageSearchResults(googleResponse: GoogleImageSearchResponse): ProcessedImageSearchResult[] {
+  if (!googleResponse.items) {
+    return [];
+  }
+
+  return googleResponse.items.map((item) => ({
+    title: item.title,
+    link: item.link,
+    snippet: item.snippet,
+    displayLink: item.displayLink,
+    formattedUrl: item.formattedUrl,
+    imageUrl: item.link, // The main image URL
+    thumbnailUrl: item.image.thumbnailLink,
+    imageWidth: item.image.width,
+    imageHeight: item.image.height,
+    thumbnailWidth: item.image.thumbnailWidth,
+    thumbnailHeight: item.image.thumbnailHeight,
+    imageSize: item.image.byteSize,
+    contextUrl: item.image.contextLink,
   }));
 }
 
@@ -205,39 +359,88 @@ function handleToolsList(): MCPResponse {
 
 async function handleToolsCall(params: any): Promise<MCPResponse> {
   try {
-    // Validate parameters
-    const validatedParams = GoogleSearchParamsSchema.parse(params.arguments);
+    const toolName = params.name;
+    
+    if (toolName === 'web_search') {
+      // Validate parameters for web search
+      const validatedParams = GoogleSearchParamsSchema.parse(params.arguments);
 
-    // Call Google Search API
-    const googleResponse = await callGoogleSearchAPI(validatedParams);
+      // Call Google Search API
+      const googleResponse = await callGoogleSearchAPI(validatedParams);
 
-    // Process results
-    const processedResults = processSearchResults(googleResponse);
+      // Process results
+      const processedResults = processSearchResults(googleResponse);
 
-    // Create response
-    const searchResponse: SearchResponse = {
-      success: true,
-      results: processedResults,
-      totalResults: googleResponse.searchInformation?.totalResults || '0',
-      searchTime: googleResponse.searchInformation?.searchTime || 0,
-      query: validatedParams.query,
-      timestamp: new Date().toISOString(),
-      source: 'google-search-mcp',
-    };
+      // Create response
+      const searchResponse: SearchResponse = {
+        success: true,
+        results: processedResults,
+        totalResults: googleResponse.searchInformation?.totalResults || '0',
+        searchTime: googleResponse.searchInformation?.searchTime || 0,
+        query: validatedParams.query,
+        timestamp: new Date().toISOString(),
+        source: 'google-search-mcp',
+      };
 
-    return {
-      jsonrpc: '2.0',
-      id: params.id || 1,
-      result: {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(searchResponse, null, 2),
-          },
-        ],
-        isError: false,
-      },
-    };
+      return {
+        jsonrpc: '2.0',
+        id: params.id || 1,
+        result: {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(searchResponse, null, 2),
+            },
+          ],
+          isError: false,
+        },
+      };
+    } else if (toolName === 'image_search') {
+      // Validate parameters for image search
+      const validatedParams = GoogleImageSearchParamsSchema.parse(params.arguments);
+
+      // Call Google Image Search API
+      const googleResponse = await callGoogleImageSearchAPI(validatedParams);
+
+      // Process results
+      const processedResults = processImageSearchResults(googleResponse);
+
+      // Create response
+      const imageSearchResponse: ImageSearchResponse = {
+        success: true,
+        results: processedResults,
+        totalResults: googleResponse.searchInformation?.totalResults || '0',
+        searchTime: googleResponse.searchInformation?.searchTime || 0,
+        query: validatedParams.query,
+        timestamp: new Date().toISOString(),
+        source: 'google-search-mcp',
+      };
+
+      return {
+        jsonrpc: '2.0',
+        id: params.id || 1,
+        result: {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(imageSearchResponse, null, 2),
+            },
+          ],
+          isError: false,
+        },
+      };
+    } else {
+      const errorResponse: MCPError = {
+        code: -32601,
+        message: `Unknown tool: ${toolName}`,
+      };
+
+      return {
+        jsonrpc: '2.0',
+        id: params.id || 1,
+        error: errorResponse,
+      };
+    }
   } catch (error) {
     console.error('Error in tools/call handler:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -361,6 +564,58 @@ async function handleDirectSearch(params: GoogleSearchParams, clientId: string):
   }
 }
 
+// Direct image search handler (non-MCP)
+async function handleDirectImageSearch(params: GoogleImageSearchParams, clientId: string): Promise<ImageSearchResponse> {
+  try {
+    // Check rate limit
+    if (!checkRateLimit(clientId)) {
+      return {
+        success: false,
+        results: [],
+        totalResults: '0',
+        searchTime: 0,
+        query: params.query,
+        timestamp: new Date().toISOString(),
+        source: 'google-search-mcp',
+        error: 'Rate limit exceeded. Please try again later.',
+      };
+    }
+
+    // Validate parameters
+    const validatedParams = GoogleImageSearchParamsSchema.parse(params);
+
+    // Call Google Image Search API
+    const googleResponse = await callGoogleImageSearchAPI(validatedParams);
+
+    // Process results
+    const processedResults = processImageSearchResults(googleResponse);
+
+    return {
+      success: true,
+      results: processedResults,
+      totalResults: googleResponse.searchInformation?.totalResults || '0',
+      searchTime: googleResponse.searchInformation?.searchTime || 0,
+      query: validatedParams.query,
+      timestamp: new Date().toISOString(),
+      source: 'google-search-mcp',
+    };
+  } catch (error) {
+    console.error('Error in direct image search handler:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+
+    return {
+      success: false,
+      results: [],
+      totalResults: '0',
+      searchTime: 0,
+      query: params.query,
+      timestamp: new Date().toISOString(),
+      source: 'google-search-mcp',
+      error: errorMessage,
+    };
+  }
+}
+
 // Main request handler
 serve(async (req) => {
   // Handle CORS
@@ -421,20 +676,39 @@ serve(async (req) => {
       );
     } else if (body.query) {
       // Handle direct search request
-      const searchParams: GoogleSearchParams = body;
-      const searchResponse = await handleDirectSearch(searchParams, clientId);
+      if (body.searchType === 'image') {
+        // Handle direct image search request
+        const searchParams: GoogleImageSearchParams = body;
+        const searchResponse = await handleDirectImageSearch(searchParams, clientId);
 
-      return new Response(
-        JSON.stringify(searchResponse),
-        {
-          status: searchResponse.success ? 200 : 400,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
+        return new Response(
+          JSON.stringify(searchResponse),
+          {
+            status: searchResponse.success ? 200 : 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
+            },
           },
-        },
-      );
+        );
+      } else {
+        // Handle direct web search request
+        const searchParams: GoogleSearchParams = body;
+        const searchResponse = await handleDirectSearch(searchParams, clientId);
+
+        return new Response(
+          JSON.stringify(searchResponse),
+          {
+            status: searchResponse.success ? 200 : 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, apikey',
+            },
+          },
+        );
+      }
     } else {
       // Invalid request format
       return new Response(

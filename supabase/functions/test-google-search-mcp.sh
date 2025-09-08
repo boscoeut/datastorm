@@ -71,16 +71,16 @@ fi
 
 echo ""
 
-# Test 3: MCP Tools Call (Google Search)
-echo "3️⃣ Testing MCP Google Search..."
-SEARCH_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
+# Test 3: MCP Tools Call (Web Search)
+echo "3️⃣ Testing MCP Web Search..."
+WEB_SEARCH_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
     -H "$CONTENT_TYPE" \
     -d '{
         "jsonrpc": "2.0",
         "id": 1,
         "method": "tools/call",
         "params": {
-            "name": "google_search",
+            "name": "web_search",
             "arguments": {
                 "query": "electric vehicles 2024",
                 "num_results": 3
@@ -88,20 +88,48 @@ SEARCH_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
         }
     }')
 
-echo "Response: $SEARCH_RESPONSE"
-if echo "$SEARCH_RESPONSE" | grep -q '"result"'; then
-    echo "✅ MCP Google Search successful"
+echo "Response: $WEB_SEARCH_RESPONSE"
+if echo "$WEB_SEARCH_RESPONSE" | grep -q '"result"'; then
+    echo "✅ MCP Web Search successful"
 else
-    echo "❌ MCP Google Search failed"
+    echo "❌ MCP Web Search failed"
+fi
+
+echo ""
+
+# Test 4: MCP Tools Call (Image Search)
+echo "4️⃣ Testing MCP Image Search..."
+IMAGE_SEARCH_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
+    -H "$CONTENT_TYPE" \
+    -d '{
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "tools/call",
+        "params": {
+            "name": "image_search",
+            "arguments": {
+                "query": "Tesla Model 3",
+                "num_results": 3,
+                "image_size": "large",
+                "image_type": "photo"
+            }
+        }
+    }')
+
+echo "Response: $IMAGE_SEARCH_RESPONSE"
+if echo "$IMAGE_SEARCH_RESPONSE" | grep -q '"result"'; then
+    echo "✅ MCP Image Search successful"
+else
+    echo "❌ MCP Image Search failed"
 fi
 
 echo ""
 echo "🔍 Testing Direct Search Requests"
 echo "================================="
 
-# Test 4: Direct Search
-echo "4️⃣ Testing Direct Search..."
-DIRECT_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
+# Test 5: Direct Web Search
+echo "5️⃣ Testing Direct Web Search..."
+DIRECT_WEB_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
     -H "$CONTENT_TYPE" \
     -d '{
         "query": "Tesla Model 3",
@@ -109,17 +137,38 @@ DIRECT_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
         "site_restriction": "tesla.com"
     }')
 
-echo "Response: $DIRECT_RESPONSE"
-if echo "$DIRECT_RESPONSE" | grep -q '"success":true'; then
-    echo "✅ Direct Search successful"
+echo "Response: $DIRECT_WEB_RESPONSE"
+if echo "$DIRECT_WEB_RESPONSE" | grep -q '"success":true'; then
+    echo "✅ Direct Web Search successful"
 else
-    echo "❌ Direct Search failed"
+    echo "❌ Direct Web Search failed"
 fi
 
 echo ""
 
-# Test 5: Error Handling - Invalid Request
-echo "5️⃣ Testing Error Handling..."
+# Test 6: Direct Image Search
+echo "6️⃣ Testing Direct Image Search..."
+DIRECT_IMAGE_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
+    -H "$CONTENT_TYPE" \
+    -d '{
+        "query": "Tesla Model 3",
+        "num_results": 2,
+        "searchType": "image",
+        "image_size": "large",
+        "image_type": "photo"
+    }')
+
+echo "Response: $DIRECT_IMAGE_RESPONSE"
+if echo "$DIRECT_IMAGE_RESPONSE" | grep -q '"success":true'; then
+    echo "✅ Direct Image Search successful"
+else
+    echo "❌ Direct Image Search failed"
+fi
+
+echo ""
+
+# Test 7: Error Handling - Invalid Request
+echo "7️⃣ Testing Error Handling..."
 ERROR_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
     -H "$CONTENT_TYPE" \
     -d '{
@@ -135,8 +184,8 @@ fi
 
 echo ""
 
-# Test 6: Rate Limiting (make multiple requests quickly)
-echo "6️⃣ Testing Rate Limiting..."
+# Test 8: Rate Limiting (make multiple requests quickly)
+echo "8️⃣ Testing Rate Limiting..."
 echo "Making multiple rapid requests..."
 
 for i in {1..5}; do

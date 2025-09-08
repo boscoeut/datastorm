@@ -47,12 +47,46 @@ export interface GoogleSearchParams {
   start_index?: number;
 }
 
+export interface GoogleImageSearchParams {
+  query: string;
+  num_results?: number;
+  site_restriction?: string;
+  language?: string;
+  start_index?: number;
+  image_size?: 'huge' | 'icon' | 'large' | 'medium' | 'small' | 'xlarge' | 'xxlarge';
+  image_type?: 'clipart' | 'face' | 'lineart' | 'stock' | 'photo' | 'animated';
+  image_color_type?: 'color' | 'gray' | 'trans';
+  safe?: 'active' | 'off';
+}
+
 export interface GoogleSearchResult {
   title: string;
   link: string;
   snippet: string;
   displayLink: string;
   formattedUrl: string;
+  pagemap?: {
+    metatags?: Array<{
+      [key: string]: string;
+    }>;
+  };
+}
+
+export interface GoogleImageSearchResult {
+  title: string;
+  link: string;
+  snippet: string;
+  displayLink: string;
+  formattedUrl: string;
+  image: {
+    contextLink: string;
+    height: number;
+    width: number;
+    byteSize: number;
+    thumbnailLink: string;
+    thumbnailHeight: number;
+    thumbnailWidth: number;
+  };
   pagemap?: {
     metatags?: Array<{
       [key: string]: string;
@@ -91,6 +125,38 @@ export interface GoogleSearchResponse {
   items?: GoogleSearchResult[];
 }
 
+export interface GoogleImageSearchResponse {
+  kind: string;
+  url: {
+    type: string;
+    template: string;
+  };
+  queries: {
+    request: Array<{
+      title: string;
+      totalResults: string;
+      searchTerms: string;
+      count: number;
+      startIndex: number;
+      inputEncoding: string;
+      outputEncoding: string;
+      safe: string;
+      cx: string;
+      searchType: string;
+    }>;
+  };
+  context: {
+    title: string;
+  };
+  searchInformation: {
+    searchTime: number;
+    formattedSearchTime: string;
+    totalResults: string;
+    formattedTotalResults: string;
+  };
+  items?: GoogleImageSearchResult[];
+}
+
 export interface ProcessedSearchResult {
   title: string;
   link: string;
@@ -99,9 +165,36 @@ export interface ProcessedSearchResult {
   formattedUrl: string;
 }
 
+export interface ProcessedImageSearchResult {
+  title: string;
+  link: string;
+  snippet: string;
+  displayLink: string;
+  formattedUrl: string;
+  imageUrl: string;
+  thumbnailUrl: string;
+  imageWidth: number;
+  imageHeight: number;
+  thumbnailWidth: number;
+  thumbnailHeight: number;
+  imageSize: number;
+  contextUrl: string;
+}
+
 export interface SearchResponse {
   success: boolean;
   results: ProcessedSearchResult[];
+  totalResults: string;
+  searchTime: number;
+  query: string;
+  timestamp: string;
+  source: 'google-search-mcp';
+  error?: string;
+}
+
+export interface ImageSearchResponse {
+  success: boolean;
+  results: ProcessedImageSearchResult[];
   totalResults: string;
   searchTime: number;
   query: string;
