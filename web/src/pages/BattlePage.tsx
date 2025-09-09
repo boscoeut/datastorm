@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Swords, X, TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { useVehicleStore, useVehicles, useVehicleLoading, useVehicleError } from '@/stores/vehicle-store'
+import { Swords, X, TrendingUp, TrendingDown, Minus, ExternalLink, Car } from 'lucide-react'
+import { useVehicleStore } from '@/stores/vehicle-store'
+import { VehicleService } from '@/services/database'
+import { supabase } from '@/lib/supabase'
 import type { Vehicle } from '@/types/database'
 
 const BattlePage: React.FC = () => {
@@ -13,27 +16,93 @@ const BattlePage: React.FC = () => {
   const [showSearch1, setShowSearch1] = useState(false)
   const [showSearch2, setShowSearch2] = useState(false)
 
-  const { fetchVehicles, fetchManufacturers, clearError } = useVehicleStore()
-  const vehicles = useVehicles()
-  const loading = useVehicleLoading()
-  const error = useVehicleError()
+  const { fetchManufacturers, clearError } = useVehicleStore()
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Initialize data when component mounts
   useEffect(() => {
-    fetchVehicles()
+    const fetchAllVehicles = async () => {
+      setLoading(true)
+      setError(null)
+      
+      try {
+        // Fetch all vehicles with specifications for battle page
+        const { data, error } = await supabase
+          .from('vehicles')
+          .select(`
+            *,
+            manufacturers!inner(*),
+            vehicle_specifications(*)
+          `)
+          .eq('is_currently_available', true)
+          .order('model', { ascending: true })
+        
+        if (error) {
+          setError(error.message)
+          setVehicles([])
+        } else {
+          // Transform the data to match the expected interface
+          const transformedData = (data || []).map(vehicle => {
+            if (vehicle.vehicle_specifications && Array.isArray(vehicle.vehicle_specifications)) {
+              // Take the first specification if it's an array
+              vehicle.specifications = vehicle.vehicle_specifications[0] || null
+              delete vehicle.vehicle_specifications
+            }
+            // Transform manufacturers to manufacturer for consistency
+            if (vehicle.manufacturers) {
+              vehicle.manufacturer = vehicle.manufacturers
+              delete vehicle.manufacturers
+            }
+            return vehicle
+          })
+          
+          setVehicles(transformedData)
+          setError(null)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch vehicles')
+        setVehicles([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAllVehicles()
     fetchManufacturers()
-  }, [fetchVehicles, fetchManufacturers])
+  }, [fetchManufacturers])
 
-  // Filter vehicles based on search terms
-  const filteredVehicles1 = vehicles.filter(vehicle => 
-    vehicle.model.toLowerCase().includes(searchTerm1.toLowerCase()) ||
-    vehicle.manufacturer?.name.toLowerCase().includes(searchTerm1.toLowerCase())
-  )
+  // Filter and sort vehicles based on search terms
+  const filteredVehicles1 = vehicles
+    .filter(vehicle => {
+      const searchLower = searchTerm1.toLowerCase()
+      return (
+        vehicle.model.toLowerCase().includes(searchLower) ||
+        vehicle.manufacturer?.name.toLowerCase().includes(searchLower) ||
+        (vehicle.trim && vehicle.trim.toLowerCase().includes(searchLower))
+      )
+    })
+    .sort((a, b) => {
+      const aName = `${a.manufacturer?.name || ''} ${a.model} ${a.trim || ''}`.trim()
+      const bName = `${b.manufacturer?.name || ''} ${b.model} ${b.trim || ''}`.trim()
+      return aName.localeCompare(bName)
+    })
 
-  const filteredVehicles2 = vehicles.filter(vehicle => 
-    vehicle.model.toLowerCase().includes(searchTerm2.toLowerCase()) ||
-    vehicle.manufacturer?.name.toLowerCase().includes(searchTerm2.toLowerCase())
-  )
+  const filteredVehicles2 = vehicles
+    .filter(vehicle => {
+      const searchLower = searchTerm2.toLowerCase()
+      return (
+        vehicle.model.toLowerCase().includes(searchLower) ||
+        vehicle.manufacturer?.name.toLowerCase().includes(searchLower) ||
+        (vehicle.trim && vehicle.trim.toLowerCase().includes(searchLower))
+      )
+    })
+    .sort((a, b) => {
+      const aName = `${a.manufacturer?.name || ''} ${a.model} ${a.trim || ''}`.trim()
+      const bName = `${b.manufacturer?.name || ''} ${b.model} ${b.trim || ''}`.trim()
+      return aName.localeCompare(bName)
+    })
 
   const handleVehicleSelect = (vehicle: Vehicle, position: 1 | 2) => {
     if (position === 1) {
@@ -254,15 +323,21 @@ const BattlePage: React.FC = () => {
                   />
                   {showSearch1 && (
                     <div className="max-h-48 overflow-y-auto border border-input rounded-md bg-background">
-                      {filteredVehicles1.map(vehicle => (
-                        <div
-                          key={vehicle.id}
-                          onClick={() => handleVehicleSelect(vehicle, 1)}
-                          className="p-2 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
-                        >
-                          <div className="font-medium">{vehicle.manufacturer?.name} {vehicle.model}{vehicle.trim ? ` ${vehicle.trim}` : ''}</div>
+                      {filteredVehicles1.length > 0 ? (
+                        filteredVehicles1.map(vehicle => (
+                          <div
+                            key={vehicle.id}
+                            onClick={() => handleVehicleSelect(vehicle, 1)}
+                            className="p-2 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
+                          >
+                            <div className="font-medium">{vehicle.manufacturer?.name} {vehicle.model}{vehicle.trim ? ` ${vehicle.trim}` : ''}</div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-2 text-muted-foreground text-sm">
+                          {searchTerm1 ? 'No vehicles found matching your search' : 'No vehicles available'}
                         </div>
-                      ))}
+                      )}
                     </div>
                   )}
                 </div>
@@ -306,15 +381,21 @@ const BattlePage: React.FC = () => {
                   />
                   {showSearch2 && (
                     <div className="max-h-48 overflow-y-auto border border-input rounded-md bg-background">
-                      {filteredVehicles2.map(vehicle => (
-                        <div
-                          key={vehicle.id}
-                          onClick={() => handleVehicleSelect(vehicle, 2)}
-                          className="p-2 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
-                        >
-                          <div className="font-medium">{vehicle.manufacturer?.name} {vehicle.model}{vehicle.trim ? ` ${vehicle.trim}` : ''}</div>
+                      {filteredVehicles2.length > 0 ? (
+                        filteredVehicles2.map(vehicle => (
+                          <div
+                            key={vehicle.id}
+                            onClick={() => handleVehicleSelect(vehicle, 2)}
+                            className="p-2 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
+                          >
+                            <div className="font-medium">{vehicle.manufacturer?.name} {vehicle.model}{vehicle.trim ? ` ${vehicle.trim}` : ''}</div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-2 text-muted-foreground text-sm">
+                          {searchTerm2 ? 'No vehicles found matching your search' : 'No vehicles available'}
                         </div>
-                      ))}
+                      )}
                     </div>
                   )}
                 </div>
@@ -325,32 +406,36 @@ const BattlePage: React.FC = () => {
       </Card>
 
       {/* Comparison Table */}
-      {selectedVehicle1 && selectedVehicle2 && (
+      {selectedVehicle1 && (
         <div className="space-y-6">
-          {/* Legend */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-500" />
-                  <span>Better</span>
+          {/* Legend - Only show when both vehicles are selected */}
+          {selectedVehicle2 && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-green-500" />
+                    <span>Better</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="h-4 w-4 text-red-500" />
+                    <span>Worse</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Minus className="h-4 w-4 text-gray-400" />
+                    <span>Equal</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <TrendingDown className="h-4 w-4 text-red-500" />
-                  <span>Worse</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Minus className="h-4 w-4 text-gray-400" />
-                  <span>Equal</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Comparison Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Specification Comparison</CardTitle>
+              <CardTitle>
+                {selectedVehicle2 ? 'Specification Comparison' : 'Vehicle Specifications'}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -361,57 +446,121 @@ const BattlePage: React.FC = () => {
                         Specification
                       </th>
                       <th className="text-center p-3 font-semibold">
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-                          {selectedVehicle1.manufacturer?.name} {selectedVehicle1.model}{selectedVehicle1.trim ? ` ${selectedVehicle1.trim}` : ''}
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-blue-500 bg-gray-100 dark:bg-gray-800">
+                            {selectedVehicle1.profile_image_url ? (
+                              <img 
+                                src={selectedVehicle1.profile_image_url} 
+                                alt={`${selectedVehicle1.manufacturer?.name} ${selectedVehicle1.model}`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : null}
+                            <div className={`w-full h-full flex items-center justify-center text-blue-500 ${selectedVehicle1.profile_image_url ? 'hidden' : ''}`}>
+                              <Car className="h-12 w-12" />
+                            </div>
+                          </div>
+                          <Link 
+                            to={`/vehicles/${selectedVehicle1.id}`}
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 transition-colors text-sm"
+                          >
+                            {selectedVehicle1.manufacturer?.name} {selectedVehicle1.model}{selectedVehicle1.trim ? ` ${selectedVehicle1.trim}` : ''}
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
                         </div>
                       </th>
-                      <th className="text-center p-3 font-semibold">
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-                          {selectedVehicle2.manufacturer?.name} {selectedVehicle2.model}{selectedVehicle2.trim ? ` ${selectedVehicle2.trim}` : ''}
-                        </div>
-                      </th>
-                      <th className="text-center p-3 font-semibold text-muted-foreground">
-                        Comparison
-                      </th>
+                      {selectedVehicle2 && (
+                        <th className="text-center p-3 font-semibold">
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-red-500 bg-gray-100 dark:bg-gray-800">
+                              {selectedVehicle2.profile_image_url ? (
+                                <img 
+                                  src={selectedVehicle2.profile_image_url} 
+                                  alt={`${selectedVehicle2.manufacturer?.name} ${selectedVehicle2.model}`}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    target.nextElementSibling?.classList.remove('hidden');
+                                  }}
+                                />
+                              ) : null}
+                              <div className={`w-full h-full flex items-center justify-center text-red-500 ${selectedVehicle2.profile_image_url ? 'hidden' : ''}`}>
+                                <Car className="h-12 w-12" />
+                              </div>
+                            </div>
+                            <Link 
+                              to={`/vehicles/${selectedVehicle2.id}`}
+                              className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1 transition-colors text-sm"
+                            >
+                              {selectedVehicle2.manufacturer?.name} {selectedVehicle2.model}{selectedVehicle2.trim ? ` ${selectedVehicle2.trim}` : ''}
+                              <ExternalLink className="h-3 w-3" />
+                            </Link>
+                          </div>
+                        </th>
+                      )}
+                      {selectedVehicle2 && (
+                        <th className="text-center p-3 font-semibold text-muted-foreground">
+                          Comparison
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
                     {specifications.map((spec) => {
                       const value1 = selectedVehicle1.specifications?.[spec.key as keyof typeof selectedVehicle1.specifications]
-                      const value2 = selectedVehicle2.specifications?.[spec.key as keyof typeof selectedVehicle2.specifications]
+                      const value2 = selectedVehicle2?.specifications?.[spec.key as keyof typeof selectedVehicle2.specifications]
                       
                       return (
                         <tr key={spec.key} className="border-b border-border/50 hover:bg-muted/30">
                           <td className="p-3 font-medium text-sm">
                             {spec.name}
                           </td>
-                          <td className={`p-3 text-center ${getTableCellBackground(value1 as number, value2 as number, spec.higherIsBetter)}`}>
+                          <td className={`p-3 text-center ${selectedVehicle2 ? getTableCellBackground(value1 as number, value2 as number, spec.higherIsBetter) : ''}`}>
                             <div className="flex items-center justify-center gap-2">
                               <span className="font-medium">
                                 {formatSpecValue(value1 as number, spec.unit)}
                               </span>
-                              {getComparisonIndicator(value1 as number, value2 as number, spec.higherIsBetter)}
+                              {selectedVehicle2 && getComparisonIndicator(value1 as number, value2 as number, spec.higherIsBetter)}
                             </div>
                           </td>
-                          <td className={`p-3 text-center ${getTableCellBackground(value2 as number, value1 as number, spec.higherIsBetter)}`}>
-                            <div className="flex items-center justify-center gap-2">
-                              <span className="font-medium">
-                                {formatSpecValue(value2 as number, spec.unit)}
-                              </span>
-                              {getComparisonIndicator(value2 as number, value1 as number, spec.higherIsBetter)}
-                            </div>
-                          </td>
-                          <td className="p-3 text-center text-sm text-muted-foreground">
-                            {value1 && value2 ? (
-                              compareValues(value1 as number, value2 as number, spec.higherIsBetter) === 'better' ? 
-                                `${selectedVehicle1.manufacturer?.name} ${selectedVehicle1.model}${selectedVehicle1.trim ? ` ${selectedVehicle1.trim}` : ''}` :
-                              compareValues(value1 as number, value2 as number, spec.higherIsBetter) === 'worse' ? 
-                                `${selectedVehicle2.manufacturer?.name} ${selectedVehicle2.model}${selectedVehicle2.trim ? ` ${selectedVehicle2.trim}` : ''}` :
-                                'Equal'
-                            ) : 'N/A'}
-                          </td>
+                          {selectedVehicle2 && (
+                            <td className={`p-3 text-center ${getTableCellBackground(value2 as number, value1 as number, spec.higherIsBetter)}`}>
+                              <div className="flex items-center justify-center gap-2">
+                                <span className="font-medium">
+                                  {formatSpecValue(value2 as number, spec.unit)}
+                                </span>
+                                {getComparisonIndicator(value2 as number, value1 as number, spec.higherIsBetter)}
+                              </div>
+                            </td>
+                          )}
+                          {selectedVehicle2 && (
+                            <td className="p-3 text-center text-sm text-muted-foreground">
+                              {value1 && value2 ? (
+                                compareValues(value1 as number, value2 as number, spec.higherIsBetter) === 'better' ? 
+                                  <Link 
+                                    to={`/vehicles/${selectedVehicle1.id}`}
+                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center justify-center gap-1 transition-colors"
+                                  >
+                                    {selectedVehicle1.manufacturer?.name} {selectedVehicle1.model}{selectedVehicle1.trim ? ` ${selectedVehicle1.trim}` : ''}
+                                    <ExternalLink className="h-3 w-3" />
+                                  </Link> :
+                                compareValues(value1 as number, value2 as number, spec.higherIsBetter) === 'worse' ? 
+                                  <Link 
+                                    to={`/vehicles/${selectedVehicle2.id}`}
+                                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 flex items-center justify-center gap-1 transition-colors"
+                                  >
+                                    {selectedVehicle2.manufacturer?.name} {selectedVehicle2.model}{selectedVehicle2.trim ? ` ${selectedVehicle2.trim}` : ''}
+                                    <ExternalLink className="h-3 w-3" />
+                                  </Link> :
+                                  'Equal'
+                              ) : 'N/A'}
+                            </td>
+                          )}
                         </tr>
                       )
                     })}

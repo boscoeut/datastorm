@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { RefreshCw, Loader2, CheckCircle, XCircle, Database, Newspaper, Car } from 'lucide-react'
+import { RefreshCw, Loader2, CheckCircle, XCircle, Database, Newspaper, Car, ExternalLink } from 'lucide-react'
 import { VehicleDetailsUpdateService, type VehicleDetailsUpdateOptions, type VehicleDetailsUpdateResult } from '@/services/vehicle-details-update'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -174,6 +175,24 @@ export const UpdateVehicleDetailsButton: React.FC<UpdateVehicleDetailsButtonProp
                       <div>
                         <p className="font-medium">Model year:</p>
                         <p className="text-gray-500">{result.data.model_year_processed}</p>
+                      </div>
+                    )}
+                    
+                    {result.data.vehicle_ids.length > 0 && (
+                      <div>
+                        <p className="font-medium">Updated vehicles:</p>
+                        <div className="space-y-1">
+                          {result.data.vehicle_ids.map((vehicleId) => (
+                            <Link 
+                              key={vehicleId}
+                              to={`/vehicles/${vehicleId}`}
+                              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 transition-colors text-xs"
+                            >
+                              View Vehicle Details
+                              <ExternalLink className="h-3 w-3" />
+                            </Link>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { VehicleUpdateService, type VehicleUpdateParams, type VehicleUpdateResult } from '@/services/vehicle-update';
-import { Loader2, Car, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
+import { Loader2, Car, CheckCircle, XCircle, AlertCircle, Info, ExternalLink } from 'lucide-react';
 
 export const VehicleUpdateForm: React.FC = () => {
   const [formData, setFormData] = useState<Partial<VehicleUpdateParams>>({
@@ -250,6 +251,25 @@ export const VehicleUpdateForm: React.FC = () => {
                     <div className="flex flex-wrap gap-1">
                       {result.data.trims_processed.map((trim, index) => (
                         <Badge key={index} variant="secondary">{trim}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {result.data.vehicle_ids.length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-2">Updated Vehicles:</h4>
+                    <div className="space-y-2">
+                      {result.data.vehicle_ids.map((vehicleId, index) => (
+                        <div key={vehicleId} className="flex items-center gap-2">
+                          <Link 
+                            to={`/vehicles/${vehicleId}`}
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 transition-colors text-sm"
+                          >
+                            View Vehicle Details
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        </div>
                       ))}
                     </div>
                   </div>
