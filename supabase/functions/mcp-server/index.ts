@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 import { updateVehicleDetails, VehicleUpdateParams } from './vehicle-updater.ts'
+import { executeSearchEVs } from './ev-search.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -386,6 +387,44 @@ const mcpTools: MCPTool[] = [
       required: ['query'],
     },
   },
+  {
+    name: 'search-evs',
+    description: 'Use Gemini AI to research and compile comprehensive lists of Electric Vehicles for specific manufacturers and models',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        manufacturer: {
+          type: 'string',
+          description: 'Vehicle manufacturer (e.g., "Tesla", "Ford", "BMW")',
+        },
+        model: {
+          type: 'string',
+          description: 'Vehicle model (optional, e.g., "Model 3", "F-150 Lightning", "iX"). If not provided, searches for all models from the manufacturer.',
+        },
+        trim: {
+          type: 'string',
+          description: 'Specific trim level (optional, e.g., "Performance", "Long Range", "Platinum")',
+        },
+        year: {
+          type: 'number',
+          description: 'Model year (optional, defaults to current year)',
+          minimum: 2020,
+          maximum: 2030,
+        },
+        includeAllTrims: {
+          type: 'boolean',
+          description: 'Whether to include all available trim levels for the model (default: true)',
+        },
+        maxResults: {
+          type: 'number',
+          description: 'Maximum number of vehicles to return (default: 20)',
+          minimum: 1,
+          maximum: 50,
+        },
+      },
+      required: ['manufacturer'],
+    },
+  },
 ]
 
 // Check if user is admin
@@ -448,25 +487,35 @@ async function callGoogleSearchAPI(params: GoogleSearchParams): Promise<GoogleSe
       throw new Error('Google Search API key or search engine ID not configured');
     }
 
+    // Validate and sanitize parameters
+    const numResults = Math.min(Math.max(params.num_results || 10, 1), 10); // Ensure between 1-10
+    const startIndex = Math.max(params.start_index || 1, 1); // Ensure at least 1
+    const query = params.query?.trim();
+    
+    if (!query) {
+      throw new Error('Search query is required');
+    }
+
     // Build search URL
     const baseUrl = 'https://www.googleapis.com/customsearch/v1';
     const searchParams = new URLSearchParams({
       key: apiKey,
       cx: searchEngineId,
-      q: params.query,
-      num: String(params.num_results || 10),
-      start: String(params.start_index || 1),
+      q: query,
+      num: String(numResults),
+      start: String(startIndex),
     });
 
     // Add optional parameters
-    if (params.site_restriction) {
-      searchParams.append('siteSearch', params.site_restriction);
+    if (params.site_restriction && params.site_restriction.trim()) {
+      searchParams.append('siteSearch', params.site_restriction.trim());
     }
-    if (params.language) {
-      searchParams.append('lr', `lang_${params.language}`);
+    if (params.language && params.language.trim()) {
+      searchParams.append('lr', `lang_${params.language.trim()}`);
     }
 
     const url = `${baseUrl}?${searchParams.toString()}`;
+    console.log('Google Search API URL:', url.replace(apiKey, '***')); // Log URL without API key
 
     // Make the API request
     const response = await fetch(url, {
@@ -478,6 +527,7 @@ async function callGoogleSearchAPI(params: GoogleSearchParams): Promise<GoogleSe
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('Google Search API error response:', errorText);
       throw new Error(`Google Search API error: ${response.status} ${errorText}`);
     }
 
@@ -605,7 +655,7 @@ function handleInitialize(request: any): any {
       serverInfo: {
         name: 'datastorm-mcp-server',
         version: '2.1.0',
-        description: 'MCP Server for Electric Vehicle Data Hub with populate-images, update-vehicle-details, web_search, and image_search functionality'
+        description: 'MCP Server for Electric Vehicle Data Hub with populate-images, update-vehicle-details, web_search, image_search, and search-evs functionality'
       }
     }
   }
@@ -638,6 +688,8 @@ async function handleToolsCall(request: any, token: string, isServiceToken: bool
     return await executeWebSearch(args, request.id)
   } else if (name === 'image_search') {
     return await executeImageSearch(args, request.id)
+  } else if (name === 'search-evs') {
+    return await executeSearchEVs(args, request.id)
   }
   
   // Tool not found
@@ -1167,7 +1219,7 @@ serve(async (req) => {
           }
         } else {
           // For service tokens, we'll pass a special flag
-          response = await handleToolsCall(requestBody, token, isServiceToken)
+          response = await handleToolsCall(requestBody, token, isServiceToken || false)
         }
         break
       
