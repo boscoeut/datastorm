@@ -319,7 +319,7 @@ const BattlePage: React.FC = () => {
                     value={searchTerm1}
                     onChange={(e) => setSearchTerm1(e.target.value)}
                     onFocus={() => setShowSearch1(true)}
-                    className="w-full p-2 border border-input rounded-md"
+                    className="w-full p-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                   />
                   {showSearch1 && (
                     <div className="max-h-48 overflow-y-auto border border-input rounded-md bg-background">
@@ -377,7 +377,7 @@ const BattlePage: React.FC = () => {
                     value={searchTerm2}
                     onChange={(e) => setSearchTerm2(e.target.value)}
                     onFocus={() => setShowSearch2(true)}
-                    className="w-full p-2 border border-input rounded-md"
+                    className="w-full p-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                   />
                   {showSearch2 && (
                     <div className="max-h-48 overflow-y-auto border border-input rounded-md bg-background">
