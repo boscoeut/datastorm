@@ -193,7 +193,7 @@ async function callGeminiProxy(request: {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
       },
       body: JSON.stringify(request),
     });
@@ -367,8 +367,19 @@ async function processSearchResultsForVehicleData(
     ...newsSearchResults.flatMap(response => response.items || [])
   ];
 
-  const searchResultsText = allSearchResults
-    .map(item => `Title: ${item.title}\nSnippet: ${item.snippet}\nURL: ${item.link}\n---`)
+  // Limit search results and truncate long snippets to stay within prompt limits
+  const maxResults = 20; // Limit to 20 most relevant results
+  const maxSnippetLength = 200; // Truncate snippets to 200 characters
+  
+  const limitedSearchResults = allSearchResults.slice(0, maxResults);
+  
+  const searchResultsText = limitedSearchResults
+    .map(item => {
+      const truncatedSnippet = item.snippet && item.snippet.length > maxSnippetLength 
+        ? item.snippet.substring(0, maxSnippetLength) + '...'
+        : item.snippet;
+      return `Title: ${item.title}\nSnippet: ${truncatedSnippet}\nURL: ${item.link}\n---`;
+    })
     .join('\n');
 
   // Use Gemini to extract manufacturer information
@@ -391,9 +402,30 @@ async function processSearchResultsForVehicleData(
   };
 }
 
+// Helper function to truncate prompt if it exceeds limits
+function truncatePromptIfNeeded(prompt: string, maxLength: number = 9000): string {
+  if (prompt.length <= maxLength) {
+    return prompt;
+  }
+  
+  // Find the search results section and truncate it
+  const searchResultsIndex = prompt.indexOf('Search Results:');
+  if (searchResultsIndex === -1) {
+    return prompt.substring(0, maxLength);
+  }
+  
+  const beforeSearchResults = prompt.substring(0, searchResultsIndex + 'Search Results:'.length);
+  const remainingLength = maxLength - beforeSearchResults.length - 100; // Leave room for closing text
+  
+  const searchResultsSection = prompt.substring(searchResultsIndex + 'Search Results:'.length);
+  const truncatedSearchResults = searchResultsSection.substring(0, remainingLength) + '\n\n[Search results truncated for length]';
+  
+  return beforeSearchResults + '\n' + truncatedSearchResults + prompt.substring(prompt.lastIndexOf('If information is not available'));
+}
+
 // Extract manufacturer data using Gemini
 async function extractManufacturerData(params: VehicleUpdateParams, searchResultsText: string) {
-  const prompt = `Analyze the following search results and extract manufacturer information for ${params.manufacturer}.
+  let prompt = `Analyze the following search results and extract manufacturer information for ${params.manufacturer}.
 
 Search Results:
 ${searchResultsText}
@@ -406,6 +438,9 @@ Please extract and return ONLY a JSON object with the following structure:
 }
 
 If information is not available in the search results, use your knowledge to provide reasonable defaults.`;
+
+  // Ensure prompt doesn't exceed limits
+  prompt = truncatePromptIfNeeded(prompt);
 
   const response = await callGeminiProxy({
     task: 'analyze_vehicle_data',
@@ -429,7 +464,7 @@ If information is not available in the search results, use your knowledge to pro
 
 // Extract vehicle data using Gemini
 async function extractVehicleData(params: VehicleUpdateParams, targetYear: number, searchResultsText: string) {
-  const prompt = `Analyze the following search results and extract vehicle information for ${params.manufacturer} ${params.model} ${targetYear}.
+  let prompt = `Analyze the following search results and extract vehicle information for ${params.manufacturer} ${params.model} ${targetYear}.
 
 Search Results:
 ${searchResultsText}
@@ -446,6 +481,9 @@ Please extract and return ONLY a JSON array with vehicle objects. Each vehicle s
 }
 
 If multiple trims are mentioned, create separate objects for each. If information is not available, use reasonable defaults based on the model name.`;
+
+  // Ensure prompt doesn't exceed limits
+  prompt = truncatePromptIfNeeded(prompt);
 
   const response = await callGeminiProxy({
     task: 'analyze_vehicle_data',
@@ -466,7 +504,7 @@ If multiple trims are mentioned, create separate objects for each. If informatio
 
 // Extract specifications data using Gemini
 async function extractSpecificationsData(params: VehicleUpdateParams, targetYear: number, searchResultsText: string) {
-  const prompt = `Analyze the following search results and extract detailed specifications for ${params.manufacturer} ${params.model} ${targetYear}.
+  let prompt = `Analyze the following search results and extract detailed specifications for ${params.manufacturer} ${params.model} ${targetYear}.
 
 Search Results:
 ${searchResultsText}
@@ -491,6 +529,9 @@ Please extract and return ONLY a JSON object with the following structure:
 }
 
 Extract actual values from the search results. If a specification is not mentioned, omit it from the JSON object (don't include null values). Use your knowledge to provide reasonable estimates if specific data is not available.`;
+
+  // Ensure prompt doesn't exceed limits
+  prompt = truncatePromptIfNeeded(prompt);
 
   const response = await callGeminiProxy({
     task: 'analyze_vehicle_data',

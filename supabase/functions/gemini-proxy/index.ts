@@ -89,7 +89,7 @@ async function callGeminiAPI(request: any): Promise<{ text: string; usage?: any 
     
     // Get the model
     const model = genAI.getGenerativeModel({
-      model: request.model || 'gemini-2.0-flash-exp',
+      model: request.model || 'gemini-2.5-flash',
       generationConfig: {
         temperature: request.temperature || 0.7,
         maxOutputTokens: request.maxTokens || 2048,
