@@ -1,4 +1,5 @@
 import { VehicleImageService } from '../services/storage'
+import { NewsImageService } from '../services/news-image-storage'
 
 /**
  * Initialize Supabase storage buckets and policies
@@ -8,6 +9,7 @@ export async function initializeStorage() {
   try {
     console.log('Initializing Supabase storage...')
     await VehicleImageService.initializeStorage()
+    await NewsImageService.initializeStorage()
     console.log('Storage initialization complete')
   } catch (error) {
     console.warn('Storage initialization completed with warnings:', error instanceof Error ? error.message : 'Unknown error')
@@ -25,16 +27,20 @@ export async function checkStorageStatus() {
     if (error) throw error
     
     const vehicleImagesBucket = buckets.find(bucket => bucket.name === 'vehicle-images')
+    const newsImagesBucket = buckets.find(bucket => bucket.name === 'news-images')
+    
     return {
       available: true,
-      bucketExists: !!vehicleImagesBucket,
-      bucketName: 'vehicle-images'
+      vehicleImagesBucket: !!vehicleImagesBucket,
+      newsImagesBucket: !!newsImagesBucket,
+      buckets: buckets.map(b => b.name)
     }
   } catch (error) {
     return {
       available: false,
-      bucketExists: false,
-      bucketName: 'vehicle-images',
+      vehicleImagesBucket: false,
+      newsImagesBucket: false,
+      buckets: [],
       error: error instanceof Error ? error.message : 'Unknown error'
     }
   }

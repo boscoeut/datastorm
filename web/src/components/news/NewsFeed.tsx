@@ -26,6 +26,7 @@ import {
   useNewsTotalCount,
   useNewsStore
 } from '@/stores/news-store'
+import { NewsImageService } from '@/services/news-image-storage'
 
 
 interface NewsFeedProps {
@@ -317,6 +318,29 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
           >
             <CardContent className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                {/* Article Image */}
+                <div className="w-full sm:w-48 flex-shrink-0 mb-3 sm:mb-0">
+                  {(() => {
+                    const imageUrl = NewsImageService.getImageUrl(article);
+                    return imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={article.title}
+                        className="w-full h-32 sm:h-36 object-cover rounded-lg border"
+                        onError={(e) => {
+                          // Show placeholder if image fails to load
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null;
+                  })()}
+                  {/* Placeholder image */}
+                  <div className={`w-full h-32 sm:h-36 bg-muted rounded-lg border flex items-center justify-center ${NewsImageService.getImageUrl(article) ? 'hidden' : ''}`}>
+                    <Newspaper className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                </div>
+                
                 <div className="flex-1 space-y-3 min-w-0">
                   {/* Article Header */}
                   <div className="space-y-2">

@@ -74,14 +74,20 @@ export interface VehicleSpecification {
 
 export interface NewsArticle {
   id: string
-  title: string
+  title: string // VARCHAR(1000)
   content?: string
-  summary?: string
-  source_url?: string
-  source_name?: string
+  summary?: string // VARCHAR(1000)
+  source_url?: string // VARCHAR(1000)
+  source_name?: string // VARCHAR(500)
   published_date?: string
-  category?: string
+  category?: string // VARCHAR(200)
   tags?: string[]
+  image_url?: string
+  image_path?: string
+  image_name?: string
+  image_size?: number
+  image_width?: number
+  image_height?: number
   created_at: string
   updated_at: string
 }
