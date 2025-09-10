@@ -509,18 +509,25 @@ async function extractVehicleData(params: VehicleUpdateParams, targetYear: numbe
 Search Results:
 ${searchResultsText}
 
-Please extract and return ONLY a JSON array with vehicle objects. Do not include any markdown formatting, code blocks, or additional text - just the raw JSON array. Each vehicle should have the following structure:
+IMPORTANT: Return ONLY a valid JSON array. Do not include any markdown formatting, code blocks, explanations, or additional text - just the raw JSON array.
+
+Each vehicle object must have this exact structure:
 {
   "model": "Model name",
   "year": ${targetYear},
   "model_year": ${targetYear},
   "trim": "Trim level (e.g., Base, Performance, Long Range)",
   "body_style": "Body style (Sedan, SUV, Truck, etc.)",
-  "is_electric": true/false,
-  "is_currently_available": true/false
+  "is_electric": true,
+  "is_currently_available": true
 }
 
-If multiple trims are mentioned, create separate objects for each. If information is not available, use reasonable defaults based on the model name.`;
+Rules:
+- Return an array even if only one vehicle
+- Use true for is_electric and is_currently_available for electric vehicles
+- If multiple trims are mentioned, create separate objects for each
+- If information is not available, use reasonable defaults based on the model name
+- Ensure all JSON is properly formatted and valid`;
 
   // Ensure prompt doesn't exceed limits
   prompt = truncatePromptIfNeeded(prompt);
@@ -535,6 +542,15 @@ If multiple trims are mentioned, create separate objects for each. If informatio
   try {
     // Clean the response text to extract JSON
     let responseText = response.text.trim();
+    
+    console.log('Raw Gemini response for vehicle data:', responseText);
+    
+    // Check if response is empty or too short
+    if (!responseText || responseText.length < 10) {
+      console.warn('Empty or very short response from Gemini for vehicle data');
+      const fallbackData = await getFallbackVehicleData(params, targetYear);
+      return [fallbackData];
+    }
     
     // Remove any markdown code blocks
     if (responseText.startsWith('```json')) {
@@ -553,12 +569,29 @@ If multiple trims are mentioned, create separate objects for each. If informatio
       responseText = objectMatch[0];
     }
     
-    console.log('Parsing vehicle data:', responseText);
+    console.log('Cleaned response for parsing:', responseText);
+    
+    // Validate that we have something to parse
+    if (!responseText || responseText.length < 5) {
+      console.warn('No valid JSON found in response');
+      const fallbackData = await getFallbackVehicleData(params, targetYear);
+      return [fallbackData];
+    }
+    
     const data = JSON.parse(responseText);
+    
+    // Validate the parsed data
+    if (!data || (Array.isArray(data) && data.length === 0)) {
+      console.warn('Parsed data is empty or invalid');
+      const fallbackData = await getFallbackVehicleData(params, targetYear);
+      return [fallbackData];
+    }
+    
     return Array.isArray(data) ? data : [data];
   } catch (error) {
     console.warn('Failed to parse vehicle data from Gemini:', error);
     console.warn('Raw response:', response.text);
+    console.warn('Response length:', response.text?.length || 0);
     const fallbackData = await getFallbackVehicleData(params, targetYear);
     return [fallbackData];
   }
