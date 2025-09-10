@@ -42,15 +42,6 @@ export interface VehicleData {
     charging_speed_kw?: number
     msrp_usd?: number
   }>
-  newsArticles: Array<{
-    title: string
-    summary: string
-    source_url: string
-    source_name: string
-    category: string
-    tags: string[]
-    published_date: string
-  }>
 }
 
 export interface VehicleUpdateResult {
@@ -63,8 +54,6 @@ export interface VehicleUpdateResult {
     vehicles_updated: number
     specifications_created: number
     specifications_updated: number
-    news_articles_added: number
-    news_articles_skipped: number
     trims_processed: string[]
     vehicle_ids: string[]
     model_year_processed: string
@@ -257,8 +246,6 @@ export async function updateVehicleDetails(
     vehicles_updated: 0,
     specifications_created: 0,
     specifications_updated: 0,
-    news_articles_added: 0,
-    news_articles_skipped: 0,
     trims_processed: [] as string[],
     vehicle_ids: [] as string[],
     model_year_processed: ''
@@ -294,13 +281,6 @@ export async function updateVehicleDetails(
       counters.vehicle_ids.push(vehicleResult.vehicle_id);
     }
 
-    // Step 4: Process news articles
-    console.log('📰 Processing news articles...');
-    for (const article of vehicleData.newsArticles) {
-      const articleResult = await processNewsArticle(article, supabase);
-      counters.news_articles_added += articleResult.added;
-      counters.news_articles_skipped += articleResult.skipped;
-    }
 
     const result: VehicleUpdateResult = {
       success: true,
@@ -344,27 +324,16 @@ async function researchVehicleInformation(params: VehicleUpdateParams): Promise<
     `${params.manufacturer} ${params.model} ${targetYear} performance`
   ];
 
-  // Search for news articles
-  const newsSearchQueries = [
-    `${params.manufacturer} ${params.model} ${targetYear} news`,
-    `${params.manufacturer} ${params.model} ${targetYear} review`,
-    `${params.manufacturer} ${params.model} ${targetYear} update`,
-    `${params.manufacturer} ${params.model} ${targetYear} price change`
-  ];
 
   // Execute searches
   const vehicleSearchResults = await Promise.all(
     vehicleSearchQueries.map(query => callGoogleSearchAPI({ query, num_results: 5 }))
   );
 
-  const newsSearchResults = await Promise.all(
-    newsSearchQueries.map(query => callGoogleSearchAPI({ query, num_results: 3 }))
-  );
 
   // Process search results to extract vehicle data
   const vehicleData = await processSearchResultsForVehicleData(
     vehicleSearchResults,
-    newsSearchResults,
     params,
     targetYear
   );
@@ -375,7 +344,6 @@ async function researchVehicleInformation(params: VehicleUpdateParams): Promise<
 // Process search results to extract structured vehicle data using Gemini
 async function processSearchResultsForVehicleData(
   vehicleSearchResults: GoogleSearchResponse[],
-  newsSearchResults: GoogleSearchResponse[],
   params: VehicleUpdateParams,
   targetYear: number
 ): Promise<VehicleData> {
@@ -383,8 +351,7 @@ async function processSearchResultsForVehicleData(
 
   // Combine all search results into a single text for analysis
   const allSearchResults = [
-    ...vehicleSearchResults.flatMap(response => response.items || []),
-    ...newsSearchResults.flatMap(response => response.items || [])
+    ...vehicleSearchResults.flatMap(response => response.items || [])
   ];
 
   // Limit search results and truncate long snippets to stay within prompt limits
@@ -412,14 +379,11 @@ async function processSearchResultsForVehicleData(
   // Use Gemini to extract specifications
   const specificationsData = await extractSpecificationsData(params, targetYear, searchResultsText);
   
-  // Use Gemini to extract and categorize news articles
-  const newsArticlesData = await extractNewsArticlesData(params, newsSearchResults);
 
   return {
     manufacturer: manufacturerData,
     vehicles: vehicleData,
-    specifications: specificationsData,
-    newsArticles: newsArticlesData
+    specifications: specificationsData
   };
 }
 
@@ -702,74 +666,6 @@ Pay special attention to:
   }
 }
 
-// Extract news articles data using Gemini
-async function extractNewsArticlesData(params: VehicleUpdateParams, newsSearchResults: GoogleSearchResponse[]) {
-  const newsItems = newsSearchResults.flatMap(response => response.items || []);
-  
-  if (newsItems.length === 0) {
-    return [];
-  }
-
-  const newsText = newsItems
-    .map(item => `Title: ${item.title}\nSnippet: ${item.snippet}\nURL: ${item.link}\nSource: ${item.displayLink}\n---`)
-    .join('\n');
-
-  const prompt = `Analyze the following news articles about ${params.manufacturer} ${params.model} and extract structured information.
-
-News Articles:
-${newsText}
-
-Please extract and return ONLY a JSON array with article objects. Each article should have the following structure:
-{
-  "title": "Article title",
-  "summary": "Brief summary of the article",
-  "source_url": "Article URL",
-  "source_name": "Source website name",
-  "category": "Category (Reviews, Market Trends, Technology, Performance, Safety, General)",
-  "tags": ["array", "of", "relevant", "tags"],
-  "published_date": "YYYY-MM-DD format"
-}
-
-Categorize each article appropriately and extract relevant tags. If published date is not available, use today's date. Limit to the 10 most relevant articles.`;
-
-  const response = await callGeminiAPI({
-    task: 'analyze_vehicle_data',
-    prompt,
-    expectedOutput: 'JSON array of news article objects',
-    temperature: 0.3
-  });
-
-  try {
-    // Clean the response text to extract JSON
-    let responseText = response.text.trim();
-    
-    // Remove any markdown code blocks
-    if (responseText.startsWith('```json')) {
-      responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-    } else if (responseText.startsWith('```')) {
-      responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
-    }
-    
-    // Try to find JSON array in the response
-    const arrayMatch = responseText.match(/\[[\s\S]*\]/);
-    if (arrayMatch) {
-      responseText = arrayMatch[0];
-    }
-    
-    console.log('Parsing news articles data:', responseText);
-    const data = JSON.parse(responseText);
-    return Array.isArray(data) ? data.slice(0, 10) : [data];
-  } catch (error) {
-    console.warn('Failed to parse news articles data from Gemini:', error);
-    console.warn('Raw response:', response.text);
-    const fallbackArticles: any[] = [];
-    for (const item of newsItems.slice(0, 10)) {
-      const fallbackData = await getFallbackNewsArticleData(item, params);
-      fallbackArticles.push(fallbackData);
-    }
-    return fallbackArticles;
-  }
-}
 
 // Fallback functions using Gemini for data extraction when primary extraction fails
 async function getFallbackManufacturerData(params: VehicleUpdateParams) {
@@ -885,50 +781,10 @@ async function getFallbackSpecificationsData(params: VehicleUpdateParams, target
     );
   } catch (error) {
     console.warn('Fallback specifications data extraction failed:', error);
-    console.warn('Raw fallback response:', response?.text);
     return {};
   }
 }
 
-async function getFallbackNewsArticleData(article: any, params: VehicleUpdateParams) {
-  const prompt = `Categorize and tag this news article about ${params.manufacturer} ${params.model}:
-
-Title: ${article.title}
-Summary: ${article.snippet}
-
-Return ONLY a JSON object:
-{
-  "title": "${article.title}",
-  "summary": "${article.snippet}",
-  "source_url": "${article.link}",
-  "source_name": "${article.displayLink}",
-  "category": "Category (Reviews, Market Trends, Technology, Performance, Safety, General)",
-  "tags": ["array", "of", "relevant", "tags"],
-  "published_date": "${new Date().toISOString().split('T')[0]}"
-}`;
-
-  try {
-    const response = await callGeminiAPI({
-      task: 'analyze_vehicle_data',
-      prompt,
-      expectedOutput: 'JSON object with categorized article data',
-      temperature: 0.1
-    });
-    
-    return JSON.parse(response.text);
-  } catch (error) {
-    console.warn('Fallback news article categorization failed, using basic defaults');
-    return {
-      title: article.title,
-      summary: article.snippet,
-      source_url: article.link,
-      source_name: article.displayLink,
-      category: 'General',
-      tags: [params.manufacturer, params.model],
-      published_date: new Date().toISOString().split('T')[0]
-    };
-  }
-}
 
 // Database processing functions
 async function processManufacturer(manufacturer: any, supabase: any) {
@@ -1117,44 +973,3 @@ async function processSpecifications(vehicleId: string, specifications: any, sup
   }
 }
 
-async function processNewsArticle(article: any, supabase: any) {
-  console.log('📰 Processing news article:', article.title);
-  
-  // Check if article exists
-  const { data: existingArticle, error: checkError } = await supabase
-    .from('news_articles')
-    .select('*')
-    .eq('source_url', article.source_url)
-    .single();
-
-  if (checkError && checkError.code !== 'PGRST116') {
-    throw new Error(`Error checking news article: ${checkError.message}`);
-  }
-
-  if (existingArticle) {
-    console.log('⏭️ News article already exists, skipping:', article.title);
-    return { added: 0, skipped: 1 };
-  } else {
-    // Create new article
-    const { error: createError } = await supabase
-      .from('news_articles')
-      .insert([{
-        title: article.title,
-        summary: article.summary,
-        source_url: article.source_url,
-        source_name: article.source_name,
-        category: article.category,
-        tags: article.tags,
-        published_date: article.published_date,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }]);
-
-    if (createError) {
-      throw new Error(`Error creating news article: ${createError.message}`);
-    }
-
-    console.log('✅ News article created:', article.title);
-    return { added: 1, skipped: 0 };
-  }
-}

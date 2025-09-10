@@ -9,12 +9,6 @@ const allNavigationItems: NavigationItem[] = [
     public: true,
   },
   {
-    id: 'battle',
-    label: 'Vehicle Battle',
-    href: '/battle',
-    public: true,
-  },
-  {
     id: 'news',
     label: 'Industry News',
     href: '/news',
@@ -24,13 +18,6 @@ const allNavigationItems: NavigationItem[] = [
     id: 'admin',
     label: 'Admin Dashboard',
     href: '/admin',
-    public: false,
-    adminOnly: true,
-  },
-  {
-    id: 'sql',
-    label: 'SQL',
-    href: '/sql',
     public: false,
     adminOnly: true,
   },

@@ -84,7 +84,7 @@ print_status "After editing the .env file, you can deploy your functions with:"
 echo "  ./deploy.sh"
 echo ""
 print_status "Or deploy a specific function with:"
-echo "  ./deploy.sh tesla-news-fetcher"
+echo "  ./deploy.sh mcp-server"
 echo ""
 
 print_success "Setup complete! 🎉"

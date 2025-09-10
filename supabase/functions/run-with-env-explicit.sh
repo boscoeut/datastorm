@@ -4,20 +4,19 @@
 show_usage() {
     echo "Usage: $0 [FUNCTION_NAME] [PORT]"
     echo ""
-    echo "FUNCTION_NAME: Name of the Edge Function to run (default: tesla-news-fetcher)"
+    echo "FUNCTION_NAME: Name of the Edge Function to run"
     echo "PORT: Port to run the function on (default: 8000)"
     echo ""
     echo "Examples:"
-    echo "  $0                                    # Run tesla-news-fetcher on port 8000"
-    echo "  $0 tesla-news-fetcher 9000          # Run tesla-news-fetcher on port 9000"
+    echo "  $0 mcp-server 8000                  # Run mcp-server on port 8000"
     echo ""
     echo "Available functions:"
-    echo "  - tesla-news-fetcher"
+    echo "  - mcp-server"
     echo ""
 }
 
 # Default values
-FUNCTION_NAME=${1:-tesla-news-fetcher}
+FUNCTION_NAME=${1}
 PORT=${2:-8000}
 
 # Validate function name
@@ -74,8 +73,8 @@ PORT=$PORT deno run --allow-net --allow-env --allow-read --watch "$FUNCTION_NAME
 # Option 2: Use deno tasks (alternative approach)
 # Uncomment the line below if you prefer using deno tasks
 # case $FUNCTION_NAME in
-#   "tesla-news-fetcher")
-#     PORT=$PORT deno task dev:tesla
+#   "mcp-server")
+#     PORT=$PORT deno task dev:mcp
 #     ;;
 #   *)
 #     echo "Error: No deno task defined for $FUNCTION_NAME"

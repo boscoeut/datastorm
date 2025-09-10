@@ -4,26 +4,25 @@
 show_usage() {
     echo "Usage: $0 [FUNCTION_NAME] [PORT] [TEST_DATA]"
     echo ""
-    echo "FUNCTION_NAME: Name of the Edge Function to test (default: tesla-news-fetcher)"
+    echo "FUNCTION_NAME: Name of the Edge Function to test"
     echo "PORT: Port the function is running on (default: 8000)"
     echo "TEST_DATA: JSON data to send in POST request (default: {})"
     echo ""
     echo "Examples:"
-    echo "  $0                                    # Test tesla-news-fetcher on port 8000 with empty data"
-    echo "  $0 tesla-news-fetcher 9000          # Test tesla-news-fetcher on port 9000"
+    echo "  $0 mcp-server 8000                  # Test mcp-server on port 8000"
     echo ""
     echo "Available functions:"
-    echo "  - tesla-news-fetcher"
+    echo "  - mcp-server"
     echo ""
     echo "Test data examples:"
-    echo "  Tesla News Fetcher: {}"
+    echo "  MCP Server: {}"
     echo ""
     echo "Note: When passing JSON data, ensure proper escaping:"
     echo ""
 }
 
 # Default values
-FUNCTION_NAME=${1:-tesla-news-fetcher}
+FUNCTION_NAME=${1}
 PORT=${2:-8000}
 
 # Handle TEST_DATA parameter carefully to avoid shell expansion issues

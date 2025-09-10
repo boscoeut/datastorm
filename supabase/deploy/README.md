@@ -71,7 +71,7 @@ Create a `.env` file in this directory with the following variables:
 
 ### Deploy Specific Function
 ```bash
-./deploy.sh tesla-news-fetcher
+./deploy.sh mcp-server
 ```
 
 ### Show Help
@@ -115,9 +115,8 @@ supabase/
 │   ├── env.template       # Environment variables template
 │   └── README.md          # This file
 ├── functions/
-│   └── tesla-news-fetcher/
-│       ├── index.ts       # Edge Function code
-│       ├── types.ts       # TypeScript types
+│   └── mcp-server/
+│       └── index.ts       # MCP Server Edge Function
 │       └── README.md      # Function documentation
 └── ...
 ```
@@ -160,12 +159,12 @@ chmod +x deploy.sh
 
 2. **View Function Logs**:
    ```bash
-   supabase functions logs tesla-news-fetcher
+   supabase functions logs mcp-server
    ```
 
 3. **Test Function Locally**:
    ```bash
-   supabase functions serve tesla-news-fetcher
+   supabase functions serve mcp-server
    ```
 
 ## Security Notes

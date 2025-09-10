@@ -4,9 +4,9 @@ This directory contains Edge Functions for the Electric Vehicle Data Hub project
 
 ## Available Functions
 
-### 1. Tesla News Fetcher (`tesla-news-fetcher/`)
-- **Purpose**: Fetches Tesla news using Google Gemini AI
-- **Endpoint**: `POST /functions/v1/tesla-news-fetcher`
+### 1. MCP Server (`mcp-server/`)
+- **Purpose**: Model Context Protocol server with vehicle and news management tools
+- **Endpoint**: `POST /functions/v1/mcp-server`
 - **Test Data**: `{}`
 
 
@@ -16,9 +16,8 @@ This directory contains Edge Functions for the Electric Vehicle Data Hub project
 
 #### Option 1: Using the Flexible Script (Recommended)
 ```bash
-# Run tesla-news-fetcher on default port 8000
-./run-with-env-explicit.sh
-
+# Run mcp-server on port 8000
+./run-with-env-explicit.sh mcp-server 8000
 
 # Show usage help
 ./run-with-env-explicit.sh --help
@@ -28,38 +27,24 @@ This directory contains Edge Functions for the Electric Vehicle Data Hub project
 
 #### Option 2: Manual Directory Navigation
 ```bash
-cd tesla-news-fetcher
-PORT=8000 deno task dev
-
-```
-
-#### Option 3: Using Deno Tasks (Alternative)
-```bash
-# Run tesla-news-fetcher using predefined task
-PORT=8000 deno task dev:tesla
-
+cd mcp-server
+PORT=8000 deno run --allow-net --allow-env --allow-read --watch index.ts
 ```
 
 ### Testing Functions
 
 #### Option 1: Using the Flexible Test Script
 ```bash
-# Test tesla-news-fetcher on port 8000
-./test-function.sh
-
+# Test mcp-server on port 8000
+./test-function.sh mcp-server 8000
 ```
 
-#### Option 2: Using Specialized Test Scripts
+#### Option 2: Manual Testing with curl
 ```bash
-```
-
-#### Option 3: Manual Testing with curl
-```bash
-# Test tesla-news-fetcher
+# Test mcp-server
 curl -X POST http://localhost:8000/ \
   -H "Content-Type: application/json" \
   -d '{}'
-
 ```
 
 ## Environment Setup
@@ -102,13 +87,13 @@ The scripts automatically load environment variables from `.env.local` and valid
 ### 1. Start Development
 ```bash
 # Terminal 1: Start the function
-./run-with-env-explicit.sh tesla-news-fetcher 8000
+./run-with-env-explicit.sh mcp-server 8000
 ```
 
 ### 2. Test the Function
 ```bash
 # Terminal 2: Run tests
-./test-function.sh tesla-news-fetcher 8000
+./test-function.sh mcp-server 8000
 ```
 
 ### 3. Monitor and Debug
@@ -133,17 +118,17 @@ The scripts automatically load environment variables from `.env.local` and valid
    - Check function directory names match exactly
 
 4. **Port Already in Use**
-   - Use a different port: `./run-with-env-explicit.sh tesla-news-fetcher 9000`
+   - Use a different port: `./run-with-env-explicit.sh mcp-server 9000`
    - Kill existing processes using the port
 
 ### Debug Mode
 ```bash
 # Check function logs
-cd tesla-news-fetcher
-deno task dev
+cd mcp-server
+deno run --allow-net --allow-env --allow-read --watch index.ts
 
 # Or check Supabase logs
-supabase functions logs tesla-news-fetcher
+supabase functions logs mcp-server
 ```
 
 ## Best Practices
@@ -158,8 +143,8 @@ supabase functions logs tesla-news-fetcher
 
 ```bash
 # Deploy to Supabase
-supabase functions deploy tesla-news-fetcher
+supabase functions deploy mcp-server
 
 # Deploy with specific project
-supabase functions deploy tesla-news-fetcher --project-ref your-project-ref
+supabase functions deploy mcp-server --project-ref your-project-ref
 ```

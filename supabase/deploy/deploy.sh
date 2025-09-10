@@ -436,7 +436,7 @@ show_usage() {
     echo ""
     echo "Examples:"
     echo "  $0                    # Deploy all functions"
-    echo "  $0 tesla-news-fetcher # Deploy specific function"
+    echo "  $0 mcp-server         # Deploy specific function"
     echo "  $0 --fix-env          # Fix .env file formatting issues"
     echo "  $0 --help            # Show this help message"
     echo ""

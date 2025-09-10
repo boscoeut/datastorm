@@ -7,8 +7,6 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import DatabaseTest from '@/components/DatabaseTest';
 import VehiclesPage from '@/pages/VehiclesPage';
 import NewsPage from '@/pages/NewsPage';
-import BattlePage from '@/pages/BattlePage';
-import SqlPage from '@/pages/SqlPage';
 import { AdminPage } from '@/pages/AdminPage';
 import VehicleDetail from '@/components/vehicles/VehicleDetail';
 import LandingPage from '@/components/LandingPage';
@@ -39,16 +37,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/vehicles" element={<VehiclesPage />} />
               <Route path="/vehicles/:id" element={<VehicleDetail />} />
-              <Route path="/battle" element={<BattlePage />} />
               <Route path="/news" element={<NewsPage />} />
-              <Route 
-                path="/sql" 
-                element={
-                  <ProtectedRoute requireAdmin={true}>
-                    <SqlPage />
-                  </ProtectedRoute>
-                } 
-              />
               <Route 
                 path="/admin" 
                 element={

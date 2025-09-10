@@ -70,7 +70,7 @@ export const AdminPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Access SQL interface and database management tools.
+                Access database management tools and vehicle updates.
               </CardDescription>
             </CardContent>
           </Card>

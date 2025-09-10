@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoginForm } from './LoginForm'
-import { LogOut, User, Shield, X } from 'lucide-react'
+import { LogOut, Shield, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export const AuthButton: React.FC = () => {
@@ -35,12 +34,31 @@ export const AuthButton: React.FC = () => {
   if (user) {
     return (
       <div className="flex items-center space-x-2">
-        <div className="flex items-center space-x-1 text-sm text-gray-600 dark:text-gray-400">
-          <User className="h-4 w-4" />
-          <span>{user.email}</span>
-          {isAdmin && (
-            <Shield className="h-4 w-4 text-blue-600" title="Admin" />
-          )}
+        <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+          {/* Profile Image */}
+          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-semibold">
+            {user.user_metadata?.avatar_url ? (
+              <img 
+                src={user.user_metadata.avatar_url} 
+                alt="Profile" 
+                className="w-8 h-8 rounded-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  target.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+            ) : null}
+            <span className={`${user.user_metadata?.avatar_url ? 'hidden' : ''}`}>
+              {user.email?.charAt(0).toUpperCase() || 'U'}
+            </span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <span>{user.email}</span>
+            {isAdmin && (
+              <Shield className="h-4 w-4 text-blue-600" />
+            )}
+          </div>
         </div>
         <Button
           variant="ghost"

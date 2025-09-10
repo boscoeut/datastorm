@@ -95,7 +95,7 @@ The updated `deploy.sh` script now includes:
 ./deploy.sh --fix-env
 
 # Deploy specific function
-./deploy.sh tesla-news-fetcher
+./deploy.sh mcp-server
 
 # Show help
 ./deploy.sh --help
