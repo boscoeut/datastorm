@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { VehicleUpdateForm } from '@/components/admin/VehicleUpdateForm';
 import { AdminVehicleUpdateTest } from '@/components/admin/AdminVehicleUpdateTest';
 import { EVSearchForm } from '@/components/admin/EVSearchForm';
+import { IndustryNewsForm } from '@/components/admin/IndustryNewsForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Car, Database, Settings } from 'lucide-react';
 
@@ -95,6 +96,9 @@ export const AdminPage: React.FC = () => {
 
         {/* EV Search Form */}
         <EVSearchForm />
+
+        {/* Industry News Form */}
+        <IndustryNewsForm />
 
         {/* Test Component */}
         <AdminVehicleUpdateTest />

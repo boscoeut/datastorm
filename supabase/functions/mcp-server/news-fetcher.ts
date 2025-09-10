@@ -10,6 +10,12 @@ export interface NewsFetchParams {
   maxArticles?: number
 }
 
+export interface IndustryNewsFetchParams {
+  maxArticles?: number
+  category?: string
+  timeRange?: 'day' | 'week' | 'month' | 'year'
+}
+
 export interface NewsArticle {
   title: string
   summary: string
@@ -153,9 +159,12 @@ async function callGeminiAPI(request: {
     // Initialize Google Gemini AI
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Get the model
+    // Get the model with web grounding
     const model = genAI.getGenerativeModel({
       model: request.model || 'gemini-2.5-flash',
+      tools: [{
+        googleSearch: {}, // This enables Google Search grounding
+      }],
       generationConfig: {
         temperature: request.temperature || 0.7,
         maxOutputTokens: request.maxTokens || 2048,
@@ -200,7 +209,73 @@ async function callGeminiAPI(request: {
   }
 }
 
-// Main news fetch function
+// Main industry news fetch function
+export async function fetchIndustryNews(
+  params: IndustryNewsFetchParams,
+  supabaseUrl: string,
+  supabaseServiceKey: string
+): Promise<NewsFetchResult> {
+  console.log('📰 Starting industry news fetch process for:', params);
+  
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  
+  // Initialize counters
+  const counters = {
+    articles_added: 0,
+    articles_skipped: 0,
+    total_processed: 0,
+    categories: [] as string[],
+    sources: [] as string[]
+  };
+
+  try {
+    // Step 1: Search for industry news articles
+    console.log('🔍 Searching for industry news articles...');
+    const newsArticles = await searchIndustryNews(params);
+
+    // Step 2: Process each article
+    console.log('📊 Processing industry news articles...');
+    for (const article of newsArticles) {
+      const articleResult = await processNewsArticle(article, supabase);
+      counters.articles_added += articleResult.added;
+      counters.articles_skipped += articleResult.skipped;
+      counters.total_processed += 1;
+      
+      // Track unique categories and sources
+      if (!counters.categories.includes(article.category)) {
+        counters.categories.push(article.category);
+      }
+      if (!counters.sources.includes(article.source_name)) {
+        counters.sources.push(article.source_name);
+      }
+    }
+
+    const result: NewsFetchResult = {
+      success: true,
+      message: `Successfully processed ${counters.total_processed} industry news articles`,
+      data: counters,
+      timestamp: new Date().toISOString(),
+      source: 'mcp-server-industry-news-fetcher'
+    };
+
+    console.log('✅ Industry news fetch completed successfully:', result);
+    return result;
+
+  } catch (error) {
+    console.error('❌ Error in industry news fetch process:', error);
+    
+    return {
+      success: false,
+      message: 'Industry news fetch failed',
+      data: counters,
+      timestamp: new Date().toISOString(),
+      source: 'mcp-server-industry-news-fetcher',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
+// Main vehicle news fetch function
 export async function fetchVehicleNews(
   params: NewsFetchParams,
   supabaseUrl: string,
@@ -266,6 +341,71 @@ export async function fetchVehicleNews(
   }
 }
 
+// Search for industry news articles
+async function searchIndustryNews(params: IndustryNewsFetchParams): Promise<NewsArticle[]> {
+  console.log('🔍 Searching for industry news articles for:', params);
+  
+  // Build industry-focused search queries
+  const industrySearchQueries = [
+    'electric vehicle industry news 2024',
+    'EV market trends 2024',
+    'electric car technology breakthroughs',
+    'EV charging infrastructure news',
+    'electric vehicle policy regulations',
+    'battery technology electric vehicles',
+    'EV sales statistics 2024',
+    'electric vehicle startups funding',
+    'autonomous electric vehicles',
+    'EV manufacturing news'
+  ];
+
+  // Add category-specific queries if specified
+  if (params.category) {
+    const categoryQueries = {
+      'technology': [
+        'electric vehicle battery technology 2024',
+        'EV charging technology advances',
+        'electric vehicle software updates'
+      ],
+      'market': [
+        'electric vehicle sales data 2024',
+        'EV market share statistics',
+        'electric car price trends'
+      ],
+      'policy': [
+        'electric vehicle government incentives',
+        'EV emissions regulations',
+        'electric car policy changes'
+      ],
+      'infrastructure': [
+        'EV charging station expansion',
+        'electric vehicle charging networks',
+        'EV infrastructure investment'
+      ]
+    };
+    
+    if (categoryQueries[params.category as keyof typeof categoryQueries]) {
+      industrySearchQueries.push(...categoryQueries[params.category as keyof typeof categoryQueries]);
+    }
+  }
+
+  // Execute searches
+  const newsSearchResults = await Promise.all(
+    industrySearchQueries.map(query => callGoogleSearchAPI({ 
+      query, 
+      num_results: Math.ceil((params.maxArticles || 20) / industrySearchQueries.length)
+    }))
+  );
+
+  // Process search results to extract news articles
+  const newsArticles = await processSearchResultsForIndustryNews(
+    newsSearchResults,
+    params
+  );
+
+  return newsArticles;
+}
+
 // Search for vehicle news articles
 async function searchVehicleNews(params: NewsFetchParams): Promise<NewsArticle[]> {
   console.log('🔍 Searching for news articles for:', params);
@@ -300,6 +440,43 @@ async function searchVehicleNews(params: NewsFetchParams): Promise<NewsArticle[]
   );
 
   return newsArticles;
+}
+
+// Process search results to extract structured industry news data using Gemini
+async function processSearchResultsForIndustryNews(
+  newsSearchResults: GoogleSearchResponse[],
+  params: IndustryNewsFetchParams
+): Promise<NewsArticle[]> {
+  console.log('📊 Processing search results for industry news data using Gemini...');
+
+  // Combine all search results
+  const allNewsItems = newsSearchResults.flatMap(response => response.items || []);
+  
+  if (allNewsItems.length === 0) {
+    console.log('No industry news items found in search results');
+    return [];
+  }
+
+  // Limit search results and truncate long snippets to stay within prompt limits
+  const maxResults = params.maxArticles || 20;
+  const maxSnippetLength = 200; // Truncate snippets to 200 characters
+  
+  const limitedNewsItems = allNewsItems.slice(0, maxResults);
+  console.log('🔍 Limited industry news items:', limitedNewsItems.length);
+  
+  const newsText = limitedNewsItems
+    .map(item => {
+      const truncatedSnippet = item.snippet && item.snippet.length > maxSnippetLength 
+        ? item.snippet.substring(0, maxSnippetLength) + '...'
+        : item.snippet;
+      return `Title: ${item.title}\nSnippet: ${truncatedSnippet}\nURL: ${item.link}\nSource: ${item.displayLink}\n---`;
+    })
+    .join('\n');
+
+  // Use Gemini to extract and categorize industry news articles
+  const newsArticlesData = await extractIndustryNewsArticlesData(params, newsText);
+
+  return newsArticlesData;
 }
 
 // Process search results to extract structured news data using Gemini
@@ -338,6 +515,85 @@ async function processSearchResultsForNews(
   const newsArticlesData = await extractNewsArticlesData(params, newsText, targetYear);
 
   return newsArticlesData;
+}
+
+// Extract industry news articles data using Gemini
+async function extractIndustryNewsArticlesData(params: IndustryNewsFetchParams, newsText: string): Promise<NewsArticle[]> {
+  const prompt = `Analyze the following industry news articles about electric vehicles and extract structured information.
+
+Industry News Articles:
+${newsText}
+
+Please extract and return ONLY a JSON array with article objects. Each article should have the following structure:
+{
+  "title": "Article title",
+  "summary": "Brief summary of the article",
+  "source_url": "Article URL",
+  "source_name": "Source website name",
+  "category": "Category (Technology, Market Trends, Policy, Infrastructure, Manufacturing, Startups, Investment, Safety, Performance, General)",
+  "tags": ["array", "of", "relevant", "tags"],
+  "published_date": "YYYY-MM-DD format"
+}
+
+Categorize each article appropriately for the electric vehicle industry and extract relevant tags. If published date is not available, use today's date. Limit to the ${params.maxArticles || 20} most relevant articles.`;
+
+  const response = await callGeminiAPI({
+    task: 'analyze_industry_news_data',
+    prompt,
+    expectedOutput: 'JSON array of industry news article objects',
+    temperature: 0.3
+  });
+
+  try {
+    // Clean the response text to extract JSON
+    let responseText = response.text.trim();
+    
+    // Remove any markdown code blocks
+    if (responseText.startsWith('```json')) {
+      responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+    
+    // Try to find JSON array in the response
+    const arrayMatch = responseText.match(/\[[\s\S]*\]/);
+    if (arrayMatch) {
+      responseText = arrayMatch[0];
+    }
+    
+    console.log('Parsing industry news articles data:', responseText);
+    const data = JSON.parse(responseText);
+    return Array.isArray(data) ? data.slice(0, params.maxArticles || 20) : [data];
+  } catch (error) {
+    console.warn('Failed to parse industry news articles data from Gemini:', error);
+    console.warn('Raw response:', response.text);
+    
+    // Fallback: create basic article objects from search results
+    const fallbackArticles: NewsArticle[] = [];
+    const newsItems = newsText.split('---').slice(0, params.maxArticles || 20);
+    
+    for (const item of newsItems) {
+      if (item.trim()) {
+        const lines = item.trim().split('\n');
+        const title = lines.find(l => l.startsWith('Title:'))?.replace('Title:', '').trim() || 'Untitled';
+        const snippet = lines.find(l => l.startsWith('Snippet:'))?.replace('Snippet:', '').trim() || '';
+        const url = lines.find(l => l.startsWith('URL:'))?.replace('URL:', '').trim() || '';
+        const source = lines.find(l => l.startsWith('Source:'))?.replace('Source:', '').trim() || 'Unknown';
+        
+        fallbackArticles.push({
+          title,
+          summary: snippet,
+          source_url: url,
+          source_name: source,
+          category: 'General',
+          tags: ['electric vehicles', 'industry news'],
+          published_date: new Date().toISOString().split('T')[0]
+        });
+      }
+    }
+    
+    return fallbackArticles;
+  }
 }
 
 // Extract news articles data using Gemini

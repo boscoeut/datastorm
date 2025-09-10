@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 import { updateVehicleDetails, VehicleUpdateParams } from './vehicle-updater.ts'
 import { executeSearchEVs } from './ev-search.ts'
-import { fetchVehicleNews, NewsFetchParams } from './news-fetcher.ts'
+import { fetchVehicleNews, NewsFetchParams, fetchIndustryNews, IndustryNewsFetchParams } from './news-fetcher.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -458,6 +458,32 @@ const mcpTools: MCPTool[] = [
       required: ['manufacturer', 'model']
     }
   },
+  {
+    name: 'fetch-industry-news',
+    description: 'Fetch and categorize industry-wide electric vehicle news. Searches for recent industry trends, technology breakthroughs, market data, and policy updates.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        maxArticles: {
+          type: 'number',
+          description: 'Maximum number of articles to fetch (default: 20)',
+          minimum: 1,
+          maximum: 50
+        },
+        category: {
+          type: 'string',
+          description: 'News category filter (optional: technology, market, policy, infrastructure)',
+          enum: ['technology', 'market', 'policy', 'infrastructure']
+        },
+        timeRange: {
+          type: 'string',
+          description: 'Time range for news articles (optional: day, week, month, year)',
+          enum: ['day', 'week', 'month', 'year']
+        }
+      },
+      required: []
+    }
+  },
 ]
 
 // Check if user is admin
@@ -725,6 +751,8 @@ async function handleToolsCall(request: any, token: string, isServiceToken: bool
     return await executeSearchEVs(args, request.id)
   } else if (name === 'fetch-vehicle-news') {
     return await executeFetchVehicleNews(args, token, request.id, isServiceToken)
+  } else if (name === 'fetch-industry-news') {
+    return await executeFetchIndustryNews(args, token, request.id, isServiceToken)
   }
   
   // Tool not found
@@ -1026,6 +1054,100 @@ async function executeFetchVehicleNews(args: any, token: string, requestId: any,
         code: -32603,
         message: 'Internal error',
         data: `fetch-vehicle-news execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      }
+    }
+  }
+}
+
+// Execute fetch-industry-news functionality
+async function executeFetchIndustryNews(args: any, token: string, requestId: any, isServiceToken: boolean = false): Promise<any> {
+  console.log('MCP Server: Executing fetch-industry-news with args:', args)
+  
+  try {
+    let userId: string | null = null
+    let isAdmin = false
+
+    if (isServiceToken) {
+      // For service tokens, we'll allow admin operations
+      console.log('Service token detected, allowing admin operations')
+      userId = 'service-admin'
+      isAdmin = true
+    } else {
+      // Try to verify as user token
+      const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+      
+      if (authError || !user) {
+        return {
+          jsonrpc: '2.0',
+          id: requestId,
+          error: {
+            code: -32000,
+            message: 'Authentication failed',
+            data: 'Invalid or expired token'
+          }
+        }
+      }
+
+      console.log('User authenticated:', user.id)
+      userId = user.id
+      
+      // Check admin permission for user tokens
+      isAdmin = await checkAdminPermission(user.id)
+    }
+    
+    if (!isAdmin) {
+      return {
+        jsonrpc: '2.0',
+        id: requestId,
+        error: {
+          code: -32000,
+          message: 'Access denied',
+          data: 'Admin privileges required. Only administrators can fetch industry news.'
+        }
+      }
+    }
+
+    // Validate parameters
+    const IndustryNewsFetchParamsSchema = z.object({
+      maxArticles: z.number().min(1).max(50).optional(),
+      category: z.enum(['technology', 'market', 'policy', 'infrastructure']).optional(),
+      timeRange: z.enum(['day', 'week', 'month', 'year']).optional(),
+    });
+    
+    const validatedParams = IndustryNewsFetchParamsSchema.parse(args);
+
+    console.log('All validations passed, starting industry news fetch...')
+
+    // Execute industry news fetch
+    const result = await fetchIndustryNews(
+      validatedParams as IndustryNewsFetchParams,
+      supabaseUrl,
+      supabaseServiceKey
+    )
+
+    return {
+      jsonrpc: '2.0',
+      id: requestId,
+      result: {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2)
+          }
+        ]
+      }
+    }
+
+  } catch (error) {
+    console.error('Error in fetch-industry-news execution:', error)
+    
+    return {
+      jsonrpc: '2.0',
+      id: requestId,
+      error: {
+        code: -32603,
+        message: 'Internal error',
+        data: `fetch-industry-news execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       }
     }
   }
