@@ -235,10 +235,7 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
       />
 
       {/* Results */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg sm:text-xl">Vehicles</CardTitle>
-        </CardHeader>
+      <Card>       
         <CardContent className="p-0 sm:p-6">
           {loading ? (
             <div className="flex items-center justify-center py-8 px-4 sm:px-0">

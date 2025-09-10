@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,6 @@ import type { VehicleWithDetails, VehicleImage } from '@/types/database'
 
 const VehicleDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   
   const [vehicle, setVehicle] = useState<VehicleWithDetails | null>(null)
   const [loading, setLoading] = useState(true)
@@ -53,9 +52,6 @@ const VehicleDetail: React.FC = () => {
     fetchVehicleDetails()
   }, [id])
 
-  const handleBackToList = () => {
-    navigate('/vehicles')
-  }
 
   const handleProfileImageUpdate = (imageUrl: string) => {
     if (vehicle) {
@@ -84,11 +80,6 @@ const VehicleDetail: React.FC = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button onClick={handleBackToList} variant="outline">
-            ← Back to Vehicles
-          </Button>
-        </div>
         <Card>
           <CardContent className="py-8">
             <div className="flex items-center justify-center">
@@ -104,11 +95,6 @@ const VehicleDetail: React.FC = () => {
   if (error || !vehicle) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button onClick={handleBackToList} variant="outline">
-            ← Back to Vehicles
-          </Button>
-        </div>
         <Card>
           <CardHeader>
             <CardTitle className="text-red-600">Error Loading Vehicle</CardTitle>
@@ -129,12 +115,6 @@ const VehicleDetail: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Back Button */}
-      <div className="flex items-center gap-4">
-        <Button onClick={handleBackToList} variant="outline">
-          ← Back to Vehicles
-        </Button>
-      </div>
 
       {/* Vehicle Header with Profile Image */}
       <Card>

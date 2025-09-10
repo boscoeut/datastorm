@@ -3,6 +3,12 @@ import type { LayoutState, LayoutActions, NavigationItem } from '@/types/layout'
 
 const allNavigationItems: NavigationItem[] = [
   {
+    id: 'home',
+    label: 'Home',
+    href: '/',
+    public: true,
+  },
+  {
     id: 'vehicles',
     label: 'Vehicle Database',
     href: '/vehicles',
