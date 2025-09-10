@@ -152,6 +152,33 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
       },
     },
     {
+      accessorKey: 'specifications.msrp_usd',
+      header: 'Starting MSRP',
+      cell: ({ row }) => {
+        const vehicle = row.original
+        const msrp = vehicle.specifications?.msrp_usd
+        
+        if (!msrp) {
+          return (
+            <span className="text-muted-foreground text-sm">
+              N/A
+            </span>
+          )
+        }
+        
+        return (
+          <span className="font-medium text-foreground">
+            ${msrp.toLocaleString()}
+          </span>
+        )
+      },
+      sortingFn: (rowA, rowB) => {
+        const msrpA = rowA.original.specifications?.msrp_usd || 0
+        const msrpB = rowB.original.specifications?.msrp_usd || 0
+        return msrpA - msrpB
+      },
+    },
+    {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => {

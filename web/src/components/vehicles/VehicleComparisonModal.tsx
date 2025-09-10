@@ -78,6 +78,13 @@ const VehicleComparisonModal: React.FC<VehicleComparisonModalProps> = ({
         return `${value} cu ft`
       case 'seating_capacity':
         return `${value} seats`
+      case 'msrp_usd':
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        }).format(value as number)
       default:
         return String(value)
     }
@@ -93,8 +100,8 @@ const VehicleComparisonModal: React.FC<VehicleComparisonModalProps> = ({
     if (numericValues.length === 0) return null
     
     // For most specs, higher is better (range, power, etc.)
-    // For some specs, lower is better (acceleration, weight)
-    const lowerIsBetter = ['acceleration_0_60', 'weight_lbs']
+    // For some specs, lower is better (acceleration, weight, price)
+    const lowerIsBetter = ['acceleration_0_60', 'weight_lbs', 'msrp_usd']
     return lowerIsBetter.includes(key) 
       ? Math.min(...numericValues)
       : Math.max(...numericValues)
@@ -106,7 +113,7 @@ const VehicleComparisonModal: React.FC<VehicleComparisonModalProps> = ({
     const bestValue = getBestValue(key)
     if (bestValue === null) return false
     
-    const lowerIsBetter = ['acceleration_0_60', 'weight_lbs']
+    const lowerIsBetter = ['acceleration_0_60', 'weight_lbs', 'msrp_usd']
     if (lowerIsBetter.includes(key)) {
       return value === bestValue
     }

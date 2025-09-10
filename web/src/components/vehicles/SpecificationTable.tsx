@@ -40,6 +40,17 @@ const SpecificationTable: React.FC<SpecificationTableProps> = ({
     })
   }
 
+  // Helper function to format currency
+  const formatCurrency = (value: number | null | undefined): string => {
+    if (value === null || value === undefined) return 'N/A'
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value)
+  }
+
   // Helper function to calculate efficiency
   const calculateEfficiency = (): string => {
     if (!specs?.battery_capacity_kwh || !specs?.range_miles) return 'N/A'
@@ -145,6 +156,18 @@ const SpecificationTable: React.FC<SpecificationTableProps> = ({
           label: 'Cargo Capacity',
           value: specs?.cargo_capacity_cu_ft,
           unit: 'cu ft'
+        }
+      ]
+    },
+    {
+      title: 'Pricing',
+      icon: '💰',
+      condition: !!specs?.msrp_usd,
+      rows: [
+        {
+          label: 'Starting MSRP',
+          value: specs?.msrp_usd,
+          formatter: (value: number) => formatCurrency(value)
         }
       ]
     },

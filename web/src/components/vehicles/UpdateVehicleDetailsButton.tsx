@@ -144,57 +144,152 @@ export const UpdateVehicleDetailsButton: React.FC<UpdateVehicleDetailsButtonProp
                 </h4>
                 
                 {result.success && (
-                  <div className="text-xs text-gray-600 space-y-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="flex items-center gap-1">
-                        <Database className="w-3 h-3" />
-                        <span>Manufacturers: {result.data.manufacturer_created + result.data.manufacturer_updated}</span>
+                  <div className="text-xs text-gray-600 space-y-3">
+                    {/* Summary Statistics */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1 font-medium text-gray-700">
+                          <Database className="w-3 h-3" />
+                          <span>Manufacturers</span>
+                        </div>
+                        <div className="ml-4 space-y-1">
+                          {result.data.manufacturer_created > 0 && (
+                            <div className="text-green-600">+{result.data.manufacturer_created} created</div>
+                          )}
+                          {result.data.manufacturer_updated > 0 && (
+                            <div className="text-blue-600">~{result.data.manufacturer_updated} updated</div>
+                          )}
+                          {result.data.manufacturer_created === 0 && result.data.manufacturer_updated === 0 && (
+                            <div className="text-gray-500">No changes</div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Car className="w-3 h-3" />
-                        <span>Vehicles: {result.data.vehicles_created + result.data.vehicles_updated}</span>
+                      
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1 font-medium text-gray-700">
+                          <Car className="w-3 h-3" />
+                          <span>Vehicles</span>
+                        </div>
+                        <div className="ml-4 space-y-1">
+                          {result.data.vehicles_created > 0 && (
+                            <div className="text-green-600">+{result.data.vehicles_created} created</div>
+                          )}
+                          {result.data.vehicles_updated > 0 && (
+                            <div className="text-blue-600">~{result.data.vehicles_updated} updated</div>
+                          )}
+                          {result.data.vehicles_created === 0 && result.data.vehicles_updated === 0 && (
+                            <div className="text-gray-500">No changes</div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Database className="w-3 h-3" />
-                        <span>Specs: {result.data.specifications_created + result.data.specifications_updated}</span>
+                      
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1 font-medium text-gray-700">
+                          <Database className="w-3 h-3" />
+                          <span>Specifications</span>
+                        </div>
+                        <div className="ml-4 space-y-1">
+                          {result.data.specifications_created > 0 && (
+                            <div className="text-green-600">+{result.data.specifications_created} created</div>
+                          )}
+                          {result.data.specifications_updated > 0 && (
+                            <div className="text-blue-600">~{result.data.specifications_updated} updated</div>
+                          )}
+                          {result.data.specifications_created === 0 && result.data.specifications_updated === 0 && (
+                            <div className="text-gray-500">No changes</div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Newspaper className="w-3 h-3" />
-                        <span>News: {result.data.news_articles_added}</span>
+                      
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1 font-medium text-gray-700">
+                          <Newspaper className="w-3 h-3" />
+                          <span>News Articles</span>
+                        </div>
+                        <div className="ml-4 space-y-1">
+                          {result.data.news_articles_added > 0 && (
+                            <div className="text-green-600">+{result.data.news_articles_added} added</div>
+                          )}
+                          {result.data.news_articles_skipped > 0 && (
+                            <div className="text-gray-500">~{result.data.news_articles_skipped} skipped</div>
+                          )}
+                          {result.data.news_articles_added === 0 && result.data.news_articles_skipped === 0 && (
+                            <div className="text-gray-500">No changes</div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     
-                    {result.data.trims_processed.length > 0 && (
-                      <div>
-                        <p className="font-medium">Trims processed:</p>
-                        <p className="text-gray-500">{result.data.trims_processed.join(', ')}</p>
-                      </div>
-                    )}
+                    {/* Detailed Information */}
+                    <div className="border-t pt-2 space-y-2">
+                      {result.data.trims_processed.length > 0 && (
+                        <div>
+                          <p className="font-medium text-gray-700 mb-1">Trims Processed:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {result.data.trims_processed.map((trim, index) => (
+                              <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                {trim}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {result.data.model_year_processed && (
+                        <div>
+                          <p className="font-medium text-gray-700">Model Year:</p>
+                          <p className="text-gray-500">{result.data.model_year_processed}</p>
+                        </div>
+                      )}
+                      
+                      {result.data.vehicle_ids.length > 0 && (
+                        <div>
+                          <p className="font-medium text-gray-700 mb-1">Updated Vehicles:</p>
+                          <div className="space-y-1">
+                            {result.data.vehicle_ids.map((vehicleId) => (
+                              <Link 
+                                key={vehicleId}
+                                to={`/vehicles/${vehicleId}`}
+                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 transition-colors text-xs"
+                              >
+                                View Vehicle Details
+                                <ExternalLink className="h-3 w-3" />
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     
-                    {result.data.model_year_processed && (
-                      <div>
-                        <p className="font-medium">Model year:</p>
-                        <p className="text-gray-500">{result.data.model_year_processed}</p>
-                      </div>
-                    )}
-                    
-                    {result.data.vehicle_ids.length > 0 && (
-                      <div>
-                        <p className="font-medium">Updated vehicles:</p>
-                        <div className="space-y-1">
-                          {result.data.vehicle_ids.map((vehicleId) => (
-                            <Link 
-                              key={vehicleId}
-                              to={`/vehicles/${vehicleId}`}
-                              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 transition-colors text-xs"
-                            >
-                              View Vehicle Details
-                              <ExternalLink className="h-3 w-3" />
-                            </Link>
-                          ))}
+                    {/* Attributes Summary */}
+                    <div className="border-t pt-2">
+                      <p className="font-medium text-gray-700 mb-2">Database Changes Summary:</p>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span>Total Records Modified:</span>
+                          <span className="font-medium">
+                            {result.data.manufacturer_created + result.data.manufacturer_updated + 
+                             result.data.vehicles_created + result.data.vehicles_updated + 
+                             result.data.specifications_created + result.data.specifications_updated + 
+                             result.data.news_articles_added}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>New Records:</span>
+                          <span className="text-green-600 font-medium">
+                            {result.data.manufacturer_created + result.data.vehicles_created + 
+                             result.data.specifications_created + result.data.news_articles_added}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Updated Records:</span>
+                          <span className="text-blue-600 font-medium">
+                            {result.data.manufacturer_updated + result.data.vehicles_updated + 
+                             result.data.specifications_updated}
+                          </span>
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 )}
                 

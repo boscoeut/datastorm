@@ -215,33 +215,96 @@ export const VehicleUpdateForm: React.FC = () => {
                   </AlertDescription>
                 </Alert>
 
+                {/* Summary Statistics */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">
                       {result.data.manufacturer_created + result.data.manufacturer_updated}
                     </div>
-                    <div className="text-sm text-gray-600">Manufacturers</div>
+                    <div className="text-sm text-gray-600 mb-1">Manufacturers</div>
+                    <div className="text-xs text-gray-500 space-y-1">
+                      {result.data.manufacturer_created > 0 && (
+                        <div className="text-green-600">+{result.data.manufacturer_created} created</div>
+                      )}
+                      {result.data.manufacturer_updated > 0 && (
+                        <div className="text-blue-600">~{result.data.manufacturer_updated} updated</div>
+                      )}
+                    </div>
                   </div>
                   
-                  <div className="text-center">
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
                     <div className="text-2xl font-bold text-green-600">
                       {result.data.vehicles_created + result.data.vehicles_updated}
                     </div>
-                    <div className="text-sm text-gray-600">Vehicles</div>
+                    <div className="text-sm text-gray-600 mb-1">Vehicles</div>
+                    <div className="text-xs text-gray-500 space-y-1">
+                      {result.data.vehicles_created > 0 && (
+                        <div className="text-green-600">+{result.data.vehicles_created} created</div>
+                      )}
+                      {result.data.vehicles_updated > 0 && (
+                        <div className="text-blue-600">~{result.data.vehicles_updated} updated</div>
+                      )}
+                    </div>
                   </div>
                   
-                  <div className="text-center">
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
                     <div className="text-2xl font-bold text-purple-600">
                       {result.data.specifications_created + result.data.specifications_updated}
                     </div>
-                    <div className="text-sm text-gray-600">Specifications</div>
+                    <div className="text-sm text-gray-600 mb-1">Specifications</div>
+                    <div className="text-xs text-gray-500 space-y-1">
+                      {result.data.specifications_created > 0 && (
+                        <div className="text-green-600">+{result.data.specifications_created} created</div>
+                      )}
+                      {result.data.specifications_updated > 0 && (
+                        <div className="text-blue-600">~{result.data.specifications_updated} updated</div>
+                      )}
+                    </div>
                   </div>
                   
-                  <div className="text-center">
+                  <div className="text-center p-4 bg-orange-50 rounded-lg">
                     <div className="text-2xl font-bold text-orange-600">
                       {result.data.news_articles_added}
                     </div>
-                    <div className="text-sm text-gray-600">News Articles</div>
+                    <div className="text-sm text-gray-600 mb-1">News Articles</div>
+                    <div className="text-xs text-gray-500 space-y-1">
+                      {result.data.news_articles_added > 0 && (
+                        <div className="text-green-600">+{result.data.news_articles_added} added</div>
+                      )}
+                      {result.data.news_articles_skipped > 0 && (
+                        <div className="text-gray-500">~{result.data.news_articles_skipped} skipped</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Database Changes Summary */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-700 mb-3">Database Changes Summary</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-gray-800">
+                        {result.data.manufacturer_created + result.data.manufacturer_updated + 
+                         result.data.vehicles_created + result.data.vehicles_updated + 
+                         result.data.specifications_created + result.data.specifications_updated + 
+                         result.data.news_articles_added}
+                      </div>
+                      <div className="text-gray-600">Total Records Modified</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-green-600">
+                        {result.data.manufacturer_created + result.data.vehicles_created + 
+                         result.data.specifications_created + result.data.news_articles_added}
+                      </div>
+                      <div className="text-gray-600">New Records</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-blue-600">
+                        {result.data.manufacturer_updated + result.data.vehicles_updated + 
+                         result.data.specifications_updated}
+                      </div>
+                      <div className="text-gray-600">Updated Records</div>
+                    </div>
                   </div>
                 </div>
 

@@ -28,13 +28,6 @@ const allNavigationItems: NavigationItem[] = [
     adminOnly: true,
   },
   {
-    id: 'chat',
-    label: 'Chat',
-    href: '/chat',
-    public: false,
-    adminOnly: true,
-  },
-  {
     id: 'sql',
     label: 'SQL',
     href: '/sql',

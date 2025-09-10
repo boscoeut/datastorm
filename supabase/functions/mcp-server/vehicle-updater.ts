@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai@0.24.1'
 
 // Types for vehicle update functionality
 export interface VehicleUpdateParams {
@@ -39,6 +40,7 @@ export interface VehicleData {
     towing_capacity_lbs?: number
     drag_coefficient?: number
     charging_speed_kw?: number
+    msrp_usd?: number
   }>
   newsArticles: Array<{
     title: string
@@ -171,8 +173,8 @@ async function callGoogleSearchAPI(params: GoogleSearchParams): Promise<GoogleSe
   }
 }
 
-// Gemini Proxy API function
-async function callGeminiProxy(request: {
+// Direct Gemini API function
+async function callGeminiAPI(request: {
   task: string;
   prompt: string;
   data?: Record<string, any>;
@@ -182,40 +184,58 @@ async function callGeminiProxy(request: {
   maxTokens?: number;
 }): Promise<{ text: string; usage?: any }> {
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    if (!supabaseUrl) {
-      throw new Error('SUPABASE_URL not configured');
+    const apiKey = Deno.env.get('GOOGLE_GEMINI_API_KEY');
+    if (!apiKey) {
+      throw new Error('Google Gemini API key not configured');
     }
 
-    const geminiProxyUrl = `${supabaseUrl}/functions/v1/gemini-proxy`;
+    // Initialize Google Gemini AI
+    const genAI = new GoogleGenerativeAI(apiKey);
     
-    const response = await fetch(geminiProxyUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+    // Get the model
+    const model = genAI.getGenerativeModel({
+      model: request.model || 'gemini-2.5-flash',
+      generationConfig: {
+        temperature: request.temperature || 0.7,
+        maxOutputTokens: request.maxTokens || 2048,
       },
-      body: JSON.stringify(request),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Gemini Proxy API error: ${response.status} ${errorText}`);
+    // Prepare the content with expected output guidance
+    let content = request.prompt;
+    
+    // Add expected output guidance if provided
+    if (request.expectedOutput) {
+      content += `\n\nPlease provide your response in the following format: ${request.expectedOutput}`;
+    }
+    
+    // Add context data if provided
+    if (request.data) {
+      content += `\n\nContext Data: ${JSON.stringify(request.data, null, 2)}`;
     }
 
-    const data = await response.json();
-    
-    if (!data.success) {
-      throw new Error(`Gemini Proxy error: ${data.error}`);
-    }
+    // Generate content
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: content }] }]
+    });
+
+    const response = await result.response;
+    const text = response.text();
+
+    // Get usage information if available
+    const usage = response.usageMetadata ? {
+      promptTokens: response.usageMetadata.promptTokenCount || 0,
+      completionTokens: response.usageMetadata.candidatesTokenCount || 0,
+      totalTokens: response.usageMetadata.totalTokenCount || 0,
+    } : undefined;
 
     return {
-      text: data.data.text,
-      usage: data.data.usage,
+      text,
+      usage,
     };
   } catch (error) {
-    console.error('Error calling Gemini Proxy API:', error);
-    throw new Error(`Gemini Proxy API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Error calling Gemini API:', error);
+    throw new Error(`Gemini API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -372,6 +392,7 @@ async function processSearchResultsForVehicleData(
   const maxSnippetLength = 200; // Truncate snippets to 200 characters
   
   const limitedSearchResults = allSearchResults.slice(0, maxResults);
+  console.log('🔍 Limited search results:', limitedSearchResults);
   
   const searchResultsText = limitedSearchResults
     .map(item => {
@@ -430,7 +451,8 @@ async function extractManufacturerData(params: VehicleUpdateParams, searchResult
 Search Results:
 ${searchResultsText}
 
-Please extract and return ONLY a JSON object with the following structure:
+Please extract and return ONLY a JSON object with the following structure. Do not include any markdown formatting, code blocks, or additional text - just the raw JSON:
+
 {
   "name": "${params.manufacturer}",
   "country": "Country where the manufacturer is headquartered",
@@ -442,7 +464,7 @@ If information is not available in the search results, use your knowledge to pro
   // Ensure prompt doesn't exceed limits
   prompt = truncatePromptIfNeeded(prompt);
 
-  const response = await callGeminiProxy({
+  const response = await callGeminiAPI({
     task: 'analyze_vehicle_data',
     prompt,
     expectedOutput: 'JSON object with manufacturer information',
@@ -450,14 +472,32 @@ If information is not available in the search results, use your knowledge to pro
   });
 
   try {
-    const data = JSON.parse(response.text);
+    // Clean the response text to extract JSON
+    let responseText = response.text.trim();
+    
+    // Remove any markdown code blocks
+    if (responseText.startsWith('```json')) {
+      responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+    
+    // Try to find JSON object in the response
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      responseText = jsonMatch[0];
+    }
+    
+    console.log('Parsing manufacturer data:', responseText);
+    const data = JSON.parse(responseText);
     return {
       name: data.name || params.manufacturer,
       country: data.country || 'Unknown',
       website: data.website || ''
     };
   } catch (error) {
-    console.warn('Failed to parse manufacturer data from Gemini, using fallback');
+    console.warn('Failed to parse manufacturer data from Gemini:', error);
+    console.warn('Raw response:', response.text);
     return await getFallbackManufacturerData(params);
   }
 }
@@ -469,7 +509,7 @@ async function extractVehicleData(params: VehicleUpdateParams, targetYear: numbe
 Search Results:
 ${searchResultsText}
 
-Please extract and return ONLY a JSON array with vehicle objects. Each vehicle should have the following structure:
+Please extract and return ONLY a JSON array with vehicle objects. Do not include any markdown formatting, code blocks, or additional text - just the raw JSON array. Each vehicle should have the following structure:
 {
   "model": "Model name",
   "year": ${targetYear},
@@ -485,7 +525,7 @@ If multiple trims are mentioned, create separate objects for each. If informatio
   // Ensure prompt doesn't exceed limits
   prompt = truncatePromptIfNeeded(prompt);
 
-  const response = await callGeminiProxy({
+  const response = await callGeminiAPI({
     task: 'analyze_vehicle_data',
     prompt,
     expectedOutput: 'JSON array of vehicle objects',
@@ -493,10 +533,32 @@ If multiple trims are mentioned, create separate objects for each. If informatio
   });
 
   try {
-    const data = JSON.parse(response.text);
+    // Clean the response text to extract JSON
+    let responseText = response.text.trim();
+    
+    // Remove any markdown code blocks
+    if (responseText.startsWith('```json')) {
+      responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+    
+    // Try to find JSON array or object in the response
+    const arrayMatch = responseText.match(/\[[\s\S]*\]/);
+    const objectMatch = responseText.match(/\{[\s\S]*\}/);
+    
+    if (arrayMatch) {
+      responseText = arrayMatch[0];
+    } else if (objectMatch) {
+      responseText = objectMatch[0];
+    }
+    
+    console.log('Parsing vehicle data:', responseText);
+    const data = JSON.parse(responseText);
     return Array.isArray(data) ? data : [data];
   } catch (error) {
-    console.warn('Failed to parse vehicle data from Gemini, using fallback');
+    console.warn('Failed to parse vehicle data from Gemini:', error);
+    console.warn('Raw response:', response.text);
     const fallbackData = await getFallbackVehicleData(params, targetYear);
     return [fallbackData];
   }
@@ -509,7 +571,8 @@ async function extractSpecificationsData(params: VehicleUpdateParams, targetYear
 Search Results:
 ${searchResultsText}
 
-Please extract and return ONLY a JSON object with the following structure:
+Please extract and return ONLY a JSON object with the following structure. Do not include any markdown formatting, code blocks, or additional text - just the raw JSON:
+
 {
   "battery_capacity_kwh": number,
   "range_miles": number,
@@ -525,15 +588,23 @@ Please extract and return ONLY a JSON object with the following structure:
   "seating_capacity": number,
   "towing_capacity_lbs": number,
   "drag_coefficient": number,
-  "charging_speed_kw": number
+  "charging_speed_kw": number,
+  "msrp_usd": number
 }
 
-Extract actual values from the search results. If a specification is not mentioned, omit it from the JSON object (don't include null values). Use your knowledge to provide reasonable estimates if specific data is not available.`;
+Extract actual values from the search results. If a specification is not mentioned, omit it from the JSON object (don't include null values). Use your knowledge to provide reasonable estimates if specific data is not available.
+
+Pay special attention to:
+- MSRP/starting price information (look for "starting at", "MSRP", "base price", "from $X")
+- Battery capacity in kWh
+- EPA range in miles
+- Performance specifications (0-60 mph, top speed, power, torque)
+- Physical dimensions and capacities`;
 
   // Ensure prompt doesn't exceed limits
   prompt = truncatePromptIfNeeded(prompt);
 
-  const response = await callGeminiProxy({
+  const response = await callGeminiAPI({
     task: 'analyze_vehicle_data',
     prompt,
     expectedOutput: 'JSON object with vehicle specifications',
@@ -541,14 +612,58 @@ Extract actual values from the search results. If a specification is not mention
   });
 
   try {
-    const data = JSON.parse(response.text);
+    // Clean the response text to extract JSON
+    let responseText = response.text.trim();
+    
+    console.log('Raw specifications response:', responseText);
+    
+    // Check if response is empty
+    if (!responseText || responseText.length === 0) {
+      console.warn('Empty response from Gemini for specifications');
+      const fallbackData = await getFallbackSpecificationsData(params, targetYear);
+      return [fallbackData];
+    }
+    
+    // Remove any markdown code blocks
+    if (responseText.startsWith('```json')) {
+      responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+    
+    // Try to find JSON object in the response
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      responseText = jsonMatch[0];
+    }
+    
+    // Check if we have valid JSON content
+    if (!responseText || responseText.length < 10) {
+      console.warn('No valid JSON found in specifications response');
+      const fallbackData = await getFallbackSpecificationsData(params, targetYear);
+      return [fallbackData];
+    }
+    
+    console.log('Parsing specifications data:', responseText);
+    const data = JSON.parse(responseText);
+    
+    // Validate that we got an object
+    if (typeof data !== 'object' || data === null) {
+      console.warn('Invalid JSON object structure for specifications');
+      const fallbackData = await getFallbackSpecificationsData(params, targetYear);
+      return [fallbackData];
+    }
+    
     // Filter out null/undefined values
     const filteredData = Object.fromEntries(
       Object.entries(data).filter(([_, value]) => value !== null && value !== undefined)
     );
+    
+    console.log('Successfully parsed specifications:', filteredData);
     return [filteredData];
   } catch (error) {
-    console.warn('Failed to parse specifications data from Gemini, using fallback');
+    console.warn('Failed to parse specifications data from Gemini:', error);
+    console.warn('Raw response:', response.text);
     const fallbackData = await getFallbackSpecificationsData(params, targetYear);
     return [fallbackData];
   }
@@ -584,7 +699,7 @@ Please extract and return ONLY a JSON array with article objects. Each article s
 
 Categorize each article appropriately and extract relevant tags. If published date is not available, use today's date. Limit to the 10 most relevant articles.`;
 
-  const response = await callGeminiProxy({
+  const response = await callGeminiAPI({
     task: 'analyze_vehicle_data',
     prompt,
     expectedOutput: 'JSON array of news article objects',
@@ -592,10 +707,28 @@ Categorize each article appropriately and extract relevant tags. If published da
   });
 
   try {
-    const data = JSON.parse(response.text);
+    // Clean the response text to extract JSON
+    let responseText = response.text.trim();
+    
+    // Remove any markdown code blocks
+    if (responseText.startsWith('```json')) {
+      responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+    
+    // Try to find JSON array in the response
+    const arrayMatch = responseText.match(/\[[\s\S]*\]/);
+    if (arrayMatch) {
+      responseText = arrayMatch[0];
+    }
+    
+    console.log('Parsing news articles data:', responseText);
+    const data = JSON.parse(responseText);
     return Array.isArray(data) ? data.slice(0, 10) : [data];
   } catch (error) {
-    console.warn('Failed to parse news articles data from Gemini, using fallback');
+    console.warn('Failed to parse news articles data from Gemini:', error);
+    console.warn('Raw response:', response.text);
     const fallbackArticles: any[] = [];
     for (const item of newsItems.slice(0, 10)) {
       const fallbackData = await getFallbackNewsArticleData(item, params);
@@ -615,7 +748,7 @@ async function getFallbackManufacturerData(params: VehicleUpdateParams) {
 }`;
 
   try {
-    const response = await callGeminiProxy({
+    const response = await callGeminiAPI({
       task: 'analyze_vehicle_data',
       prompt,
       expectedOutput: 'JSON object with manufacturer information',
@@ -646,7 +779,7 @@ async function getFallbackVehicleData(params: VehicleUpdateParams, targetYear: n
 }`;
 
   try {
-    const response = await callGeminiProxy({
+    const response = await callGeminiAPI({
       task: 'analyze_vehicle_data',
       prompt,
       expectedOutput: 'JSON object with vehicle information',
@@ -669,7 +802,8 @@ async function getFallbackVehicleData(params: VehicleUpdateParams, targetYear: n
 }
 
 async function getFallbackSpecificationsData(params: VehicleUpdateParams, targetYear: number) {
-  const prompt = `Provide basic specifications for ${params.manufacturer} ${params.model} ${targetYear}. Return ONLY a JSON object with any known specifications (omit fields you don't know):
+  const prompt = `Provide basic specifications for ${params.manufacturer} ${params.model} ${targetYear}. Return ONLY a JSON object with any known specifications (omit fields you don't know). Do not include any markdown formatting, code blocks, or additional text - just the raw JSON:
+
 {
   "battery_capacity_kwh": number,
   "range_miles": number,
@@ -682,24 +816,43 @@ async function getFallbackSpecificationsData(params: VehicleUpdateParams, target
   "width_inches": number,
   "height_inches": number,
   "cargo_capacity_cu_ft": number,
-  "seating_capacity": number
+  "seating_capacity": number,
+  "msrp_usd": number
 }`;
 
   try {
-    const response = await callGeminiProxy({
+    const response = await callGeminiAPI({
       task: 'analyze_vehicle_data',
       prompt,
       expectedOutput: 'JSON object with vehicle specifications',
       temperature: 0.1
     });
     
-    const data = JSON.parse(response.text);
+    // Clean the response text to extract JSON
+    let responseText = response.text.trim();
+    
+    // Remove any markdown code blocks
+    if (responseText.startsWith('```json')) {
+      responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+    
+    // Try to find JSON object in the response
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      responseText = jsonMatch[0];
+    }
+    
+    console.log('Fallback specifications response:', responseText);
+    const data = JSON.parse(responseText);
     // Filter out null/undefined values
     return Object.fromEntries(
       Object.entries(data).filter(([_, value]) => value !== null && value !== undefined)
     );
   } catch (error) {
-    console.warn('Fallback specifications data extraction failed, returning empty object');
+    console.warn('Fallback specifications data extraction failed:', error);
+    console.warn('Raw fallback response:', response?.text);
     return {};
   }
 }
@@ -722,7 +875,7 @@ Return ONLY a JSON object:
 }`;
 
   try {
-    const response = await callGeminiProxy({
+    const response = await callGeminiAPI({
       task: 'analyze_vehicle_data',
       prompt,
       expectedOutput: 'JSON object with categorized article data',

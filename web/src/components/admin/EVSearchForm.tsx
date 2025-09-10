@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Search, Loader2, ExternalLink, Car, AlertCircle } from 'lucide-react';
 import { EVSearchService } from '@/services/ev-search';
 import type { EVSearchResult } from '@/services/ev-search';
+import { UpdateVehicleDetailsButton } from '@/components/vehicles/UpdateVehicleDetailsButton';
 
 export const EVSearchForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -233,16 +234,25 @@ export const EVSearchForm: React.FC = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {vehicle.url && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => window.open(vehicle.url, '_blank')}
-                              >
-                                <ExternalLink className="h-4 w-4 mr-1" />
-                                View
-                              </Button>
-                            )}
+                            <div className="flex flex-col gap-2">
+                              {vehicle.url && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => window.open(vehicle.url, '_blank')}
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                              )}
+                              <UpdateVehicleDetailsButton
+                                manufacturer={vehicle.manufacturer}
+                                model={vehicle.model}
+                                trim={vehicle.trim}
+                                year={vehicle.year}
+                                className="w-full"
+                              />
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}

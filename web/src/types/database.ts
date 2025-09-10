@@ -63,6 +63,7 @@ export interface VehicleSpecification {
   height_inches?: number
   cargo_capacity_cu_ft?: number
   seating_capacity?: number
+  msrp_usd?: number
   created_at: string
   updated_at: string
   // Relations

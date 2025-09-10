@@ -242,7 +242,7 @@ const VehicleDetail: React.FC = () => {
 
               {/* Quick Specs Preview */}
               {specs && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4">
                   {specs.range_miles && (
                     <div className="text-center">
                       <div className="text-2xl font-bold text-primary">{specs.range_miles}</div>
@@ -265,6 +265,19 @@ const VehicleDetail: React.FC = () => {
                     <div className="text-center">
                       <div className="text-2xl font-bold text-primary">{specs.battery_capacity_kwh}</div>
                       <div className="text-xs text-muted-foreground">kWh Battery</div>
+                    </div>
+                  )}
+                  {specs.msrp_usd && (
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">
+                        {new Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: 'USD',
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0
+                        }).format(specs.msrp_usd)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Starting MSRP</div>
                     </div>
                   )}
                 </div>
