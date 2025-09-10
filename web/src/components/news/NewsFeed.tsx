@@ -306,7 +306,15 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
       {/* News Articles */}
       <div className="space-y-3 sm:space-y-4">
         {articles.map((article) => (
-          <Card key={article.id} className="hover:shadow-md transition-shadow">
+          <Card 
+            key={article.id} 
+            className="hover:shadow-md transition-shadow cursor-pointer"
+            onClick={() => {
+              if (article.source_url) {
+                window.open(article.source_url, '_blank', 'noopener,noreferrer');
+              }
+            }}
+          >
             <CardContent className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                 <div className="flex-1 space-y-3 min-w-0">
@@ -351,7 +359,10 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
                           key={tag}
                           variant="secondary"
                           className="text-xs cursor-pointer hover:bg-secondary/80"
-                          onClick={() => handleTagFilter(tag)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleTagFilter(tag);
+                          }}
                         >
                           {tag}
                         </Badge>
@@ -372,6 +383,7 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
                     size="sm"
                     asChild
                     className="shrink-0 w-full sm:w-auto"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <a
                       href={article.source_url}
