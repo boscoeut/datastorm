@@ -78,13 +78,13 @@ const FeaturedArticles: React.FC<FeaturedArticlesProps> = ({
   const secondaryArticles = articles.slice(1, 4)
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Featured Articles</h2>
-          <p className="text-muted-foreground">Top stories and breaking news from the EV industry</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Featured Articles</h2>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">Top stories and breaking news from the EV industry</p>
         </div>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="w-full sm:w-auto">
           View All Featured
         </Button>
       </div>
@@ -96,52 +96,52 @@ const FeaturedArticles: React.FC<FeaturedArticlesProps> = ({
         <CardContent className="p-0">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
             {/* Article Content */}
-            <div className="p-8 flex flex-col justify-center">
-              <div className="flex items-center gap-2 mb-4">
-                <Badge className={getCategoryColor(mainArticle.category || '')}>
+            <div className="p-4 sm:p-6 lg:p-8 flex flex-col justify-center">
+              <div className="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
+                <Badge className={`${getCategoryColor(mainArticle.category || '')} text-xs`}>
                   {getCategoryIcon(mainArticle.category || '')}
                   <span className="ml-1">{mainArticle.category || 'News'}</span>
                 </Badge>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
+                <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                  <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                   {estimateReadingTime(mainArticle.summary || '')}
                 </div>
               </div>
 
-              <h3 className="text-2xl lg:text-3xl font-bold text-foreground mb-4 leading-tight group-hover:text-blue-600 transition-colors duration-200">
+              <h3 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground mb-3 sm:mb-4 leading-tight group-hover:text-blue-600 transition-colors duration-200">
                 {mainArticle.title}
               </h3>
 
               {mainArticle.summary && (
-                <p className="text-muted-foreground mb-6 leading-relaxed text-lg">
+                <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-4 sm:mb-6 leading-relaxed line-clamp-3 lg:line-clamp-none">
                   {mainArticle.summary}
                 </p>
               )}
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                   {mainArticle.published_date && (
                     <span>{formatDate(mainArticle.published_date)}</span>
                   )}
                   {mainArticle.source_name && (
-                    <span>Source: {mainArticle.source_name}</span>
+                    <span className="truncate">Source: {mainArticle.source_name}</span>
                   )}
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hidden sm:flex">
                     <Bookmark className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hidden sm:flex">
                     <Share2 className="h-4 w-4" />
                   </Button>
                   {mainArticle.source_url && (
-                    <Button size="sm" asChild>
+                    <Button size="sm" asChild className="w-full sm:w-auto">
                       <a
                         href={mainArticle.source_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2"
+                        className="flex items-center justify-center gap-2"
                       >
                         <ExternalLink className="h-4 w-4" />
                         Read Full Article
@@ -153,13 +153,13 @@ const FeaturedArticles: React.FC<FeaturedArticlesProps> = ({
             </div>
 
             {/* Visual Element */}
-            <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30 p-8 flex items-center justify-center">
+            <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30 p-4 sm:p-6 lg:p-8 flex items-center justify-center">
               <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 mx-auto">
-                  <Newspaper className="h-12 w-12 text-white" />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
+                  <Newspaper className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-white" />
                 </div>
-                <h4 className="text-lg font-semibold text-foreground mb-2">Featured Story</h4>
-                <p className="text-sm text-muted-foreground">Industry Impact</p>
+                <h4 className="text-base sm:text-lg font-semibold text-foreground mb-1 sm:mb-2">Featured Story</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">Industry Impact</p>
               </div>
             </div>
           </div>
@@ -167,49 +167,49 @@ const FeaturedArticles: React.FC<FeaturedArticlesProps> = ({
       </Card>
 
       {/* Secondary Featured Articles */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {secondaryArticles.map((article, index) => (
           <Card key={article.id} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               {/* Article Header */}
-              <div className="flex items-center justify-between mb-4">
-                <Badge className={getCategoryColor(article.category || '')}>
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <Badge className={`${getCategoryColor(article.category || '')} text-xs`}>
                   {getCategoryIcon(article.category || '')}
                   <span className="ml-1">{article.category || 'News'}</span>
                 </Badge>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
                   <Clock className="h-3 w-3" />
                   {estimateReadingTime(article.summary || '')}
                 </div>
               </div>
 
               {/* Article Title */}
-              <h4 className="text-lg font-semibold text-foreground mb-3 leading-tight group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
+              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2 sm:mb-3 leading-tight group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
                 {article.title}
               </h4>
 
               {/* Article Summary */}
               {article.summary && (
-                <p className="text-muted-foreground mb-4 leading-relaxed line-clamp-3">
+                <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 leading-relaxed line-clamp-3">
                   {article.summary}
                 </p>
               )}
 
               {/* Article Metadata */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                   {article.published_date && (
                     <span>{formatDate(article.published_date)}</span>
                   )}
                   {article.source_name && (
-                    <span>Source: {article.source_name}</span>
+                    <span className="truncate">Source: {article.source_name}</span>
                   )}
                 </div>
 
                 {/* Tags */}
                 {article.tags && article.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {article.tags.slice(0, 3).map((tag) => (
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
+                    {article.tags.slice(0, 2).map((tag) => (
                       <Badge
                         key={tag}
                         variant="secondary"
@@ -218,9 +218,9 @@ const FeaturedArticles: React.FC<FeaturedArticlesProps> = ({
                         {tag}
                       </Badge>
                     ))}
-                    {article.tags.length > 3 && (
+                    {article.tags.length > 2 && (
                       <Badge variant="secondary" className="text-xs">
-                        +{article.tags.length - 3}
+                        +{article.tags.length - 2}
                       </Badge>
                     )}
                   </div>
@@ -228,24 +228,24 @@ const FeaturedArticles: React.FC<FeaturedArticlesProps> = ({
 
                 {/* Action Buttons */}
                 <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <Bookmark className="h-4 w-4" />
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <Button variant="ghost" size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 hidden sm:flex">
+                      <Bookmark className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <Share2 className="h-4 w-4" />
+                    <Button variant="ghost" size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 hidden sm:flex">
+                      <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                   
                   {article.source_url && (
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
                       <a
                         href={article.source_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2"
+                        className="flex items-center justify-center gap-2"
                       >
-                        <ExternalLink className="h-4 w-4" />
+                        <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
                         Read More
                       </a>
                     </Button>

@@ -16,20 +16,20 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-40">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo and Brand */}
-          <div className="flex items-center">
+          <div className="flex items-center min-w-0 flex-1">
             <div className="flex-shrink-0">
               <button
                 onClick={handleTitleClick}
                 className="text-left hover:opacity-80 transition-opacity cursor-pointer"
               >
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">
                   DataStorm
                 </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
                   Electric Vehicle Data Hub
                 </p>
               </button>
@@ -37,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
+          <div className="hidden lg:block flex-1">
             <Navigation 
               items={navigationItems} 
               variant="horizontal"
@@ -46,12 +46,16 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
           </div>
 
           {/* Theme Switcher, Auth Button, and Mobile Menu */}
-          <div className="flex items-center space-x-2">
-            <ThemeSwitcher />
-            <AuthButton />
+          <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+            <div className="hidden sm:block">
+              <ThemeSwitcher />
+            </div>
+            <div className="hidden sm:block">
+              <AuthButton />
+            </div>
             
             {/* Mobile Menu Button */}
-            <div className="md:hidden">
+            <div className="lg:hidden">
               <Button
                 variant="ghost"
                 size="sm"

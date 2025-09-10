@@ -98,44 +98,44 @@ const VehiclesPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Vehicle Database</h1>
-          <p className="text-muted-foreground">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Vehicle Database</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Browse and search electric vehicles in our comprehensive database
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           {totalCount > 0 && (
-            <div className="text-sm text-muted-foreground">
-              {totalCount} vehicles in database
+            <div className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
+              {totalCount} vehicles
             </div>
           )}
           {loading && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-              Loading...
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+              <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-primary"></div>
+              <span className="hidden sm:inline">Loading...</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Quick Search */}
-      <div className="mb-6">
-        <div className="relative max-w-md">
+      <div className="mb-4 sm:mb-6">
+        <div className="relative w-full max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by model, manufacturer, body style, or trim..."
+            placeholder="Search vehicles..."
             value={localSearchQuery}
             onChange={(e) => setLocalSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 text-sm sm:text-base"
             aria-label="Search vehicles by model, manufacturer, body style, or trim"
           />
         </div>
         {searchQuery && (
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
             Searching for: "{searchQuery}"
           </p>
         )}
@@ -146,21 +146,22 @@ const VehiclesPage: React.FC = () => {
 
       {/* Fixed Floating Compare Button - Always visible when vehicles are selected */}
       {comparisonCount > 0 && (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
           <VehicleComparisonModal />
         </div>
       )}
 
       {/* Quick Actions */}
       <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg sm:text-xl">Quick Actions</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-4">
+        <CardContent className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <Button
             onClick={() => navigate('/')}
             variant="outline"
             size="sm"
+            className="w-full sm:w-auto"
           >
             ← Back to Home
           </Button>
@@ -169,6 +170,7 @@ const VehiclesPage: React.FC = () => {
             onClick={() => navigate('/news')}
             variant="outline"
             size="sm"
+            className="w-full sm:w-auto"
           >
             Industry News →
           </Button>

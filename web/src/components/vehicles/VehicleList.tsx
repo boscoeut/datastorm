@@ -236,18 +236,18 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
 
       {/* Results */}
       <Card>
-        <CardHeader>
-          <CardTitle>Vehicles</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg sm:text-xl">Vehicles</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 sm:p-6">
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <span className="ml-2 text-muted-foreground">Loading vehicles...</span>
+            <div className="flex items-center justify-center py-8 px-4 sm:px-0">
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary"></div>
+              <span className="ml-2 text-sm sm:text-base text-muted-foreground">Loading vehicles...</span>
             </div>
           ) : vehicles.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
+            <div className="text-center py-8 px-4 sm:px-0">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 {searchQuery || Object.keys(filters).length > 0
                   ? 'No vehicles match your search criteria'
                   : 'No vehicles found in the database'}
@@ -257,6 +257,7 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
                   onClick={clearFilters}
                   variant="outline"
                   className="mt-2"
+                  size="sm"
                 >
                   Clear Search & Filters
                 </Button>
@@ -264,60 +265,127 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
             </div>
           ) : (
             <>
-              {/* TanStack Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      <tr key={headerGroup.id} className="border-b border-border">
-                        {headerGroup.headers.map((header) => (
-                          <th
-                            key={header.id}
-                            className="text-left py-3 px-4 font-medium text-foreground cursor-pointer select-none hover:bg-muted/50 transition-colors"
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            <div className="flex items-center gap-2">
-                              {flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                              {{
-                                asc: <ChevronUp className="h-4 w-4" />,
-                                desc: <ChevronDown className="h-4 w-4" />,
-                              }[header.column.getIsSorted() as string] ?? (
-                                <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
-                              )}
+              {/* Mobile Card View */}
+              <div className="block sm:hidden">
+                <div className="space-y-3 p-4">
+                  {vehicles.map((vehicle) => (
+                    <div
+                      key={vehicle.id}
+                      onClick={() => handleVehicleClick(vehicle.id)}
+                      className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                          {vehicle.profile_image_url ? (
+                            <img
+                              src={vehicle.profile_image_url}
+                              alt={`${vehicle.manufacturer?.name || 'Unknown'} ${vehicle.model}`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <span className="text-2xl">🚗</span>
                             </div>
-                          </th>
-                        ))}
-                      </tr>
-                    ))}
-                  </thead>
-                  <tbody>
-                    {table.getRowModel().rows.map((row) => (
-                      <tr
-                        key={row.id}
-                        onClick={() => handleVehicleClick(row.original.id)}
-                        className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id} className="py-3 px-4">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-medium text-foreground truncate">
+                                {vehicle.model}
+                                {vehicle.trim && (
+                                  <span className="text-sm text-muted-foreground ml-1">
+                                    {vehicle.trim}
+                                  </span>
+                                )}
+                              </h3>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {vehicle.manufacturer?.name || vehicle.manufacturer_id}
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span
+                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                    vehicle.is_electric
+                                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                      : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                  }`}
+                                >
+                                  {vehicle.is_electric ? 'Electric' : 'Hybrid/Other'}
+                                </span>
+                                {vehicle.specifications?.msrp_usd && (
+                                  <span className="text-xs font-medium text-foreground">
+                                    ${vehicle.specifications.msrp_usd.toLocaleString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex-shrink-0 ml-2">
+                              <ComparisonButton vehicle={vehicle} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden sm:block">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      {table.getHeaderGroups().map((headerGroup) => (
+                        <tr key={headerGroup.id} className="border-b border-border">
+                          {headerGroup.headers.map((header) => (
+                            <th
+                              key={header.id}
+                              className="text-left py-3 px-4 font-medium text-foreground cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                              onClick={header.column.getToggleSortingHandler()}
+                            >
+                              <div className="flex items-center gap-2">
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                                {{
+                                  asc: <ChevronUp className="h-4 w-4" />,
+                                  desc: <ChevronDown className="h-4 w-4" />,
+                                }[header.column.getIsSorted() as string] ?? (
+                                  <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </div>
+                            </th>
+                          ))}
+                        </tr>
+                      ))}
+                    </thead>
+                    <tbody>
+                      {table.getRowModel().rows.map((row) => (
+                        <tr
+                          key={row.id}
+                          onClick={() => handleVehicleClick(row.original.id)}
+                          className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <td key={cell.id} className="py-3 px-4">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6">
-                  <div className="text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 p-4 sm:p-0">
+                  <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
                     Showing {((pagination.page - 1) * pagination.pageSize) + 1} to{' '}
                     {Math.min(pagination.page * pagination.pageSize, totalCount)} of {totalCount} results
                   </div>
@@ -330,7 +398,7 @@ const VehicleList: React.FC<VehicleListProps> = ({ showHeader = true }) => {
                     >
                       Previous
                     </Button>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-xs sm:text-sm text-muted-foreground px-2">
                       Page {pagination.page} of {totalPages}
                     </span>
                     <Button

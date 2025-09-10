@@ -259,204 +259,428 @@ const LandingPage = () => {
                 </CardTitle>
               </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left p-3 font-semibold text-muted-foreground w-48">
-                      </th>
-                      {selectedVehicle1 && (
-                        <th className="text-center p-3 font-semibold w-1/2">
-                          <div className="flex flex-col items-center gap-3">
-                            <Link 
-                              to={`/vehicles/${selectedVehicle1.id}`}
-                              className="block w-56 h-56 rounded-lg overflow-hidden border-2 border-blue-500 bg-gray-100 dark:bg-gray-800 hover:border-blue-600 dark:hover:border-blue-400 transition-colors cursor-pointer"
-                            >
-                              {selectedVehicle1.profile_image_url ? (
-                                <img 
-                                  src={selectedVehicle1.profile_image_url} 
-                                  alt={`${selectedVehicle1.manufacturer?.name} ${selectedVehicle1.model}`}
-                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                    target.nextElementSibling?.classList.remove('hidden');
-                                  }}
-                                />
-                              ) : null}
-                              <div className={`w-full h-full flex items-center justify-center text-blue-500 ${selectedVehicle1.profile_image_url ? 'hidden' : ''}`}>
-                                <Car className="h-24 w-24" />
-                              </div>
-                            </Link>
-                            <div className="text-center">
+              {/* Desktop Table View */}
+              <div className="hidden lg:block">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left p-3 font-semibold text-muted-foreground w-48">
+                        </th>
+                        {selectedVehicle1 && (
+                          <th className="text-center p-3 font-semibold w-1/2">
+                            <div className="flex flex-col items-center gap-3">
                               <Link 
                                 to={`/vehicles/${selectedVehicle1.id}`}
-                                className="font-medium text-base text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center justify-center gap-1 transition-colors"
+                                className="block w-56 h-56 rounded-lg overflow-hidden border-2 border-blue-500 bg-gray-100 dark:bg-gray-800 hover:border-blue-600 dark:hover:border-blue-400 transition-colors cursor-pointer"
                               >
-                                {selectedVehicle1.manufacturer?.name} {selectedVehicle1.model}
-                                <ExternalLink className="h-3 w-3" />
-                              </Link>
-                              {selectedVehicle1.trim && (
-                                <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                                  {selectedVehicle1.trim}
+                                {selectedVehicle1.profile_image_url ? (
+                                  <img 
+                                    src={selectedVehicle1.profile_image_url} 
+                                    alt={`${selectedVehicle1.manufacturer?.name} ${selectedVehicle1.model}`}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      target.nextElementSibling?.classList.remove('hidden');
+                                    }}
+                                  />
+                                ) : null}
+                                <div className={`w-full h-full flex items-center justify-center text-blue-500 ${selectedVehicle1.profile_image_url ? 'hidden' : ''}`}>
+                                  <Car className="h-24 w-24" />
                                 </div>
-                              )}
-                              <div className="text-sm text-muted-foreground">
-                                {selectedVehicle1.body_style || 'Vehicle'}
+                              </Link>
+                              <div className="text-center">
+                                <Link 
+                                  to={`/vehicles/${selectedVehicle1.id}`}
+                                  className="font-medium text-base text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center justify-center gap-1 transition-colors"
+                                >
+                                  {selectedVehicle1.manufacturer?.name} {selectedVehicle1.model}
+                                  <ExternalLink className="h-3 w-3" />
+                                </Link>
+                                {selectedVehicle1.trim && (
+                                  <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                    {selectedVehicle1.trim}
+                                  </div>
+                                )}
+                                <div className="text-sm text-muted-foreground">
+                                  {selectedVehicle1.body_style || 'Vehicle'}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </th>
-                      )}
-                      {selectedVehicle2 && (
-                        <th className="text-center p-3 font-semibold w-1/2">
-                          <div className="flex flex-col items-center gap-3">
-                            <Link 
-                              to={`/vehicles/${selectedVehicle2.id}`}
-                              className="block w-56 h-56 rounded-lg overflow-hidden border-2 border-red-500 bg-gray-100 dark:bg-gray-800 hover:border-red-600 dark:hover:border-red-400 transition-colors cursor-pointer"
-                            >
-                              {selectedVehicle2.profile_image_url ? (
-                                <img 
-                                  src={selectedVehicle2.profile_image_url} 
-                                  alt={`${selectedVehicle2.manufacturer?.name} ${selectedVehicle2.model}`}
-                                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                    target.nextElementSibling?.classList.remove('hidden');
-                                  }}
-                                />
-                              ) : null}
-                              <div className={`w-full h-full flex items-center justify-center text-red-500 ${selectedVehicle2.profile_image_url ? 'hidden' : ''}`}>
-                                <Car className="h-24 w-24" />
-                              </div>
-                            </Link>
-                            <div className="text-center">
+                          </th>
+                        )}
+                        {selectedVehicle2 && (
+                          <th className="text-center p-3 font-semibold w-1/2">
+                            <div className="flex flex-col items-center gap-3">
                               <Link 
                                 to={`/vehicles/${selectedVehicle2.id}`}
-                                className="font-medium text-base text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 flex items-center justify-center gap-1 transition-colors"
+                                className="block w-56 h-56 rounded-lg overflow-hidden border-2 border-red-500 bg-gray-100 dark:bg-gray-800 hover:border-red-600 dark:hover:border-red-400 transition-colors cursor-pointer"
                               >
-                                {selectedVehicle2.manufacturer?.name} {selectedVehicle2.model}
-                                <ExternalLink className="h-3 w-3" />
-                              </Link>
-                              {selectedVehicle2.trim && (
-                                <div className="text-sm font-medium text-red-600 dark:text-red-400">
-                                  {selectedVehicle2.trim}
+                                {selectedVehicle2.profile_image_url ? (
+                                  <img 
+                                    src={selectedVehicle2.profile_image_url} 
+                                    alt={`${selectedVehicle2.manufacturer?.name} ${selectedVehicle2.model}`}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      target.nextElementSibling?.classList.remove('hidden');
+                                    }}
+                                  />
+                                ) : null}
+                                <div className={`w-full h-full flex items-center justify-center text-red-500 ${selectedVehicle2.profile_image_url ? 'hidden' : ''}`}>
+                                  <Car className="h-24 w-24" />
                                 </div>
-                              )}
-                              <div className="text-sm text-muted-foreground">
-                                {selectedVehicle2.body_style || 'Vehicle'}
+                              </Link>
+                              <div className="text-center">
+                                <Link 
+                                  to={`/vehicles/${selectedVehicle2.id}`}
+                                  className="font-medium text-base text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 flex items-center justify-center gap-1 transition-colors"
+                                >
+                                  {selectedVehicle2.manufacturer?.name} {selectedVehicle2.model}
+                                  <ExternalLink className="h-3 w-3" />
+                                </Link>
+                                {selectedVehicle2.trim && (
+                                  <div className="text-sm font-medium text-red-600 dark:text-red-400">
+                                    {selectedVehicle2.trim}
+                                  </div>
+                                )}
+                                <div className="text-sm text-muted-foreground">
+                                  {selectedVehicle2.body_style || 'Vehicle'}
+                                </div>
                               </div>
+                            </div>
+                          </th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Range, Power, and MSRP - Combined in single row */}
+                      <tr className="border-b border-border/50">
+                        <td className="p-3 font-medium text-sm w-48"></td>
+                        {selectedVehicle1 && (
+                          <td className="p-3 text-center w-1/2">
+                    <div className="space-y-2">
+                              <div className={`text-center p-2 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(selectedVehicle2.specifications?.msrp_usd, selectedVehicle1.specifications?.msrp_usd, false) : 'bg-muted/50'}`}>
+                                <div className="text-xl font-bold text-primary">
+                                  {selectedVehicle1.specifications?.msrp_usd ? `$${selectedVehicle1.specifications.msrp_usd.toLocaleString()}` : 'N/A'}
+                                </div>
+                                <div className="text-xs text-muted-foreground">MSRP</div>
+                              </div>
+                              <div className={`text-center p-2 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(selectedVehicle1.specifications?.range_miles, selectedVehicle2.specifications?.range_miles, true) : 'bg-muted/50'}`}>
+                                <div className="text-xl font-bold text-primary">
+                                  {formatSpec(selectedVehicle1.specifications?.range_miles, 'mi')}
+                                </div>
+                                <div className="text-xs text-muted-foreground">Range</div>
+                              </div>
+                              <div className={`text-center p-2 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(selectedVehicle1.specifications?.power_hp, selectedVehicle2.specifications?.power_hp, true) : 'bg-muted/50'}`}>
+                                <div className="text-xl font-bold text-primary">
+                                  {formatSpec(selectedVehicle1.specifications?.power_hp, 'hp')}
+                                </div>
+                                <div className="text-xs text-muted-foreground">Power</div>
+                      </div>
+                    </div>
+                          </td>
+                        )}
+                        {selectedVehicle2 && (
+                          <td className="p-3 text-center w-1/2">
+                    <div className="space-y-2">
+                              <div className={`text-center p-2 rounded-lg border-2 ${getTableCellBackground(selectedVehicle1?.specifications?.msrp_usd, selectedVehicle2.specifications?.msrp_usd, false)}`}>
+                                <div className="text-xl font-bold text-primary">
+                                  {selectedVehicle2.specifications?.msrp_usd ? `$${selectedVehicle2.specifications.msrp_usd.toLocaleString()}` : 'N/A'}
+                                </div>
+                                <div className="text-xs text-muted-foreground">MSRP</div>
+                              </div>
+                              <div className={`text-center p-2 rounded-lg border-2 ${getTableCellBackground(selectedVehicle2.specifications?.range_miles, selectedVehicle1?.specifications?.range_miles, true)}`}>
+                                <div className="text-xl font-bold text-primary">
+                                  {formatSpec(selectedVehicle2.specifications?.range_miles, 'mi')}
+                                </div>
+                                <div className="text-xs text-muted-foreground">Range</div>
+                              </div>
+                              <div className={`text-center p-2 rounded-lg border-2 ${getTableCellBackground(selectedVehicle2.specifications?.power_hp, selectedVehicle1?.specifications?.power_hp, true)}`}>
+                                <div className="text-xl font-bold text-primary">
+                                  {formatSpec(selectedVehicle2.specifications?.power_hp, 'hp')}
+                                </div>
+                                <div className="text-xs text-muted-foreground">Power</div>
+                      </div>
+                    </div>
+                          </td>
+                        )}
+                      </tr>
+                      
+                      {/* All Other Specifications */}
+                      {[
+                        { name: 'Battery Capacity', key: 'battery_capacity_kwh', unit: 'kWh', icon: Battery, color: 'text-green-500', higherIsBetter: true },
+                        { name: '0-60 Acceleration', key: 'acceleration_0_60', unit: 's', icon: Zap, color: 'text-blue-500', higherIsBetter: false },
+                        { name: 'Top Speed', key: 'top_speed_mph', unit: 'mph', icon: TrendingUp, color: 'text-red-500', higherIsBetter: true },
+                        { name: 'Torque', key: 'torque_lb_ft', unit: 'lb-ft', icon: Car, color: 'text-purple-500', higherIsBetter: true },
+                        { name: 'Weight', key: 'weight_lbs', unit: 'lbs', icon: Car, color: 'text-gray-500', higherIsBetter: false },
+                        { name: 'Seating Capacity', key: 'seating_capacity', unit: 'seats', icon: Car, color: 'text-indigo-500', higherIsBetter: true },
+                        { name: 'Cargo Capacity', key: 'cargo_capacity_cu_ft', unit: 'cu ft', icon: Car, color: 'text-orange-500', higherIsBetter: true },
+                        { name: 'Wheelbase', key: 'wheelbase_inches', unit: 'in', icon: Car, color: 'text-cyan-500', higherIsBetter: true },
+                        { name: 'Length', key: 'length_inches', unit: 'in', icon: Car, color: 'text-pink-500', higherIsBetter: true },
+                        { name: 'Width', key: 'width_inches', unit: 'in', icon: Car, color: 'text-teal-500', higherIsBetter: true },
+                        { name: 'Height', key: 'height_inches', unit: 'in', icon: Car, color: 'text-amber-500', higherIsBetter: true }
+                      ].map((spec) => {
+                        const IconComponent = spec.icon;
+                        const value1 = selectedVehicle1?.specifications?.[spec.key as keyof typeof selectedVehicle1.specifications] as number;
+                        const value2 = selectedVehicle2?.specifications?.[spec.key as keyof typeof selectedVehicle2.specifications] as number;
+                        
+                        return (
+                          <tr key={spec.key} className="border-b border-border/50 hover:bg-muted/30">
+                            <td className="p-3 font-medium text-sm">
+                      <div className="flex items-center gap-2">
+                                <IconComponent className={`h-4 w-4 ${spec.color}`} />
+                                {spec.name}
+                              </div>
+                            </td>
+                            {selectedVehicle1 && (
+                              <td className="p-3 text-center w-1/2">
+                                <div className={`text-center p-2 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(value1, value2, spec.higherIsBetter) : 'bg-muted/50'}`}>
+                        <span className="font-medium">
+                                    {formatSpec(value1, spec.unit)}
+                        </span>
+                      </div>
+                              </td>
+                            )}
+                            {selectedVehicle2 && (
+                              <td className="p-3 text-center w-1/2">
+                                <div className={`text-center p-2 rounded-lg border-2 ${getTableCellBackground(value2, value1, spec.higherIsBetter)}`}>
+                        <span className="font-medium">
+                                    {formatSpec(value2, spec.unit)}
+                        </span>
+                      </div>
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="block lg:hidden space-y-6">
+                {/* Vehicle 1 Card */}
+                {selectedVehicle1 && (
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <Link 
+                        to={`/vehicles/${selectedVehicle1.id}`}
+                        className="block w-32 h-32 mx-auto rounded-lg overflow-hidden border-2 border-blue-500 bg-gray-100 dark:bg-gray-800 hover:border-blue-600 dark:hover:border-blue-400 transition-colors cursor-pointer"
+                      >
+                        {selectedVehicle1.profile_image_url ? (
+                          <img 
+                            src={selectedVehicle1.profile_image_url} 
+                            alt={`${selectedVehicle1.manufacturer?.name} ${selectedVehicle1.model}`}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.nextElementSibling?.classList.remove('hidden');
+                            }}
+                          />
+                        ) : null}
+                        <div className={`w-full h-full flex items-center justify-center text-blue-500 ${selectedVehicle1.profile_image_url ? 'hidden' : ''}`}>
+                          <Car className="h-12 w-12" />
+                        </div>
+                      </Link>
+                      <div className="mt-3">
+                        <Link 
+                          to={`/vehicles/${selectedVehicle1.id}`}
+                          className="font-medium text-lg text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center justify-center gap-1 transition-colors"
+                        >
+                          {selectedVehicle1.manufacturer?.name} {selectedVehicle1.model}
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                        {selectedVehicle1.trim && (
+                          <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                            {selectedVehicle1.trim}
+                          </div>
+                        )}
+                        <div className="text-sm text-muted-foreground">
+                          {selectedVehicle1.body_style || 'Vehicle'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Vehicle 1 Specifications */}
+                    <div className="space-y-3">
+                      {/* Key Specifications */}
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className={`p-3 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(selectedVehicle2.specifications?.msrp_usd, selectedVehicle1.specifications?.msrp_usd, false) : 'bg-muted/50'}`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">MSRP</span>
+                            <span className="text-lg font-bold text-primary">
+                              {selectedVehicle1.specifications?.msrp_usd ? `$${selectedVehicle1.specifications.msrp_usd.toLocaleString()}` : 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className={`p-3 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(selectedVehicle1.specifications?.range_miles, selectedVehicle2.specifications?.range_miles, true) : 'bg-muted/50'}`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">Range</span>
+                            <span className="text-lg font-bold text-primary">
+                              {formatSpec(selectedVehicle1.specifications?.range_miles, 'mi')}
+                            </span>
+                          </div>
+                        </div>
+                        <div className={`p-3 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(selectedVehicle1.specifications?.power_hp, selectedVehicle2.specifications?.power_hp, true) : 'bg-muted/50'}`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">Power</span>
+                            <span className="text-lg font-bold text-primary">
+                              {formatSpec(selectedVehicle1.specifications?.power_hp, 'hp')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Other Specifications */}
+                      {[
+                        { name: 'Battery Capacity', key: 'battery_capacity_kwh', unit: 'kWh', icon: Battery, color: 'text-green-500', higherIsBetter: true },
+                        { name: '0-60 Acceleration', key: 'acceleration_0_60', unit: 's', icon: Zap, color: 'text-blue-500', higherIsBetter: false },
+                        { name: 'Top Speed', key: 'top_speed_mph', unit: 'mph', icon: TrendingUp, color: 'text-red-500', higherIsBetter: true },
+                        { name: 'Torque', key: 'torque_lb_ft', unit: 'lb-ft', icon: Car, color: 'text-purple-500', higherIsBetter: true },
+                        { name: 'Weight', key: 'weight_lbs', unit: 'lbs', icon: Car, color: 'text-gray-500', higherIsBetter: false },
+                        { name: 'Seating Capacity', key: 'seating_capacity', unit: 'seats', icon: Car, color: 'text-indigo-500', higherIsBetter: true },
+                        { name: 'Cargo Capacity', key: 'cargo_capacity_cu_ft', unit: 'cu ft', icon: Car, color: 'text-orange-500', higherIsBetter: true },
+                        { name: 'Wheelbase', key: 'wheelbase_inches', unit: 'in', icon: Car, color: 'text-cyan-500', higherIsBetter: true },
+                        { name: 'Length', key: 'length_inches', unit: 'in', icon: Car, color: 'text-pink-500', higherIsBetter: true },
+                        { name: 'Width', key: 'width_inches', unit: 'in', icon: Car, color: 'text-teal-500', higherIsBetter: true },
+                        { name: 'Height', key: 'height_inches', unit: 'in', icon: Car, color: 'text-amber-500', higherIsBetter: true }
+                      ].map((spec) => {
+                        const IconComponent = spec.icon;
+                        const value1 = selectedVehicle1?.specifications?.[spec.key as keyof typeof selectedVehicle1.specifications] as number;
+                        const value2 = selectedVehicle2?.specifications?.[spec.key as keyof typeof selectedVehicle2.specifications] as number;
+                        
+                        return (
+                          <div key={spec.key} className={`p-3 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(value1, value2, spec.higherIsBetter) : 'bg-muted/50'}`}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <IconComponent className={`h-4 w-4 ${spec.color}`} />
+                                <span className="text-sm font-medium text-muted-foreground">{spec.name}</span>
+                              </div>
+                              <span className="font-medium">
+                                {formatSpec(value1, spec.unit)}
+                              </span>
                             </div>
                           </div>
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Range, Power, and MSRP - Combined in single row */}
-                    <tr className="border-b border-border/50">
-                      <td className="p-3 font-medium text-sm w-48"></td>
-                      {selectedVehicle1 && (
-                        <td className="p-3 text-center w-1/2">
-                  <div className="space-y-2">
-                            <div className={`text-center p-2 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(selectedVehicle2.specifications?.msrp_usd, selectedVehicle1.specifications?.msrp_usd, false) : 'bg-muted/50'}`}>
-                              <div className="text-xl font-bold text-primary">
-                                {selectedVehicle1.specifications?.msrp_usd ? `$${selectedVehicle1.specifications.msrp_usd.toLocaleString()}` : 'N/A'}
-                              </div>
-                              <div className="text-xs text-muted-foreground">MSRP</div>
-                            </div>
-                            <div className={`text-center p-2 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(selectedVehicle1.specifications?.range_miles, selectedVehicle2.specifications?.range_miles, true) : 'bg-muted/50'}`}>
-                              <div className="text-xl font-bold text-primary">
-                                {formatSpec(selectedVehicle1.specifications?.range_miles, 'mi')}
-                              </div>
-                              <div className="text-xs text-muted-foreground">Range</div>
-                            </div>
-                            <div className={`text-center p-2 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(selectedVehicle1.specifications?.power_hp, selectedVehicle2.specifications?.power_hp, true) : 'bg-muted/50'}`}>
-                              <div className="text-xl font-bold text-primary">
-                                {formatSpec(selectedVehicle1.specifications?.power_hp, 'hp')}
-                              </div>
-                              <div className="text-xs text-muted-foreground">Power</div>
+                        );
+                      })}
                     </div>
                   </div>
-                        </td>
-                      )}
-                      {selectedVehicle2 && (
-                        <td className="p-3 text-center w-1/2">
-                  <div className="space-y-2">
-                            <div className={`text-center p-2 rounded-lg border-2 ${getTableCellBackground(selectedVehicle1?.specifications?.msrp_usd, selectedVehicle2.specifications?.msrp_usd, false)}`}>
-                              <div className="text-xl font-bold text-primary">
-                                {selectedVehicle2.specifications?.msrp_usd ? `$${selectedVehicle2.specifications.msrp_usd.toLocaleString()}` : 'N/A'}
+                )}
+
+                {/* Vehicle 2 Card */}
+                {selectedVehicle2 && (
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <Link 
+                        to={`/vehicles/${selectedVehicle2.id}`}
+                        className="block w-32 h-32 mx-auto rounded-lg overflow-hidden border-2 border-red-500 bg-gray-100 dark:bg-gray-800 hover:border-red-600 dark:hover:border-red-400 transition-colors cursor-pointer"
+                      >
+                        {selectedVehicle2.profile_image_url ? (
+                          <img 
+                            src={selectedVehicle2.profile_image_url} 
+                            alt={`${selectedVehicle2.manufacturer?.name} ${selectedVehicle2.model}`}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.nextElementSibling?.classList.remove('hidden');
+                            }}
+                          />
+                        ) : null}
+                        <div className={`w-full h-full flex items-center justify-center text-red-500 ${selectedVehicle2.profile_image_url ? 'hidden' : ''}`}>
+                          <Car className="h-12 w-12" />
+                        </div>
+                      </Link>
+                      <div className="mt-3">
+                        <Link 
+                          to={`/vehicles/${selectedVehicle2.id}`}
+                          className="font-medium text-lg text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 flex items-center justify-center gap-1 transition-colors"
+                        >
+                          {selectedVehicle2.manufacturer?.name} {selectedVehicle2.model}
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                        {selectedVehicle2.trim && (
+                          <div className="text-sm font-medium text-red-600 dark:text-red-400">
+                            {selectedVehicle2.trim}
+                          </div>
+                        )}
+                        <div className="text-sm text-muted-foreground">
+                          {selectedVehicle2.body_style || 'Vehicle'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Vehicle 2 Specifications */}
+                    <div className="space-y-3">
+                      {/* Key Specifications */}
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className={`p-3 rounded-lg border-2 ${getTableCellBackground(selectedVehicle1?.specifications?.msrp_usd, selectedVehicle2.specifications?.msrp_usd, false)}`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">MSRP</span>
+                            <span className="text-lg font-bold text-primary">
+                              {selectedVehicle2.specifications?.msrp_usd ? `$${selectedVehicle2.specifications.msrp_usd.toLocaleString()}` : 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className={`p-3 rounded-lg border-2 ${getTableCellBackground(selectedVehicle2.specifications?.range_miles, selectedVehicle1?.specifications?.range_miles, true)}`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">Range</span>
+                            <span className="text-lg font-bold text-primary">
+                              {formatSpec(selectedVehicle2.specifications?.range_miles, 'mi')}
+                            </span>
+                          </div>
+                        </div>
+                        <div className={`p-3 rounded-lg border-2 ${getTableCellBackground(selectedVehicle2.specifications?.power_hp, selectedVehicle1?.specifications?.power_hp, true)}`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">Power</span>
+                            <span className="text-lg font-bold text-primary">
+                              {formatSpec(selectedVehicle2.specifications?.power_hp, 'hp')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Other Specifications */}
+                      {[
+                        { name: 'Battery Capacity', key: 'battery_capacity_kwh', unit: 'kWh', icon: Battery, color: 'text-green-500', higherIsBetter: true },
+                        { name: '0-60 Acceleration', key: 'acceleration_0_60', unit: 's', icon: Zap, color: 'text-blue-500', higherIsBetter: false },
+                        { name: 'Top Speed', key: 'top_speed_mph', unit: 'mph', icon: TrendingUp, color: 'text-red-500', higherIsBetter: true },
+                        { name: 'Torque', key: 'torque_lb_ft', unit: 'lb-ft', icon: Car, color: 'text-purple-500', higherIsBetter: true },
+                        { name: 'Weight', key: 'weight_lbs', unit: 'lbs', icon: Car, color: 'text-gray-500', higherIsBetter: false },
+                        { name: 'Seating Capacity', key: 'seating_capacity', unit: 'seats', icon: Car, color: 'text-indigo-500', higherIsBetter: true },
+                        { name: 'Cargo Capacity', key: 'cargo_capacity_cu_ft', unit: 'cu ft', icon: Car, color: 'text-orange-500', higherIsBetter: true },
+                        { name: 'Wheelbase', key: 'wheelbase_inches', unit: 'in', icon: Car, color: 'text-cyan-500', higherIsBetter: true },
+                        { name: 'Length', key: 'length_inches', unit: 'in', icon: Car, color: 'text-pink-500', higherIsBetter: true },
+                        { name: 'Width', key: 'width_inches', unit: 'in', icon: Car, color: 'text-teal-500', higherIsBetter: true },
+                        { name: 'Height', key: 'height_inches', unit: 'in', icon: Car, color: 'text-amber-500', higherIsBetter: true }
+                      ].map((spec) => {
+                        const IconComponent = spec.icon;
+                        const value1 = selectedVehicle1?.specifications?.[spec.key as keyof typeof selectedVehicle1.specifications] as number;
+                        const value2 = selectedVehicle2?.specifications?.[spec.key as keyof typeof selectedVehicle2.specifications] as number;
+                        
+                        return (
+                          <div key={spec.key} className={`p-3 rounded-lg border-2 ${getTableCellBackground(value2, value1, spec.higherIsBetter)}`}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <IconComponent className={`h-4 w-4 ${spec.color}`} />
+                                <span className="text-sm font-medium text-muted-foreground">{spec.name}</span>
                               </div>
-                              <div className="text-xs text-muted-foreground">MSRP</div>
+                              <span className="font-medium">
+                                {formatSpec(value2, spec.unit)}
+                              </span>
                             </div>
-                            <div className={`text-center p-2 rounded-lg border-2 ${getTableCellBackground(selectedVehicle2.specifications?.range_miles, selectedVehicle1?.specifications?.range_miles, true)}`}>
-                              <div className="text-xl font-bold text-primary">
-                                {formatSpec(selectedVehicle2.specifications?.range_miles, 'mi')}
-                              </div>
-                              <div className="text-xs text-muted-foreground">Range</div>
-                            </div>
-                            <div className={`text-center p-2 rounded-lg border-2 ${getTableCellBackground(selectedVehicle2.specifications?.power_hp, selectedVehicle1?.specifications?.power_hp, true)}`}>
-                              <div className="text-xl font-bold text-primary">
-                                {formatSpec(selectedVehicle2.specifications?.power_hp, 'hp')}
-                              </div>
-                              <div className="text-xs text-muted-foreground">Power</div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
-                        </td>
-                      )}
-                    </tr>
-                    
-                    {/* All Other Specifications */}
-                    {[
-                      { name: 'Battery Capacity', key: 'battery_capacity_kwh', unit: 'kWh', icon: Battery, color: 'text-green-500', higherIsBetter: true },
-                      { name: '0-60 Acceleration', key: 'acceleration_0_60', unit: 's', icon: Zap, color: 'text-blue-500', higherIsBetter: false },
-                      { name: 'Top Speed', key: 'top_speed_mph', unit: 'mph', icon: TrendingUp, color: 'text-red-500', higherIsBetter: true },
-                      { name: 'Torque', key: 'torque_lb_ft', unit: 'lb-ft', icon: Car, color: 'text-purple-500', higherIsBetter: true },
-                      { name: 'Weight', key: 'weight_lbs', unit: 'lbs', icon: Car, color: 'text-gray-500', higherIsBetter: false },
-                      { name: 'Seating Capacity', key: 'seating_capacity', unit: 'seats', icon: Car, color: 'text-indigo-500', higherIsBetter: true },
-                      { name: 'Cargo Capacity', key: 'cargo_capacity_cu_ft', unit: 'cu ft', icon: Car, color: 'text-orange-500', higherIsBetter: true },
-                      { name: 'Wheelbase', key: 'wheelbase_inches', unit: 'in', icon: Car, color: 'text-cyan-500', higherIsBetter: true },
-                      { name: 'Length', key: 'length_inches', unit: 'in', icon: Car, color: 'text-pink-500', higherIsBetter: true },
-                      { name: 'Width', key: 'width_inches', unit: 'in', icon: Car, color: 'text-teal-500', higherIsBetter: true },
-                      { name: 'Height', key: 'height_inches', unit: 'in', icon: Car, color: 'text-amber-500', higherIsBetter: true }
-                    ].map((spec) => {
-                      const IconComponent = spec.icon;
-                      const value1 = selectedVehicle1?.specifications?.[spec.key as keyof typeof selectedVehicle1.specifications] as number;
-                      const value2 = selectedVehicle2?.specifications?.[spec.key as keyof typeof selectedVehicle2.specifications] as number;
-                      
-                      return (
-                        <tr key={spec.key} className="border-b border-border/50 hover:bg-muted/30">
-                          <td className="p-3 font-medium text-sm">
-                    <div className="flex items-center gap-2">
-                              <IconComponent className={`h-4 w-4 ${spec.color}`} />
-                              {spec.name}
-                            </div>
-                          </td>
-                          {selectedVehicle1 && (
-                            <td className="p-3 text-center w-1/2">
-                              <div className={`text-center p-2 rounded-lg border-2 ${selectedVehicle2 ? getTableCellBackground(value1, value2, spec.higherIsBetter) : 'bg-muted/50'}`}>
-                      <span className="font-medium">
-                                  {formatSpec(value1, spec.unit)}
-                      </span>
-                    </div>
-                            </td>
-                          )}
-                          {selectedVehicle2 && (
-                            <td className="p-3 text-center w-1/2">
-                              <div className={`text-center p-2 rounded-lg border-2 ${getTableCellBackground(value2, value1, spec.higherIsBetter)}`}>
-                      <span className="font-medium">
-                                  {formatSpec(value2, spec.unit)}
-                      </span>
-                    </div>
-                            </td>
-                          )}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-                </div>
+                )}
+              </div>
               </CardContent>
             </Card>
         </div>

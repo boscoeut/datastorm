@@ -176,26 +176,26 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-4 sm:space-y-6 ${className}`}>
       {/* Header */}
       {showHeader && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">EV Industry News</h1>
-            <p className="text-muted-foreground">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">EV Industry News</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
               Latest updates, rumors, and insights from the electric vehicle industry
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             {totalCount > 0 && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                 {totalCount} articles
               </div>
             )}
             {loading && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                Loading...
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-primary"></div>
+                <span className="hidden sm:inline">Loading...</span>
               </div>
             )}
           </div>
@@ -204,16 +204,17 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
 
       {/* Search and Filters */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Search className="h-5 w-5" />
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Search className="h-4 w-4 sm:h-5 sm:w-5" />
               Search & Filters
             </CardTitle>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
+              className="w-full sm:w-auto"
             >
               <Filter className="h-4 w-4 mr-2" />
               {showFilters ? 'Hide' : 'Show'} Filters
@@ -222,7 +223,7 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Search Bar */}
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex-1">
               <Label htmlFor="news-search" className="sr-only">
                 Search news articles
@@ -233,10 +234,10 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
                 value={localSearchQuery}
                 onChange={(e) => setLocalSearchQuery(e.target.value)}
                 onKeyPress={handleSearchKeyPress}
-                className="w-full"
+                className="w-full text-sm sm:text-base"
               />
             </div>
-            <Button onClick={handleSearch} disabled={loading}>
+            <Button onClick={handleSearch} disabled={loading} className="w-full sm:w-auto">
               <Search className="h-4 w-4 mr-2" />
               Search
             </Button>
@@ -303,30 +304,28 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
       </Card>
 
       {/* News Articles */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {articles.map((article) => (
           <Card key={article.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-3">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                <div className="flex-1 space-y-3 min-w-0">
                   {/* Article Header */}
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-foreground leading-tight">
-                        {article.title}
-                      </h3>
-                      {article.summary && (
-                        <p className="text-muted-foreground mt-2 leading-relaxed">
-                          {article.summary}
-                        </p>
-                      )}
-                    </div>
+                  <div className="space-y-2">
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground leading-tight">
+                      {article.title}
+                    </h3>
+                    {article.summary && (
+                      <p className="text-sm sm:text-base text-muted-foreground leading-relaxed line-clamp-3">
+                        {article.summary}
+                      </p>
+                    )}
                   </div>
 
                   {/* Article Metadata */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                     {article.category && (
-                      <Badge className={getCategoryColor(article.category)}>
+                      <Badge className={`${getCategoryColor(article.category)} text-xs`}>
                         {getCategoryIcon(article.category)}
                         <span className="ml-1">{article.category}</span>
                       </Badge>
@@ -334,20 +333,20 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
                     
                     {article.published_date && (
                       <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
                         {formatDate(article.published_date)}
                       </div>
                     )}
                     
                     {article.source_name && (
-                      <span>Source: {article.source_name}</span>
+                      <span className="truncate">Source: {article.source_name}</span>
                     )}
                   </div>
 
                   {/* Tags */}
                   {article.tags && article.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {article.tags.map((tag) => (
+                    <div className="flex flex-wrap gap-1 sm:gap-2">
+                      {article.tags.slice(0, 3).map((tag) => (
                         <Badge
                           key={tag}
                           variant="secondary"
@@ -357,6 +356,11 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
                           {tag}
                         </Badge>
                       ))}
+                      {article.tags.length > 3 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{article.tags.length - 3}
+                        </Badge>
+                      )}
                     </div>
                   )}
                 </div>
@@ -367,13 +371,13 @@ const NewsFeed: React.FC<NewsFeedProps> = ({ showHeader = true, className = '' }
                     variant="outline"
                     size="sm"
                     asChild
-                    className="shrink-0"
+                    className="shrink-0 w-full sm:w-auto"
                   >
                     <a
                       href={article.source_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2"
+                      className="flex items-center justify-center gap-2"
                     >
                       <ExternalLink className="h-4 w-4" />
                       Read More
