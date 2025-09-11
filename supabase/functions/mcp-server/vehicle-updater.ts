@@ -63,106 +63,19 @@ export interface VehicleUpdateResult {
   error?: string
 }
 
-// Google Search API types (reused from main file)
-interface GoogleSearchParams {
-  query: string;
-  num_results?: number;
-  site_restriction?: string;
-  language?: string;
-  start_index?: number;
+// Web grounding types for Gemini
+interface WebGroundingConfig {
+  enableWebSearch: boolean;
+  maxSearchResults?: number;
 }
 
-interface GoogleSearchResult {
-  title: string;
-  link: string;
-  snippet: string;
-  displayLink: string;
-  formattedUrl: string;
-}
+// Web grounding configuration
+const WEB_GROUNDING_CONFIG: WebGroundingConfig = {
+  enableWebSearch: true,
+  maxSearchResults: 20
+};
 
-interface GoogleSearchResponse {
-  kind: string;
-  url: {
-    type: string;
-    template: string;
-  };
-  queries: {
-    request: Array<{
-      title: string;
-      totalResults: string;
-      searchTerms: string;
-      count: number;
-      startIndex: number;
-      inputEncoding: string;
-      outputEncoding: string;
-      safe: string;
-      cx: string;
-    }>;
-  };
-  context: {
-    title: string;
-  };
-  searchInformation: {
-    searchTime: number;
-    formattedSearchTime: string;
-    totalResults: string;
-    formattedTotalResults: string;
-  };
-  items?: GoogleSearchResult[];
-}
-
-// Google Search API function
-async function callGoogleSearchAPI(params: GoogleSearchParams): Promise<GoogleSearchResponse> {
-  try {
-    const apiKey = Deno.env.get('GOOGLE_SEARCH_API_KEY');
-    const searchEngineId = Deno.env.get('GOOGLE_SEARCH_ENGINE_ID');
-
-    if (!apiKey || !searchEngineId) {
-      throw new Error('Google Search API key or search engine ID not configured');
-    }
-
-    // Build search URL
-    const baseUrl = 'https://www.googleapis.com/customsearch/v1';
-    const searchParams = new URLSearchParams({
-      key: apiKey,
-      cx: searchEngineId,
-      q: params.query,
-      num: String(params.num_results || 10),
-      start: String(params.start_index || 1),
-    });
-
-    // Add optional parameters
-    if (params.site_restriction) {
-      searchParams.append('siteSearch', params.site_restriction);
-    }
-    if (params.language) {
-      searchParams.append('lr', `lang_${params.language}`);
-    }
-
-    const url = `${baseUrl}?${searchParams.toString()}`;
-
-    // Make the API request
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Google Search API error: ${response.status} ${errorText}`);
-    }
-
-    const data: GoogleSearchResponse = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error calling Google Search API:', error);
-    throw new Error(`Google Search API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-// Direct Gemini API function
+// Enhanced Gemini API function with web grounding
 async function callGeminiAPI(request: {
   task: string;
   prompt: string;
@@ -171,7 +84,8 @@ async function callGeminiAPI(request: {
   model?: string;
   temperature?: number;
   maxTokens?: number;
-}): Promise<{ text: string; usage?: any }> {
+  enableWebGrounding?: boolean;
+}): Promise<{ text: string; usage?: any; groundingMetadata?: any }> {
   try {
     const apiKey = Deno.env.get('GOOGLE_GEMINI_API_KEY');
     if (!apiKey) {
@@ -181,15 +95,6 @@ async function callGeminiAPI(request: {
     // Initialize Google Gemini AI
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Get the model
-    const model = genAI.getGenerativeModel({
-      model: request.model || 'gemini-2.5-flash',
-      generationConfig: {
-        temperature: request.temperature || 0.7,
-        maxOutputTokens: request.maxTokens || 2048,
-      },
-    });
-
     // Prepare the content with expected output guidance
     let content = request.prompt;
     
@@ -203,9 +108,21 @@ async function callGeminiAPI(request: {
       content += `\n\nContext Data: ${JSON.stringify(request.data, null, 2)}`;
     }
 
-    // Generate content
+    // Configure the model
+    const model = genAI.getGenerativeModel({
+      model: request.model || 'gemini-2.5-flash',
+      generationConfig: {
+        temperature: request.temperature || 0.7,
+        maxOutputTokens: request.maxTokens || 2048,
+      },
+    });
+
+    // Generate content with web grounding
     const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: content }] }]
+      contents: [{ role: 'user', parts: [{ text: content }] }],
+      tools: request.enableWebGrounding !== false ? [{
+        googleSearch: {}
+      }] : undefined
     });
 
     const response = await result.response;
@@ -218,9 +135,18 @@ async function callGeminiAPI(request: {
       totalTokens: response.usageMetadata.totalTokenCount || 0,
     } : undefined;
 
+    // Get grounding metadata if available
+    const groundingMetadata = response.groundingMetadata ? {
+      groundingChunks: response.groundingMetadata.groundingChunks || [],
+      searchQueries: response.groundingMetadata.searchQueries || [],
+      retrievalScore: response.groundingMetadata.retrievalScore || 0,
+      webSearchQueries: response.groundingMetadata.webSearchQueries || []
+    } : undefined;
+
     return {
       text,
       usage,
+      groundingMetadata,
     };
   } catch (error) {
     console.error('Error calling Gemini API:', error);
@@ -307,7 +233,7 @@ export async function updateVehicleDetails(
   }
 }
 
-// Research vehicle information using Google Search
+// Research vehicle information using grounded Gemini
 async function researchVehicleInformation(params: VehicleUpdateParams): Promise<VehicleData> {
   console.log('🔍 Researching vehicle information for:', params);
   
@@ -315,25 +241,69 @@ async function researchVehicleInformation(params: VehicleUpdateParams): Promise<
   const currentYear = new Date().getFullYear();
   const targetYear = params.year || currentYear;
   
-  // Search for vehicle information
-  const vehicleSearchQueries = [
-    `${params.manufacturer} ${params.model} ${targetYear} specifications`,
-    `${params.manufacturer} ${params.model} ${targetYear} trims`,
-    `${params.manufacturer} ${params.model} ${targetYear} price MSRP`,
-    `${params.manufacturer} ${params.model} ${targetYear} battery range`,
-    `${params.manufacturer} ${params.model} ${targetYear} performance`
-  ];
+  // Use grounded Gemini to research vehicle information
+  const vehicleData = await researchVehicleWithGroundedGemini(params, targetYear);
 
+  return vehicleData;
+}
 
-  // Execute searches
-  const vehicleSearchResults = await Promise.all(
-    vehicleSearchQueries.map(query => callGoogleSearchAPI({ query, num_results: 5 }))
-  );
+// Research vehicle information using grounded Gemini
+async function researchVehicleWithGroundedGemini(
+  params: VehicleUpdateParams,
+  targetYear: number
+): Promise<VehicleData> {
+  console.log('📊 Researching vehicle data using grounded Gemini...');
 
+  // Use grounded Gemini to extract all vehicle data in one comprehensive call
+  const comprehensivePrompt = `Research comprehensive information about ${params.manufacturer} ${params.model} ${targetYear} electric vehicle.
 
-  // Process search results to extract vehicle data
-  const vehicleData = await processSearchResultsForVehicleData(
-    vehicleSearchResults,
+Please provide detailed information about:
+
+1. MANUFACTURER INFORMATION:
+   - Company name: ${params.manufacturer}
+   - Country where headquartered
+   - Official website URL
+
+2. VEHICLE INFORMATION:
+   - Model name: ${params.model}
+   - Model year: ${targetYear}
+   - Available trim levels (e.g., Base, Performance, Long Range)
+   - Body style (Sedan, SUV, Truck, etc.)
+   - Electric vehicle status
+   - Current availability status
+
+3. SPECIFICATIONS:
+   - Battery capacity (kWh)
+   - EPA range (miles)
+   - Power output (hp)
+   - Torque (lb-ft)
+   - 0-60 mph acceleration time
+   - Top speed (mph)
+   - Weight (lbs)
+   - Physical dimensions (length, width, height in inches)
+   - Cargo capacity (cubic feet)
+   - Seating capacity
+   - Towing capacity (lbs)
+   - Drag coefficient
+   - Charging speed (kW)
+   - MSRP/starting price (USD)
+
+Please search for the most current and accurate information available online.`;
+
+  const response = await callGeminiAPI({
+    task: 'research_vehicle_data',
+    prompt: comprehensivePrompt,
+    enableWebGrounding: true,
+    temperature: 0.3,
+    maxTokens: 4096
+  });
+
+  console.log('🔍 Grounded Gemini response received');
+  console.log('📊 Grounding metadata:', response.groundingMetadata);
+
+  // Extract structured data from the grounded response
+  const vehicleData = await extractStructuredDataFromGroundedResponse(
+    response.text,
     params,
     targetYear
   );
@@ -341,285 +311,79 @@ async function researchVehicleInformation(params: VehicleUpdateParams): Promise<
   return vehicleData;
 }
 
-// Process search results to extract structured vehicle data using Gemini
-async function processSearchResultsForVehicleData(
-  vehicleSearchResults: GoogleSearchResponse[],
+// Extract structured data from grounded Gemini response
+async function extractStructuredDataFromGroundedResponse(
+  responseText: string,
   params: VehicleUpdateParams,
   targetYear: number
 ): Promise<VehicleData> {
-  console.log('📊 Processing search results for vehicle data using Gemini...');
+  console.log('📊 Extracting structured data from grounded response...');
 
-  // Combine all search results into a single text for analysis
-  const allSearchResults = [
-    ...vehicleSearchResults.flatMap(response => response.items || [])
-  ];
+  // Use Gemini to parse the grounded response into structured JSON
+  const parsePrompt = `Parse the following research response about ${params.manufacturer} ${params.model} ${targetYear} into structured JSON data.
 
-  // Limit search results and truncate long snippets to stay within prompt limits
-  const maxResults = 20; // Limit to 20 most relevant results
-  const maxSnippetLength = 200; // Truncate snippets to 200 characters
-  
-  const limitedSearchResults = allSearchResults.slice(0, maxResults);
-  console.log('🔍 Limited search results:', limitedSearchResults);
-  
-  const searchResultsText = limitedSearchResults
-    .map(item => {
-      const truncatedSnippet = item.snippet && item.snippet.length > maxSnippetLength 
-        ? item.snippet.substring(0, maxSnippetLength) + '...'
-        : item.snippet;
-      return `Title: ${item.title}\nSnippet: ${truncatedSnippet}\nURL: ${item.link}\n---`;
-    })
-    .join('\n');
+RESEARCH RESPONSE:
+${responseText}
 
-  // Use Gemini to extract manufacturer information
-  const manufacturerData = await extractManufacturerData(params, searchResultsText);
-  
-  // Use Gemini to extract vehicle information
-  const vehicleData = await extractVehicleData(params, targetYear, searchResultsText);
-  
-  // Use Gemini to extract specifications
-  const specificationsData = await extractSpecificationsData(params, targetYear, searchResultsText);
-  
-
-  return {
-    manufacturer: manufacturerData,
-    vehicles: vehicleData,
-    specifications: specificationsData
-  };
-}
-
-// Helper function to truncate prompt if it exceeds limits
-function truncatePromptIfNeeded(prompt: string, maxLength: number = 9000): string {
-  if (prompt.length <= maxLength) {
-    return prompt;
-  }
-  
-  // Find the search results section and truncate it
-  const searchResultsIndex = prompt.indexOf('Search Results:');
-  if (searchResultsIndex === -1) {
-    return prompt.substring(0, maxLength);
-  }
-  
-  const beforeSearchResults = prompt.substring(0, searchResultsIndex + 'Search Results:'.length);
-  const remainingLength = maxLength - beforeSearchResults.length - 100; // Leave room for closing text
-  
-  const searchResultsSection = prompt.substring(searchResultsIndex + 'Search Results:'.length);
-  const truncatedSearchResults = searchResultsSection.substring(0, remainingLength) + '\n\n[Search results truncated for length]';
-  
-  return beforeSearchResults + '\n' + truncatedSearchResults + prompt.substring(prompt.lastIndexOf('If information is not available'));
-}
-
-// Extract manufacturer data using Gemini
-async function extractManufacturerData(params: VehicleUpdateParams, searchResultsText: string) {
-  let prompt = `Analyze the following search results and extract manufacturer information for ${params.manufacturer}.
-
-Search Results:
-${searchResultsText}
-
-Please extract and return ONLY a JSON object with the following structure. Do not include any markdown formatting, code blocks, or additional text - just the raw JSON:
+Please extract and return ONLY a valid JSON object with this exact structure. Do not include any markdown formatting, code blocks, or additional text - just the raw JSON:
 
 {
-  "name": "${params.manufacturer}",
-  "country": "Country where the manufacturer is headquartered",
-  "website": "Official website URL"
-}
-
-If information is not available in the search results, use your knowledge to provide reasonable defaults.`;
-
-  // Ensure prompt doesn't exceed limits
-  prompt = truncatePromptIfNeeded(prompt);
-
-  const response = await callGeminiAPI({
-    task: 'analyze_vehicle_data',
-    prompt,
-    expectedOutput: 'JSON object with manufacturer information',
-    temperature: 0.3
-  });
-
-  try {
-    // Clean the response text to extract JSON
-    let responseText = response.text.trim();
-    
-    // Remove any markdown code blocks
-    if (responseText.startsWith('```json')) {
-      responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-    } else if (responseText.startsWith('```')) {
-      responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+  "manufacturer": {
+    "name": "${params.manufacturer}",
+    "country": "Country where headquartered",
+    "website": "Official website URL"
+  },
+  "vehicles": [
+    {
+      "model": "${params.model}",
+      "year": ${targetYear},
+      "model_year": ${targetYear},
+      "trim": "Trim level (e.g., Base, Performance, Long Range)",
+      "body_style": "Body style (Sedan, SUV, Truck, etc.)",
+      "is_electric": true,
+      "is_currently_available": true
     }
-    
-    // Try to find JSON object in the response
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      responseText = jsonMatch[0];
+  ],
+  "specifications": [
+    {
+      "battery_capacity_kwh": number,
+      "range_miles": number,
+      "power_hp": number,
+      "torque_lb_ft": number,
+      "acceleration_0_60": number,
+      "top_speed_mph": number,
+      "weight_lbs": number,
+      "length_inches": number,
+      "width_inches": number,
+      "height_inches": number,
+      "cargo_capacity_cu_ft": number,
+      "seating_capacity": number,
+      "towing_capacity_lbs": number,
+      "drag_coefficient": number,
+      "charging_speed_kw": number,
+      "msrp_usd": number
     }
-    
-    console.log('Parsing manufacturer data:', responseText);
-    const data = JSON.parse(responseText);
-    return {
-      name: data.name || params.manufacturer,
-      country: data.country || 'Unknown',
-      website: data.website || ''
-    };
-  } catch (error) {
-    console.warn('Failed to parse manufacturer data from Gemini:', error);
-    console.warn('Raw response:', response.text);
-    return await getFallbackManufacturerData(params);
-  }
-}
-
-// Extract vehicle data using Gemini
-async function extractVehicleData(params: VehicleUpdateParams, targetYear: number, searchResultsText: string) {
-  let prompt = `Analyze the following search results and extract vehicle information for ${params.manufacturer} ${params.model} ${targetYear}.
-
-Search Results:
-${searchResultsText}
-
-IMPORTANT: Return ONLY a valid JSON array. Do not include any markdown formatting, code blocks, explanations, or additional text - just the raw JSON array.
-
-Each vehicle object must have this exact structure:
-{
-  "model": "Model name",
-  "year": ${targetYear},
-  "model_year": ${targetYear},
-  "trim": "Trim level (e.g., Base, Performance, Long Range)",
-  "body_style": "Body style (Sedan, SUV, Truck, etc.)",
-  "is_electric": true,
-  "is_currently_available": true
+  ]
 }
 
 Rules:
-- Return an array even if only one vehicle
-- Use true for is_electric and is_currently_available for electric vehicles
-- If multiple trims are mentioned, create separate objects for each
-- If information is not available, use reasonable defaults based on the model name
+- Return an array for vehicles even if only one vehicle
+- If multiple trims are mentioned, create separate vehicle objects for each
+- Omit specification fields that are not available (don't include null values)
+- Use reasonable defaults if specific information is not available
 - Ensure all JSON is properly formatted and valid`;
 
-  // Ensure prompt doesn't exceed limits
-  prompt = truncatePromptIfNeeded(prompt);
-
-  const response = await callGeminiAPI({
-    task: 'analyze_vehicle_data',
-    prompt,
-    expectedOutput: 'JSON array of vehicle objects',
-    temperature: 0.3
-  });
-
   try {
+    const parseResponse = await callGeminiAPI({
+      task: 'parse_grounded_response',
+      prompt: parsePrompt,
+      enableWebGrounding: false, // Don't use grounding for parsing
+      temperature: 0.1,
+      maxTokens: 2048
+    });
+
     // Clean the response text to extract JSON
-    let responseText = response.text.trim();
-    
-    console.log('Raw Gemini response for vehicle data:', responseText);
-    
-    // Check if response is empty or too short
-    if (!responseText || responseText.length < 10) {
-      console.warn('Empty or very short response from Gemini for vehicle data');
-      const fallbackData = await getFallbackVehicleData(params, targetYear);
-      return [fallbackData];
-    }
-    
-    // Remove any markdown code blocks
-    if (responseText.startsWith('```json')) {
-      responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-    } else if (responseText.startsWith('```')) {
-      responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
-    }
-    
-    // Try to find JSON array or object in the response
-    const arrayMatch = responseText.match(/\[[\s\S]*\]/);
-    const objectMatch = responseText.match(/\{[\s\S]*\}/);
-    
-    if (arrayMatch) {
-      responseText = arrayMatch[0];
-    } else if (objectMatch) {
-      responseText = objectMatch[0];
-    }
-    
-    console.log('Cleaned response for parsing:', responseText);
-    
-    // Validate that we have something to parse
-    if (!responseText || responseText.length < 5) {
-      console.warn('No valid JSON found in response');
-      const fallbackData = await getFallbackVehicleData(params, targetYear);
-      return [fallbackData];
-    }
-    
-    const data = JSON.parse(responseText);
-    
-    // Validate the parsed data
-    if (!data || (Array.isArray(data) && data.length === 0)) {
-      console.warn('Parsed data is empty or invalid');
-      const fallbackData = await getFallbackVehicleData(params, targetYear);
-      return [fallbackData];
-    }
-    
-    return Array.isArray(data) ? data : [data];
-  } catch (error) {
-    console.warn('Failed to parse vehicle data from Gemini:', error);
-    console.warn('Raw response:', response.text);
-    console.warn('Response length:', response.text?.length || 0);
-    const fallbackData = await getFallbackVehicleData(params, targetYear);
-    return [fallbackData];
-  }
-}
-
-// Extract specifications data using Gemini
-async function extractSpecificationsData(params: VehicleUpdateParams, targetYear: number, searchResultsText: string) {
-  let prompt = `Analyze the following search results and extract detailed specifications for ${params.manufacturer} ${params.model} ${targetYear}.
-
-Search Results:
-${searchResultsText}
-
-Please extract and return ONLY a JSON object with the following structure. Do not include any markdown formatting, code blocks, or additional text - just the raw JSON:
-
-{
-  "battery_capacity_kwh": number,
-  "range_miles": number,
-  "power_hp": number,
-  "torque_lb_ft": number,
-  "acceleration_0_60": number,
-  "top_speed_mph": number,
-  "weight_lbs": number,
-  "length_inches": number,
-  "width_inches": number,
-  "height_inches": number,
-  "cargo_capacity_cu_ft": number,
-  "seating_capacity": number,
-  "towing_capacity_lbs": number,
-  "drag_coefficient": number,
-  "charging_speed_kw": number,
-  "msrp_usd": number
-}
-
-Extract actual values from the search results. If a specification is not mentioned, omit it from the JSON object (don't include null values). Use your knowledge to provide reasonable estimates if specific data is not available.
-
-Pay special attention to:
-- MSRP/starting price information (look for "starting at", "MSRP", "base price", "from $X")
-- Battery capacity in kWh
-- EPA range in miles
-- Performance specifications (0-60 mph, top speed, power, torque)
-- Physical dimensions and capacities`;
-
-  // Ensure prompt doesn't exceed limits
-  prompt = truncatePromptIfNeeded(prompt);
-
-  const response = await callGeminiAPI({
-    task: 'analyze_vehicle_data',
-    prompt,
-    expectedOutput: 'JSON object with vehicle specifications',
-    temperature: 0.3
-  });
-
-  try {
-    // Clean the response text to extract JSON
-    let responseText = response.text.trim();
-    
-    console.log('Raw specifications response:', responseText);
-    
-    // Check if response is empty
-    if (!responseText || responseText.length === 0) {
-      console.warn('Empty response from Gemini for specifications');
-      const fallbackData = await getFallbackSpecificationsData(params, targetYear);
-      return [fallbackData];
-    }
+    let responseText = parseResponse.text.trim();
     
     // Remove any markdown code blocks
     if (responseText.startsWith('```json')) {
@@ -634,91 +398,53 @@ Pay special attention to:
       responseText = jsonMatch[0];
     }
     
-    // Check if we have valid JSON content
-    if (!responseText || responseText.length < 10) {
-      console.warn('No valid JSON found in specifications response');
-      const fallbackData = await getFallbackSpecificationsData(params, targetYear);
-      return [fallbackData];
-    }
-    
-    console.log('Parsing specifications data:', responseText);
+    console.log('Parsing grounded response data:', responseText);
     const data = JSON.parse(responseText);
     
-    // Validate that we got an object
-    if (typeof data !== 'object' || data === null) {
-      console.warn('Invalid JSON object structure for specifications');
-      const fallbackData = await getFallbackSpecificationsData(params, targetYear);
-      return [fallbackData];
+    // Validate the parsed data structure
+    if (!data.manufacturer || !data.vehicles || !data.specifications) {
+      throw new Error('Invalid data structure in grounded response');
     }
     
-    // Filter out null/undefined values
-    const filteredData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== null && value !== undefined)
+    // Ensure vehicles is an array
+    if (!Array.isArray(data.vehicles)) {
+      data.vehicles = [data.vehicles];
+    }
+    
+    // Ensure specifications is an array
+    if (!Array.isArray(data.specifications)) {
+      data.specifications = [data.specifications];
+    }
+    
+    // Filter out null/undefined values from specifications
+    data.specifications = data.specifications.map((spec: any) => 
+      Object.fromEntries(
+        Object.entries(spec).filter(([_, value]) => value !== null && value !== undefined)
+      )
     );
     
-    console.log('Successfully parsed specifications:', filteredData);
-    return [filteredData];
+    console.log('✅ Successfully extracted structured data from grounded response');
+    return data;
   } catch (error) {
-    console.warn('Failed to parse specifications data from Gemini:', error);
-    console.warn('Raw response:', response.text);
-    const fallbackData = await getFallbackSpecificationsData(params, targetYear);
-    return [fallbackData];
+    console.warn('Failed to parse grounded response, using fallback extraction:', error);
+    return await getFallbackVehicleDataFromGroundedResponse(params, targetYear);
   }
 }
 
-
-// Fallback functions using Gemini for data extraction when primary extraction fails
-async function getFallbackManufacturerData(params: VehicleUpdateParams) {
-  const prompt = `Provide basic manufacturer information for ${params.manufacturer}. Return ONLY a JSON object:
-{
-  "name": "${params.manufacturer}",
-  "country": "Country where headquartered",
-  "website": "Official website URL"
-}`;
-
-  try {
-    const response = await callGeminiAPI({
-      task: 'analyze_vehicle_data',
-      prompt,
-      expectedOutput: 'JSON object with manufacturer information',
-      temperature: 0.1
-    });
-    
-    return JSON.parse(response.text);
-  } catch (error) {
-    console.warn('Fallback manufacturer data extraction failed, using minimal defaults');
-    return {
+// Fallback function to extract data when parsing fails
+async function getFallbackVehicleDataFromGroundedResponse(
+  params: VehicleUpdateParams,
+  targetYear: number
+): Promise<VehicleData> {
+  console.log('🔄 Using fallback data extraction...');
+  
+  return {
+    manufacturer: {
       name: params.manufacturer,
       country: 'Unknown',
       website: ''
-    };
-  }
-}
-
-async function getFallbackVehicleData(params: VehicleUpdateParams, targetYear: number) {
-  const prompt = `Provide basic vehicle information for ${params.manufacturer} ${params.model} ${targetYear}. Return ONLY a JSON object:
-{
-  "model": "${params.model}",
-  "year": ${targetYear},
-  "model_year": ${targetYear},
-  "trim": "${params.trim || 'Base'}",
-  "body_style": "Body style (Sedan, SUV, Truck, etc.)",
-  "is_electric": true/false,
-  "is_currently_available": true
-}`;
-
-  try {
-    const response = await callGeminiAPI({
-      task: 'analyze_vehicle_data',
-      prompt,
-      expectedOutput: 'JSON object with vehicle information',
-      temperature: 0.1
-    });
-    
-    return JSON.parse(response.text);
-  } catch (error) {
-    console.warn('Fallback vehicle data extraction failed, using minimal defaults');
-    return {
+    },
+    vehicles: [{
       model: params.model,
       year: targetYear,
       model_year: targetYear,
@@ -726,65 +452,10 @@ async function getFallbackVehicleData(params: VehicleUpdateParams, targetYear: n
       body_style: 'Sedan',
       is_electric: true,
       is_currently_available: true
-    };
-  }
+    }],
+    specifications: [{}]
+  };
 }
-
-async function getFallbackSpecificationsData(params: VehicleUpdateParams, targetYear: number) {
-  const prompt = `Provide basic specifications for ${params.manufacturer} ${params.model} ${targetYear}. Return ONLY a JSON object with any known specifications (omit fields you don't know). Do not include any markdown formatting, code blocks, or additional text - just the raw JSON:
-
-{
-  "battery_capacity_kwh": number,
-  "range_miles": number,
-  "power_hp": number,
-  "torque_lb_ft": number,
-  "acceleration_0_60": number,
-  "top_speed_mph": number,
-  "weight_lbs": number,
-  "length_inches": number,
-  "width_inches": number,
-  "height_inches": number,
-  "cargo_capacity_cu_ft": number,
-  "seating_capacity": number,
-  "msrp_usd": number
-}`;
-
-  try {
-    const response = await callGeminiAPI({
-      task: 'analyze_vehicle_data',
-      prompt,
-      expectedOutput: 'JSON object with vehicle specifications',
-      temperature: 0.1
-    });
-    
-    // Clean the response text to extract JSON
-    let responseText = response.text.trim();
-    
-    // Remove any markdown code blocks
-    if (responseText.startsWith('```json')) {
-      responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-    } else if (responseText.startsWith('```')) {
-      responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '');
-    }
-    
-    // Try to find JSON object in the response
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      responseText = jsonMatch[0];
-    }
-    
-    console.log('Fallback specifications response:', responseText);
-    const data = JSON.parse(responseText);
-    // Filter out null/undefined values
-    return Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== null && value !== undefined)
-    );
-  } catch (error) {
-    console.warn('Fallback specifications data extraction failed:', error);
-    return {};
-  }
-}
-
 
 // Database processing functions
 async function processManufacturer(manufacturer: any, supabase: any) {
