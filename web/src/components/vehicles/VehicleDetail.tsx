@@ -263,19 +263,16 @@ const VehicleDetail: React.FC = () => {
                 </div>
               )}
 
-              {/* Admin Populate Images Button */}
-              <div className="pt-4">
+              {/* Admin Buttons */}
+              <div className="pt-4 flex gap-2">
                 <PopulateImagesButton
                   vehicleId={vehicle.id}
                   model={vehicle.model}
                   trim={vehicle.trim}
                   manufacturer={manufacturer?.name}
                   onImagesPopulated={handleImagesPopulated}
+                  className="flex-1"
                 />
-              </div>
-
-              {/* Admin Update Vehicle Details Button */}
-              <div className="pt-2">
                 <UpdateVehicleDetailsButton
                   manufacturer={manufacturer?.name || ''}
                   model={vehicle.model}
@@ -285,6 +282,7 @@ const VehicleDetail: React.FC = () => {
                     // Refresh the vehicle details after update
                     window.location.reload()
                   }}
+                  className="flex-1"
                 />
               </div>
             </div>
