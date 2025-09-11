@@ -670,47 +670,99 @@ export async function fetchVehicleNews(
   }
 }
 
-// Generate industry news articles using Gemini
+// Search for real industry news articles using Gemini with web search
 async function searchIndustryNews(params: IndustryNewsFetchParams): Promise<NewsArticle[]> {
-  console.log('🔍 Generating industry news articles with Gemini for:', params);
+  console.log('🔍 Searching for real industry news articles with Gemini for:', params);
   
-  // Build a comprehensive prompt for Gemini to generate news articles
-  const prompt = `Generate ${params.maxArticles || 20} realistic, current news articles about the electric vehicle industry. 
+  // Build search queries for different aspects of EV industry news
+  let searchQueries = [
+    'electric vehicle industry news',
+    'EV market trends sales data',
+    'battery technology advances electric vehicles',
+    'EV charging infrastructure news',
+    'electric vehicle policy regulations',
+    'EV manufacturing production news',
+    'electric vehicle startup funding investment',
+    'autonomous electric vehicles news',
+    'EV environmental impact sustainability'
+  ];
 
-Focus on these key areas:
-- Electric vehicle technology breakthroughs and innovations
-- EV market trends, sales data, and market share statistics
-- Battery technology advances and charging infrastructure
-- Government policies, incentives, and regulations
-- EV manufacturing news and industry developments
-- Startup funding and investment in EV sector
-- Autonomous electric vehicles and future mobility
-- Environmental impact and sustainability
+  // Add time-based search modifiers if timeRange is specified
+  if (params.timeRange) {
+    const timeModifiers = {
+      'day': 'today',
+      'week': 'this week',
+      'month': 'this month',
+      'year': 'this year'
+    };
+    
+    const timeModifier = timeModifiers[params.timeRange];
+    if (timeModifier) {
+      searchQueries = searchQueries.map(query => `${query} ${timeModifier}`);
+    }
+  }
 
-${params.category ? `Specifically focus on: ${params.category}` : ''}
+  // Add category-specific search if specified
+  if (params.category) {
+    const categoryQueries = {
+      'technology': ['electric vehicle technology breakthroughs', 'EV battery innovations', 'EV charging technology'],
+      'market': ['electric vehicle sales', 'EV market share statistics', 'electric car sales data'],
+      'policy': ['electric vehicle policy', 'EV incentives regulations', 'government EV support'],
+      'infrastructure': ['EV charging infrastructure', 'electric vehicle charging stations', 'EV charging network']
+    };
+    
+    if (categoryQueries[params.category as keyof typeof categoryQueries]) {
+      searchQueries.push(...categoryQueries[params.category as keyof typeof categoryQueries]);
+    }
+  }
 
-For each article, provide:
-- A compelling, realistic title
-- A detailed summary (2-3 sentences)
-- A realistic source URL (use major news outlets like Reuters, Bloomberg, TechCrunch, etc.)
-- A source name (the news outlet)
+  // Build a comprehensive prompt for Gemini to search and extract real news articles
+  const prompt = `
+
+Today's date is ${new Date().toISOString().split('T')[0]}.
+  
+Search the web for real, current news articles about the electric vehicle industry. Use the following search queries to find actual news articles:
+
+${searchQueries.map((query, index) => `${index + 1}. "${query}"`).join('\n')}
+
+${params.category ? `Focus specifically on: ${params.category} related news` : ''}
+${params.timeRange ? `Time range: ${params.timeRange} (prioritize articles from ${params.timeRange === 'day' ? 'today' : `the last ${params.timeRange}`})` : ''}
+
+For each real news article you find, extract and provide:
+- The actual article title (exactly as published)
+- A summary of the article content (2-3 sentences based on the real article)
+- The actual source URL (the real news article URL)
+- The actual source name (the real news outlet)
 - A relevant category (Technology, Market Trends, Policy, Infrastructure, Manufacturing, Startups, Investment, Safety, Performance, General)
-- 3-5 relevant tags
-- A realistic published date (within the last 30 days)
+- 3-5 relevant tags based on the article content
+- The actual published date (if available, otherwise use recent date)
 - Set image_url to null (images will be generated separately)
 
-Make the articles diverse, current, and realistic. Include specific details like company names, statistics, and recent developments.`;
+Find ${params.maxArticles || 20} real news articles from reputable sources like:
+- Reuters, Bloomberg, TechCrunch, The Verge, Electrek, InsideEVs
+- Automotive News, Car and Driver, MotorTrend
+- CNBC, Wall Street Journal, Financial Times
+- Government and industry publications
+
+Make sure to:
+1. Only include real, published news articles
+2. Use actual URLs and source names
+3. Base summaries on real article content
+4. ${params.timeRange ? `Prioritize articles from ${params.timeRange === 'day' ? 'today' : `the last ${params.timeRange}`}` : 'Include recent articles (within the last 30 days when possible)'}
+5. Provide diverse coverage across different EV industry topics
+
+Return the results as a JSON array of news article objects.`;
 
   try {
     const response = await callGeminiAPI({
-      task: 'generate_industry_news_articles',
+      task: 'search_industry_news_articles',
       prompt,
       expectedOutput: 'JSON array of news article objects',
-      temperature: 0.7
+      temperature: 0.3
     });
 
     if (response.text) {
-      console.log('✅ Gemini generated industry news articles');
+      console.log('✅ Gemini found real industry news articles');
       
       // Parse the JSON response
       let responseText = response.text.trim();
@@ -732,7 +784,7 @@ Make the articles diverse, current, and realistic. Include specific details like
       const articles = JSON.parse(responseText);
       
       if (Array.isArray(articles)) {
-        console.log(`✅ Generated ${articles.length} industry news articles`);
+        console.log(`✅ Found ${articles.length} real industry news articles`);
         return articles.slice(0, params.maxArticles || 20);
       } else {
         console.warn('Gemini returned non-array response, wrapping in array');
@@ -740,61 +792,84 @@ Make the articles diverse, current, and realistic. Include specific details like
       }
     }
 
-    console.warn('No response text from Gemini for industry news');
+    console.warn('No response text from Gemini for industry news search');
     return [];
   } catch (error) {
-    console.error('Error generating industry news with Gemini:', error);
+    console.error('Error searching for industry news with Gemini:', error);
     return [];
   }
 }
 
-// Generate vehicle news articles using Gemini
+// Search for real vehicle news articles using Gemini with web search
 async function searchVehicleNews(params: NewsFetchParams): Promise<NewsArticle[]> {
-  console.log('🔍 Generating vehicle news articles with Gemini for:', params);
+  console.log('🔍 Searching for real vehicle news articles with Gemini for:', params);
   
   // Determine the target year
   const currentYear = new Date().getFullYear();
   const targetYear = params.year || currentYear;
   
-  // Build a comprehensive prompt for Gemini to generate news articles
-  const prompt = `Generate ${params.maxArticles || 20} realistic, current news articles about the ${params.manufacturer} ${params.model} ${targetYear}.
+  // Build search queries for the specific vehicle
+  const searchQueries = [
+    `${params.manufacturer} ${params.model} ${targetYear} news`,
+    `${params.manufacturer} ${params.model} ${targetYear} review`,
+    `${params.manufacturer} ${params.model} ${targetYear} price`,
+    `${params.manufacturer} ${params.model} ${targetYear} test drive`,
+    `${params.manufacturer} ${params.model} ${targetYear} specifications`,
+    `${params.manufacturer} ${params.model} ${targetYear} performance`,
+    `${params.manufacturer} ${params.model} ${targetYear} safety`,
+    `${params.manufacturer} ${params.model} ${targetYear} comparison`,
+    `${params.manufacturer} ${params.model} ${targetYear} update`
+  ];
 
-Focus on these key areas:
-- Latest news and updates about the ${params.manufacturer} ${params.model}
-- Reviews and test drives from automotive journalists
-- Price changes, incentives, and market availability
-- Technology features and specifications
-- Performance updates and improvements
-- Safety ratings and recalls
-- Manufacturing updates and production news
-- Comparison with competitors
-- Owner experiences and community discussions
-- Future plans and announcements
+  // Add trim-specific search if specified
+  if (params.trim) {
+    searchQueries.push(`${params.manufacturer} ${params.model} ${params.trim} ${targetYear}`);
+  }
 
-${params.trim ? `Include specific information about the ${params.trim} trim level.` : ''}
+  // Build a comprehensive prompt for Gemini to search and extract real news articles
+  const prompt = `Search the web for real, current news articles about the ${params.manufacturer} ${params.model} ${targetYear}. Use the following search queries to find actual news articles:
 
-For each article, provide:
-- A compelling, realistic title
-- A detailed summary (2-3 sentences)
-- A realistic source URL (use major automotive news outlets like MotorTrend, Car and Driver, Autoblog, InsideEVs, etc.)
-- A source name (the news outlet)
+${searchQueries.map((query, index) => `${index + 1}. "${query}"`).join('\n')}
+
+${params.trim ? `Focus specifically on the ${params.trim} trim level when available.` : ''}
+
+For each real news article you find, extract and provide:
+- The actual article title (exactly as published)
+- A summary of the article content (2-3 sentences based on the real article)
+- The actual source URL (the real news article URL)
+- The actual source name (the real news outlet)
 - A relevant category (Reviews, Market Trends, Technology, Performance, Safety, General)
 - 3-5 relevant tags including the manufacturer, model, and year
-- A realistic published date (within the last 30 days)
+- The actual published date (if available, otherwise use recent date)
 - Set image_url to null (images will be generated separately)
 
-Make the articles diverse, current, and realistic. Include specific details like pricing, specifications, and recent developments.`;
+Find ${params.maxArticles || 20} real news articles from reputable automotive sources like:
+- MotorTrend, Car and Driver, Autoblog, InsideEVs, Electrek
+- Automotive News, Road & Track, Car and Driver
+- CNBC, Reuters, Bloomberg (for business/market news)
+- Manufacturer press releases and official announcements
+- Professional automotive journalism outlets
+
+Make sure to:
+1. Only include real, published news articles
+2. Use actual URLs and source names
+3. Base summaries on real article content
+4. Include recent articles (within the last 30 days when possible)
+5. Cover diverse topics: reviews, pricing, technology, performance, safety
+6. Include both positive and critical coverage when available
+
+Return the results as a JSON array of news article objects.`;
 
   try {
     const response = await callGeminiAPI({
-      task: 'generate_vehicle_news_articles',
+      task: 'search_vehicle_news_articles',
       prompt,
       expectedOutput: 'JSON array of news article objects',
-      temperature: 0.7
+      temperature: 0.3
     });
 
     if (response.text) {
-      console.log('✅ Gemini generated vehicle news articles');
+      console.log('✅ Gemini found real vehicle news articles');
       
       // Parse the JSON response
       let responseText = response.text.trim();
@@ -816,7 +891,7 @@ Make the articles diverse, current, and realistic. Include specific details like
       const articles = JSON.parse(responseText);
       
       if (Array.isArray(articles)) {
-        console.log(`✅ Generated ${articles.length} vehicle news articles`);
+        console.log(`✅ Found ${articles.length} real vehicle news articles`);
         return articles.slice(0, params.maxArticles || 20);
       } else {
         console.warn('Gemini returned non-array response, wrapping in array');
@@ -824,21 +899,15 @@ Make the articles diverse, current, and realistic. Include specific details like
       }
     }
 
-    console.warn('No response text from Gemini for vehicle news');
+    console.warn('No response text from Gemini for vehicle news search');
     return [];
   } catch (error) {
-    console.error('Error generating vehicle news with Gemini:', error);
+    console.error('Error searching for vehicle news with Gemini:', error);
     return [];
   }
 }
 
-// This function is no longer needed as we generate articles directly with Gemini
-
-// This function is no longer needed as we generate articles directly with Gemini
-
-// This function is no longer needed as we generate articles directly with Gemini
-
-// This function is no longer needed as we generate articles directly with Gemini
+// These functions are no longer needed as we search for real articles with Gemini
 
 // Helper function to truncate text to fit database constraints
 function truncateForDatabase(text: string | undefined, maxLength: number): string {

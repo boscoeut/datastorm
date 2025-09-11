@@ -21,16 +21,7 @@ The main form component that allows admins to input vehicle information and trig
 - **Trim** (optional): Vehicle trim level (e.g., Performance, Long Range, Base)
 - **Year** (optional): Model year (defaults to current year)
 
-### 2. AdminVehicleUpdateTest (`AdminVehicleUpdateTest.tsx`)
-A test component that allows admins to quickly test the vehicle update functionality with predefined parameters.
-
-**Features:**
-- One-click test with Tesla Model 3 Performance
-- Real-time test results
-- Error reporting
-- Success/failure indicators
-
-### 3. AdminPage (`AdminPage.tsx`)
+### 2. AdminPage (`AdminPage.tsx`)
 The main admin dashboard page that contains all admin tools.
 
 **Features:**
@@ -141,7 +132,6 @@ src/
 ├── components/
 │   └── admin/
 │       ├── VehicleUpdateForm.tsx
-│       ├── AdminVehicleUpdateTest.tsx
 │       └── README.md
 ├── pages/
 │   └── AdminPage.tsx

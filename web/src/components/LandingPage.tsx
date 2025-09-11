@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { useVehicleStore, useVehicles, useVehicleLoading } from '@/stores/vehicle-store';
 import { VehicleService } from '@/services/database';
 import { NewsArticleService } from '@/services/database';
+import { NewsImageService } from '@/services/news-image-storage';
 import type { VehicleWithDetails, NewsArticle } from '@/types/database';
 
 const LandingPage = () => {
@@ -691,7 +692,7 @@ const LandingPage = () => {
         <CardHeader className="text-center pb-6">
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-center gap-3">
             <TrendingUpIcon className="h-8 w-8" />
-            Latest Industry News
+            Latest News
           </CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
             Stay updated with the latest developments in electric vehicles and sustainable transportation
@@ -718,7 +719,7 @@ const LandingPage = () => {
               {recentNews.map((article, index) => (
                 <Card 
                   key={article.id} 
-                  className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm cursor-pointer"
+                  className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm cursor-pointer overflow-hidden"
                   style={{
                     animationDelay: `${index * 100}ms`
                   }}
@@ -728,6 +729,26 @@ const LandingPage = () => {
                     }
                   }}
                 >
+                  {/* Article Image Preview */}
+                  {NewsImageService.getImageUrl(article) && (
+                    <div className="relative w-full h-48 overflow-hidden">
+                      <img 
+                        src={NewsImageService.getImageUrl(article)!} 
+                        alt={article.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                      <div className="absolute top-3 right-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+                          {index + 1}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   <CardContent className="p-6 space-y-4">
                     {/* Article Header */}
                     <div className="flex items-start justify-between gap-3">
@@ -752,9 +773,11 @@ const LandingPage = () => {
                           </span>
                         </div>
                       </div>
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
-                        {index + 1}
-                      </div>
+                      {!NewsImageService.getImageUrl(article) && (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+                          {index + 1}
+                        </div>
+                      )}
                     </div>
                     
                     {/* Article Title */}

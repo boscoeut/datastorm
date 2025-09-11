@@ -2,7 +2,6 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { VehicleUpdateForm } from '@/components/admin/VehicleUpdateForm';
-import { AdminVehicleUpdateTest } from '@/components/admin/AdminVehicleUpdateTest';
 import { EVSearchForm } from '@/components/admin/EVSearchForm';
 import { IndustryNewsForm } from '@/components/admin/IndustryNewsForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -99,9 +98,6 @@ export const AdminPage: React.FC = () => {
 
         {/* Industry News Form */}
         <IndustryNewsForm />
-
-        {/* Test Component */}
-        <AdminVehicleUpdateTest />
       </div>
     </div>
   );

@@ -544,7 +544,7 @@ export class NewsArticleService {
       const { data, error } = await supabase
         .from('news_articles')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('published_date', { ascending: false })
         .limit(limit)
 
       if (error) {
@@ -562,7 +562,6 @@ export class NewsArticleService {
       let query = supabase
         .from('news_articles')
         .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
 
       // Apply filters
       if (filters.query) {
@@ -589,7 +588,7 @@ export class NewsArticleService {
         query = query.range(from, to)
       }
 
-      // Default sorting by published date
+      // Order by published date descending (most recent first)
       query = query.order('published_date', { ascending: false })
 
       const { data, error, count } = await query
