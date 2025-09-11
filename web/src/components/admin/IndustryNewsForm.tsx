@@ -15,7 +15,7 @@ export const IndustryNewsForm: React.FC = () => {
   const [result, setResult] = useState<IndustryNewsResult | null>(null);
   const [maxArticles, setMaxArticles] = useState<number>(5);
   const [category, setCategory] = useState<string>('custom');
-  const [customCategory, setCustomCategory] = useState<string>('');
+  const [customCategory, setCustomCategory] = useState<string>('Tesla');
   const [timeRange, setTimeRange] = useState<string>('day');
 
   const handleFetchIndustryNews = async () => {
