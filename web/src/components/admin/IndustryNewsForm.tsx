@@ -13,18 +13,22 @@ import type { IndustryNewsResult, IndustryNewsFetchParams } from '@/services/ind
 export const IndustryNewsForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<IndustryNewsResult | null>(null);
-  const [maxArticles, setMaxArticles] = useState<number>(20);
-  const [category, setCategory] = useState<string>('all');
-  const [timeRange, setTimeRange] = useState<string>('all');
+  const [maxArticles, setMaxArticles] = useState<number>(5);
+  const [category, setCategory] = useState<string>('custom');
+  const [customCategory, setCustomCategory] = useState<string>('');
+  const [timeRange, setTimeRange] = useState<string>('day');
 
   const handleFetchIndustryNews = async () => {
     setIsLoading(true);
     setResult(null);
 
     try {
+      // Use custom category if provided, otherwise use selected category
+      const selectedCategory = customCategory.trim() || (category !== 'all' && category !== 'custom' ? category : undefined);
+      
       const params: IndustryNewsFetchParams = {
         maxArticles,
-        ...(category && category !== 'all' && { category: category as any }),
+        ...(selectedCategory && { category: selectedCategory as any }),
         ...(timeRange && timeRange !== 'all' && { timeRange: timeRange as any }),
       };
 
@@ -63,7 +67,7 @@ export const IndustryNewsForm: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="maxArticles">Max Articles</Label>
             <Input
@@ -72,25 +76,9 @@ export const IndustryNewsForm: React.FC = () => {
               min="1"
               max="50"
               value={maxArticles}
-              onChange={(e) => setMaxArticles(parseInt(e.target.value) || 20)}
-              placeholder="20"
+              onChange={(e) => setMaxArticles(parseInt(e.target.value) || 5)}
+              placeholder="5"
             />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="category">Category (Optional)</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="technology">Technology</SelectItem>
-                <SelectItem value="market">Market</SelectItem>
-                <SelectItem value="policy">Policy</SelectItem>
-                <SelectItem value="infrastructure">Infrastructure</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           
           <div className="space-y-2">
@@ -110,9 +98,65 @@ export const IndustryNewsForm: React.FC = () => {
           </div>
         </div>
 
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="categorySelect" className="text-sm font-medium">Predefined Categories</Label>
+                <Select value={category} onValueChange={(value) => {
+                  setCategory(value);
+                  if (value !== 'custom') {
+                    setCustomCategory('');
+                  }
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="Technology">Technology</SelectItem>
+                    <SelectItem value="Market Trends">Market Trends</SelectItem>
+                    <SelectItem value="Policy">Policy</SelectItem>
+                    <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+                    <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+                    <SelectItem value="Startups">Startups</SelectItem>
+                    <SelectItem value="Investment">Investment</SelectItem>
+                    <SelectItem value="Safety">Safety</SelectItem>
+                    <SelectItem value="Performance">Performance</SelectItem>
+                    <SelectItem value="General">General</SelectItem>
+                    <SelectItem value="custom">Custom Category</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {category === 'custom' && (
+                <div className="space-y-2">
+                  <Label htmlFor="customCategory" className="text-sm font-medium">Custom Category</Label>
+                  <Input
+                    id="customCategory"
+                    type="text"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    placeholder="Enter custom category (e.g., Battery Technology, Charging Networks)"
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Enter a specific category to focus the news generation on that topic.
+                  </p>
+                  {category === 'custom' && !customCategory.trim() && (
+                    <p className="text-xs text-amber-600">
+                      Please enter a custom category to proceed.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         <Button 
           onClick={handleFetchIndustryNews} 
-          disabled={isLoading}
+          disabled={isLoading || (category === 'custom' && !customCategory.trim())}
           className="w-full"
         >
           {isLoading ? (

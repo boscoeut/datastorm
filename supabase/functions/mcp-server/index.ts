@@ -1110,7 +1110,7 @@ async function executeFetchIndustryNews(args: any, token: string, requestId: any
     // Validate parameters
     const IndustryNewsFetchParamsSchema = z.object({
       maxArticles: z.number().min(1).max(50).optional(),
-      category: z.enum(['technology', 'market', 'policy', 'infrastructure']).optional(),
+      category: z.string().optional(), // Allow any string for custom categories
       timeRange: z.enum(['day', 'week', 'month', 'year']).optional(),
     });
     
